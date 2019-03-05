@@ -1,0 +1,35 @@
+<strong class="d-inline-block mb-2 text-success">Metadata</strong>
+
+<div id="metadata">
+  <h3 class="mb-0">
+    <a class="text-dark" href="#">Editor</a>
+  </h3>
+  <p class="card-text mb-auto">Information regading the editor setup</p>
+  Editor Mode:
+  <div id="editor_mode" style="font-weight: bold;"></div>
+  <hr/>
+  Marked lines:
+  <div id="vulnerable_sections"></div>
+  <hr/>
+  Sections:
+  <nav>
+    <div>
+      <button type="button" class="btn btn-primary btn-sm" id="prev_comment">Previous</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="next_comment">Next</button>
+    </div>
+  </nav>
+  <div id="comments">
+    <ul id="sortable">
+    </ul>
+  </div>
+  <hr/>
+  Editor control keys:
+  <ul class="list-group">
+    <li class="list-group-item"><b>v</b>: mark/unmark section as vulnerable</li>
+    <li class="list-group-item"><b>i</b>: mark/unmark section as irrelevant</li>
+    <li class="list-group-item"><b>c</b>: add comment to currently selected line</li>
+  </ul>
+  <hr/>
+  <button id="reset_changes_btn" type="button" class="btn btn-primary">Reset changes</button>
+  <button id="save_changes_btn" type="button" class="btn btn-primary">Save changes</button>
+</div>

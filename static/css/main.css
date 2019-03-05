@@ -1,0 +1,293 @@
+/**
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+* { padding: 0; margin: 0; }
+
+html, body {
+    height: 100%;
+    min-height:100%;
+    font-size: .875rem;
+}
+
+/* Show it is fixed to the top */
+body {
+  min-height: 75rem;
+  padding-top: 4.5rem;
+  margin-bottom: 60px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+
+#editor {
+  width:100%;
+  min-height:800px;
+  height: 100%;
+}
+
+#files {
+  max-height:700px;
+  overflow: auto;
+}
+
+/* --------------- Editor Widget Style ------------ */
+.comment_widget_wrapper {
+  color:black;
+  background:rgb(255, 255, 255);
+  border: none;
+}
+
+.comment_widget {
+  margin: 0 0;
+  padding: 10px 60px;
+  white-space: pre-wrap;
+}
+
+.shadow-textarea textarea.form-control::placeholder {
+  font-weight: 300;
+}
+.shadow-textarea textarea.form-control {
+  padding-left: 0.8rem;
+}
+/* ----------------------------------------- */
+
+
+/* --------------- Editor Marker Style ------------ */
+.vulnerableMarker {
+  background:rgb(114, 14, 36);
+}
+
+.sectionMarker {
+  background:rgba(255, 255, 255, 0.10);
+}
+
+.highlightMarker {
+  position:absolute;
+  border:1px solid #59ff00;
+  z-index:100;
+}
+
+.irrelevantMarker {
+  opacity: 0.5;
+}
+/* ----------------------------------------- */
+
+
+/* --------------- Tree Node Style ------------ */
+.vulnerable_node_class > .jstree-anchor {
+  background:rgba(232, 0, 0, 0.8) !important;
+}
+
+.patched_node_class > .jstree-anchor {
+  background: rgba(16, 187, 255, 0.4)
+  /*color:purple !important;*/
+}
+
+/*
+.vulnerable_node_class.patched_node_class > .jstree-anchor {
+  background: rgba(225, 0, 255, 0.4);
+}
+*/
+
+.added_node_class > .jstree-anchor {
+  color:green;
+}
+
+.removed_node_class > .jstree-anchor {
+  color:red;
+}
+
+.jstree-node > .jstree-clicked {
+  background: rgba(255, 255, 0, 0.5) !important;
+  border: 1px solid black;
+}
+/* ----------------------------------------- */
+
+
+#sortable {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+#sortable li {
+  margin: 0 3px 3px 3px;
+  padding: 0.2em;
+  padding-left: 1.5em;
+}
+#sortable li span {
+  position: absolute;
+  margin-left: -1.3em;
+}
+
+.vuln_infobox_header {
+  /* height:200px; */
+  overflow:auto;
+  margin-top: 15px;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.form-group .help-block {
+  color: #a94442;
+}
+
+.input-group-prepend .has-success {
+  color: #3c763d;
+  background-color: #dff0d8;
+  border-color: #3c763d;
+}
+
+.input-group-prepend .has-error {
+  color: #763126;
+  background-color: #f0dccf;
+  border-color: #763336;
+}
+
+.help-block {
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  color: #737373;
+}
+
+.list-unstyled {
+  padding-left: 0;
+  list-style: none;
+}
+
+.ace_editor.ace_autocomplete.toolbar {
+  opacity: 0.65;
+}
+
+.ace_editor.ace_autocomplete.toolbar:hover {
+  opacity: 1;
+}
+
+
+/* ----------------- comments ---------------- */
+.comment-widget .head {
+    border-bottom: 0.1em darkgray solid;
+    padding: 0.2em;
+    color: #555;
+}
+
+.comment-widget .comment-title {
+    font-weight: bold;
+}
+/* ------------------------------------------- */
+/* ----------------- backdrop ---------------- */
+#backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1000;
+  opacity: 0.75;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* ------------------------------------------- */
+/* ----------------- spinner ----------------- */
+#spinner {
+  color: white;
+  font-size: x-large;
+}
+
+@keyframes blink {
+  /**
+   * At the start of the animation the dot
+   * has an opacity of .2
+   */
+  0% {
+    opacity: .2;
+  }
+  /**
+   * At 20% the dot is fully visible and
+   * then fades out slowly
+   */
+  20% {
+    opacity: 1;
+  }
+  /**
+   * Until it reaches an opacity of .2 and
+   * the animation can start again
+   */
+  100% {
+    opacity: .2;
+  }
+}
+
+.animate-dots span {
+  /**
+   * Use the blink animation, which is defined above
+   */
+  animation-name: blink;
+  /**
+   * The animation should take 1.4 seconds
+   */
+  animation-duration: 1.4s;
+  /**
+   * It will repeat itself forever
+   */
+  animation-iteration-count: infinite;
+  /**
+   * This makes sure that the starting style (opacity: .2)
+   * of the animation is applied before the animation starts.
+   * Otherwise we would see a short flash or would have
+   * to set the default styling of the dots to the same
+   * as the animation. Same applies for the ending styles.
+   */
+  animation-fill-mode: both;
+}
+
+.animate-dots span:nth-child(2) {
+  /**
+   * Starts the animation of the third dot
+   * with a delay of .2s, otherwise all dots
+   * would animate at the same time
+   */
+  animation-delay: .2s;
+}
+
+.animate-dots span:nth-child(3) {
+  /**
+   * Starts the animation of the third dot
+   * with a delay of .4s, otherwise all dots
+   * would animate at the same time
+   */
+  animation-delay: .4s;
+}
+/* ------------------------------------------- */
+
+
+#alert_placeholder {
+  position: fixed;
+  top: 6em;
+  z-index: 2;
+}
+
+.dismiss-progress {
+  height: 2px;
+  background-color: black;
+  opacity: 0.5;
+}

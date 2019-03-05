@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% include 'header.html' %}
+</head>
+<body>
+{% include 'navbar.html' %}
+
+<div class="container-fluid">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+
+    <div class="row">
+    <div class="col-sm-4 offset-md-4">
+    <div id="alert_placeholder"></div>
+    <div id="dialog_placeholder"></div>
+
+    {% if messages %}
+      <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+          <!-- <strong>Title</strong> --> <b>{{ message }}</b>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  </div>
+  </div>
+
+  {% block main_content %}
+  {% endblock %}
+</div>
+
+{% include 'footer.html' %}
+</body>
+</html>

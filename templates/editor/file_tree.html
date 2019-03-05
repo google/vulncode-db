@@ -1,0 +1,27 @@
+{% set vuln_id = vulnerability_details.id %}
+<a href="{{ url_for('vuln.vuln_view', vuln_id=vuln_id) }}">Goto simplified view</a>
+<strong class="d-inline-block mb-2 text-dark">Repository (<span id="num_files">?</span> files)</strong>
+
+<div class="mb-1 text-muted">Filter Settings</div>
+<div class="jstree-settings">
+  <div class="form-check">
+    <input type="radio" class="form-check-input" name="jstree_filter" id="jstree_filter_all">
+    <label class="form-check-label" for="jstree_filter_all">All Files</label>
+  </div>
+  <div class="form-check">
+    <input type="radio" class="form-check-input" name="jstree_filter" id="jstree_filter_relevant" checked>
+    <label class="form-check-label" for="jstree_filter_relevant">Relevant Files</label>
+  </div>
+  <div class="form-check">
+    <input type="radio" class="form-check-input" name="jstree_filter" id="jstree_filter_vulnerable">
+    <label class="form-check-label" for="jstree_filter_vulnerable">Vulnerable Files</label>
+  </div>
+  <div class="form-check">
+    <input type="radio" class="form-check-input" name="jstree_filter" id="jstree_filter_patched">
+    <label class="form-check-label" for="jstree_filter_patched">Patched Files</label>
+  </div>
+</div>
+<div class="table-responsive">
+  <div class="mb-1 text-muted">Files</div>
+  <div id="files"></div>
+</div>

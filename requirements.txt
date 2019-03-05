@@ -1,0 +1,17 @@
+-r vcs_requirements.txt
+Flask-Bootstrap==3.3.7.1
+flask-marshmallow==0.9.0
+Flask-Migrate==2.2.1
+Flask-OAuthlib==0.9.5
+Flask-Script==2.0.6
+Flask-SQLAlchemy==2.3.2
+Flask-WTF==0.14.2
+Werkzeug==0.14.1
+marshmallow-sqlalchemy==0.14.0
+google-auth==1.6.1
+# Flask-debugtoolbar requirements -------
+flask-debugtoolbar==0.10.1
+setuptools==40.6.3
+sqlparse==0.2.4
+pygments==2.3.1
+# ---------------------------------------

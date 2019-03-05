@@ -1,0 +1,211 @@
+{
+  "base": "vs-dark",
+  "inherit": true,
+  "rules": [
+    {
+      "foreground": "808080",
+      "fontStyle": "italic",
+      "token": "comment"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "keyword"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "storage"
+    },
+    {
+      "foreground": "6897bb",
+      "token": "constant.numeric"
+    },
+    {
+      "foreground": "9876aa",
+      "fontStyle": "italic",
+      "token": "constant"
+    },
+    {
+      "foreground": "9876aa",
+      "fontStyle": "italic",
+      "token": "constant.language"
+    },
+    {
+      "foreground": "318495",
+      "token": "variable.language"
+    },
+    {
+      "foreground": "318495",
+      "token": "variable.other"
+    },
+    {
+      "foreground": "a5c25c",
+      "token": "string"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "constant.character.escape"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "string source"
+    },
+    {
+      "foreground": "1a921c",
+      "token": "meta.preprocessor"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "keyword.control.import"
+    },
+    {
+      "foreground": "ffc66d",
+      "fontStyle": "bold",
+      "token": "entity.name.function"
+    },
+    {
+      "foreground": "ffc66d",
+      "fontStyle": "bold",
+      "token": "support.function.any-method"
+    },
+    {
+      "fontStyle": "underline",
+      "token": "entity.name.type"
+    },
+    {
+      "fontStyle": "italic",
+      "token": "entity.other.inherited-class"
+    },
+    {
+      "foreground": "70727e",
+      "token": "storage.type.method"
+    },
+    {
+      "fontStyle": "italic",
+      "token": "meta.section entity.name.section"
+    },
+    {
+      "fontStyle": "italic",
+      "token": "declaration.section entity.name.section"
+    },
+    {
+      "foreground": "3c4c72",
+      "fontStyle": "bold",
+      "token": "support.function"
+    },
+    {
+      "foreground": "6d79de",
+      "fontStyle": "bold",
+      "token": "support.class"
+    },
+    {
+      "foreground": "6d79de",
+      "fontStyle": "bold",
+      "token": "support.type"
+    },
+    {
+      "foreground": "06960e",
+      "fontStyle": "bold",
+      "token": "support.constant"
+    },
+    {
+      "foreground": "21439c",
+      "fontStyle": "bold",
+      "token": "support.variable"
+    },
+    {
+      "foreground": "687687",
+      "token": "keyword.operator.js"
+    },
+    {
+      "foreground": "ffffff",
+      "background": "990000",
+      "token": "invalid"
+    },
+    {
+      "background": "ffd0d0",
+      "token": "invalid.deprecated.trailing-whitespace"
+    },
+    {
+      "background": "000000",
+      "token": "text source"
+    },
+    {
+      "background": "000000",
+      "token": "string.unquoted"
+    },
+    {
+      "background": "000000",
+      "token": "text source string.unquoted"
+    },
+    {
+      "background": "000000",
+      "token": "text source text source"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag.preprocessor.xml"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag.sgml.doctype"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag.sgml.doctype entity"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag.sgml.doctype string"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag.preprocessor.xml"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag.preprocessor.xml entity"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag.preprocessor.xml string"
+    },
+    {
+      "fontStyle": "italic",
+      "token": "string.quoted.docinfo.doctype.DTD"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "meta.tag"
+    },
+    {
+      "foreground": "cc7832",
+      "token": "declaration.tag"
+    },
+    {
+      "foreground": "d0d0ff",
+      "token": "entity.other.attribute-name"
+    },
+    {
+      "foreground": "0c07ff",
+      "fontStyle": "bold",
+      "token": "markup.heading"
+    },
+    {
+      "foreground": "000000",
+      "fontStyle": "italic",
+      "token": "markup.quote"
+    },
+    {
+      "foreground": "b90690",
+      "token": "markup.list"
+    }
+  ],
+  "colors": {
+    "editor.foreground": "#A9B7C6",
+    "editor.background": "#232525",
+    "editor.selectionBackground": "#214283",
+    "editor.lineHighlightBackground": "#000000",
+    "editorCursor.foreground": "#BBBBBB",
+    "editorWhitespace.foreground": "#BFBFBF"
+  }
+}

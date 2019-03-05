@@ -1,0 +1,78 @@
+/**
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#tutorial-backdrop {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+  background-color: rgba(0,0,0,0.33);
+  pointer-events: none;
+  z-index: 2000;
+}
+
+#tutorial-menu {
+  background-color: #55e;
+  z-index: 2100;
+}
+#tutorial-menu ul {
+  list-style-type: none;
+  margin: 0px;
+}
+#tutorial-menu ul li {
+  border-bottom: 1px solid black;
+  color: white;
+  padding: 0.2em;
+}
+#tutorial-menu ul li:hover {
+  background-color: white;
+  color: #55e;
+}
+
+.tutorial-highlight {
+  /* display:inline-block;*/
+  position:relative;
+  /* z-index: 2000; */
+  /* box-shadow: 0px 0px 0px 9999px rgba(0,0,0,.33); */
+  /* z-index: 100; */
+}
+.tutorial-highlight:after {
+  content: '';
+  position: absolute;
+  top:0;
+  left:0;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0px 0px 0px 9999px rgba(0,0,0,.33);
+  pointer-events: none;
+}
+
+#tutorial-text {
+  z-index: 2000;
+  padding: 1em;
+  border-radius: 5px;
+  position: fixed;
+  background-color: white;
+}
+
+#tutorial-toolbar {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  background-color: white;
+  border: 1px solid black;
+}

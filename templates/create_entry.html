@@ -1,0 +1,72 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% extends "base.html" %}
+{% block main_content %}
+  <h2>Add a new vulnerability</h2>
+
+  <div class="row">
+
+    <div class="col-md-4">
+      <div class="card flex-md-row mb-4 box-shadow h-md-250 w-100">
+        <div class="card-body d-flex flex-column align-items-start w-100">
+
+          <form class="form w-100" method="post" role="form">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form, hiddens="only") }}
+
+            <h4>Commit Links</h4>
+            <div class="form-group">
+              {% for l in form.commits %}
+                {{ wtf.form_field(l.form.commit_link) }}
+                {{ wtf.form_field(l.form.repo_name) }}
+                {{ wtf.form_field(l.form.repo_url) }}
+                {{ wtf.form_field(l.form.commit_hash) }}
+              {% endfor %}
+            </div>
+
+            <h4>Description</h4>
+            {{ wtf.form_field(form.comment) }}
+            {{ wtf.form_field(form.cve_id) }}
+
+
+            <h4>Misc</h4>
+            <div class="form-group">
+              {% for l in form.additional_resources %}
+                {{ wtf.form_field(l.form.link) }}
+              {% endfor %}
+            </div>
+
+            {{ wtf.form_field(form.submit, button_map={'submit':'primary'}) }}
+          </form>
+
+          {% if vulnerability_details.vulnerability %}
+            <form class="form w-100" method="post" role="form"
+                  onsubmit="return confirm('This will delete the complete entry, proceed?');">
+              {{ form.hidden_tag() }}
+              <input type="hidden" name="delete_entry" value="1"/>
+              <input type="submit" class="btn btn-dark" value="Delete entry"/>
+            </form>
+          {% endif %}
+          {#
+          {{wtf.quick_form(form,
+          button_map={'submit':'primary'},
+          extra_classes="w-100",
+          form_type="basic"
+          )}}
+        #}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card flex-md-row mb-4 box-shadow h-md-250">
+        <div class="card-body d-flex flex-column align-items-start">
+          {% include 'vuln_info.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+{% endblock %}

@@ -1,0 +1,16 @@
+app.yaml
+cache/*
+cert/*
+third_party/*
+env/*
+vulnerable_code/*
+*.py[co]
+*.iml
+cloud_sql_proxy
+*~
+*.sw[po]
+__pycache__/
+venv/
+local_cfg.py
+.idea
+node_modules

@@ -1,0 +1,66 @@
+<strong class="d-inline-block mb-2 text-dark">
+  NVD Data
+  (<a href="https://nvd.nist.gov/vuln/detail/{{ nvd_data.cve_id }}" target="_blank">More
+  Details</a>)
+</strong>
+<div class="table-responsive">
+  {% macro print_formatted(data) -%}
+    {% if data is iterable and data is not string %}
+      {% for entry in data %}
+        {% if entry.startswith('http') %}
+          &#8226;
+          <a href="{{ entry }}" class="text-info" target="_blank">{{ entry }}</a>
+        {% else %}
+          &#8226; {{ entry }}
+        {% endif %}
+        <br/>
+      {% endfor %}
+    {% else %}
+      {% if data.startswith('http') %}
+        <a href="{{ data }}" class="text-info" target="_blank">{{ data }}</a>
+      {% else %}
+        {{ data }}
+      {% endif %}
+    {% endif %}
+  {%- endmacro %}
+  <table class="table table-hover table-dark">
+    <tr>
+      <td>Date</td>
+      <td>{{ nvd_data.published_date.strftime('%Y-%m-%d') }}</td>
+    </tr>
+    <tr>
+      <td>CVE ID</td>
+      <td>{{ nvd_data.cve_id }}</td>
+    </tr>
+    <tr>
+      <td>Summary</td>
+      <td>{{ nvd_data.summary }}</td>
+    </tr>
+    <tr>
+      <td>Products</td>
+      <td>{{ print_formatted(nvd_data.get_products()) }}</td>
+    </tr>
+    <tr>
+      <td>Score</td>
+      <td>{{ '%0.1f' % nvd_data.score }}</td>
+    </tr>
+    <tr>
+      <td>CWE ID</td>
+      <td>{{ nvd_data.cwe_id }}</td>
+    </tr>
+    <tr>
+      <td>Patches</td>
+      <td>
+      {% if nvd_data.has_patch() %}
+        {{ print_formatted(nvd_data.get_patches()) }}
+      {% else %}
+        <i class="fa fa-times" style="color: #FF0000"></i> Unknown
+      {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>Links</td>
+      <td>{{ print_formatted(nvd_data.get_links()) }}</td>
+    </tr>
+  </table>
+</div>

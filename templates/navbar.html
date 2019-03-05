@@ -1,0 +1,46 @@
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <a class="navbar-brand" href="/">{{ cfg.TITLE }}</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+          aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarCollapse">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item {# TODO active TODO #}">
+        <a class="nav-link" href="/">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/?tutorial=1.json">Tutorial</a>
+        <!--
+        Use /?tutorial=RECORD for recording a new tutorial.
+        -->
+      </li>
+    </ul>
+
+
+    <ul class="navbar-nav mt-2 mt-md-0">
+      <li class="nav-item">
+        {% if g.user %}
+          <span class="navbar-brand">
+        {% if g.user.profile_picture %}
+          <img src="{{ g.user.profile_picture|replace("/photo", "/s30-cc-rw/photo") }}" width="30"
+               height="30">
+        {% endif %}
+            Hello {{ g.user.full_name }}</span>
+          </li>
+          <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+        {% else %}
+          <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+        {% endif %}
+        </li>
+    </ul>
+    <!--
+    <form class="form-inline mt-2 mt-md-0">
+      <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+      <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
+    </form>
+    -->
+
+  </div>
+</nav>

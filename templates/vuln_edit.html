@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block main_content %}
+  <script>
+    const EDITOR_SETTINGS = {{ vulnerability_details.getSettings()|tojson }};
+    window.EDITOR_SETTINGS = EDITOR_SETTINGS;
+  </script>
+
+  <div class="row vuln_infobox_header">
+    <div class="col-md-12">
+      <div class="card flex-md-row mb-4 box-shadow">
+        <div class="card-body">
+          {% include 'vuln_info.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-2">
+      <div class="card box-shadow">
+        <div class="card-body d-flex flex-column align-items-start">
+         {% include 'editor/file_tree.html' %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="card flex-md-row mb-4 box-shadow h-md-250 h-100">
+        <div class="card-body d-flex flex-column align-items-start h-100">
+
+          <nav>
+            Patch:
+            <button type="button" class="btn btn-primary btn-sm" id="prev_patch">Previous</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="next_patch">Next</button>
+          </nav>
+
+          <strong class="d-inline-block mb-2 text-dark">
+            Path: <span id="open_file_path"></span>
+          </strong>
+          {% include 'editor/editor_container.html' %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card flex-md-row mb-4 box-shadow h-md-250" style="overflow: auto">
+        <div class="card-body d-flex flex-column align-items-start">
+          {% include 'editor/metadata_edit.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}

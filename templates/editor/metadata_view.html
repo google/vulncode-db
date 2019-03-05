@@ -1,0 +1,31 @@
+<strong class="d-inline-block mb-2 text-success">Navigation</strong>
+
+<div id="metadata">
+  <h3 class="mb-0">
+    <a class="text-dark" href="#">Custom Data</a>
+  </h3>
+  <hr/>
+  Marked lines:
+  <p class="card-text mb-auto">(current file)</p>
+  <div id="vulnerable_sections"></div>
+  <hr/>
+  Patch data:
+  <p class="card-text mb-auto">(on by default)</p>
+  <div class="btn-group" id="toggle_patch_visibility">
+    <button type="button" class="btn btn-sm btn-light locked_inactive">OFF</button>
+    <button type="button" class="btn btn-sm btn-primary unlocked_active">ON</button>
+  </div>
+  <hr/>
+  Sections:
+  <nav>
+    <div>
+      <button type="button" class="btn btn-primary btn-sm" id="prev_comment">Previous</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="next_comment">Next</button>
+    </div>
+  </nav>
+  <div id="comments">
+    <ul id="sortable">
+    </ul>
+  </div>
+  <hr/>
+</div>

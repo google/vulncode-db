@@ -1,0 +1,15 @@
+version: '2'
+services:
+  vcs-proxy:
+    build:
+      context: ..
+      dockerfile: ./docker/vcs_proxy/Dockerfile
+    image: vcs-proxy
+    ports:
+      - "8080"
+  # frontend:
+  #   depends_on:
+  #     - vcs-proxy
+  #   links:
+  #     - "vcs-proxy"
+

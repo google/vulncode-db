@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block main_content %}
+  <script>
+    const EDITOR_SETTINGS = {{ vulnerability_details.getSettings()|tojson }};
+    window.EDITOR_SETTINGS = EDITOR_SETTINGS;
+  </script>
+
+  <div class="row vuln_infobox_header">
+    <div class="col-md-12">
+      <div class="card flex-md-row mb-4 box-shadow">
+        <div class="card-body">
+          {% include 'vuln_info.html' %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if vulnerability_details.vulnerability %}
+
+    {% block vulnerability_content %}
+    {% endblock %}
+
+  {% endif %}
+
+{% endblock %}

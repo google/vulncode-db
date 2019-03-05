@@ -1,0 +1,58 @@
+# Copyright 2019 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: ssl
+  version: latest
+- name: MySQLdb
+  version: latest
+
+handlers:
+- url: /static
+  static_dir: static
+  secure: always
+- url: /.*
+  script: main.app
+  secure: always
+
+env_variables:
+  # Replace all settings according to your local / prod environment.
+
+  # OAuth settings.
+  OAUTH_CONSUMER_KEY: ''
+  OAUTH_CONSUMER_SECRET: ''
+
+  # Site settings.
+  CSRF_SESSION_KEY: ''
+  COOKIE_SECRET_KEY: ''
+
+  # Database settings.
+  CLOUDSQL_PROXY_PORT: 3307
+  # This should have the form: google.com:[PROJECT_ID]:[AREA]:[PROJECT_NAME]
+  MYSQL_CONNECTION_NAME: ''
+
+  # Database settings for local.
+  MYSQL_LOCAL_USER: ''
+  MYSQL_LOCAL_PASS: ''
+
+  # Database settings for prod.
+  MYSQL_PROD_USER: ''
+  MYSQL_PROD_PASS: ''
+
+  # Version control proxy settings.
+  VCS_PROVIDER_URL: ''

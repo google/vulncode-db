@@ -1,0 +1,98 @@
+[
+  {
+    "type": "text",
+    "target": null,
+    "text": "You can enter different formats to start",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group"
+  },
+  {
+    "type": "sleep",
+    "target": null,
+    "time": 2,
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group"
+  },
+  {
+    "type": "text",
+    "target": null,
+    "text": "",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group"
+  },
+  {
+    "type": "event",
+    "target": null,
+    "eventType": "mouseover",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(1)"
+  },
+  {
+    "type": "sleep",
+    "target": null,
+    "time": 2,
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(1)"
+  },
+  {
+    "type": "event",
+    "target": null,
+    "eventType": "mouseout",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(1)"
+  },
+  {
+    "type": "event",
+    "target": null,
+    "eventType": "mouseover",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(2)"
+  },
+  {
+    "type": "sleep",
+    "target": null,
+    "time": 2,
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(2)"
+  },
+  {
+    "type": "event",
+    "target": null,
+    "eventType": "mouseout",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(2)"
+  },
+  {
+    "type": "event",
+    "target": null,
+    "eventType": "mouseover",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(3)"
+  },
+  {
+    "type": "sleep",
+    "target": null,
+    "time": 2,
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(3)"
+  },
+  {
+    "type": "event",
+    "target": null,
+    "eventType": "mouseout",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div.form-group > label > a.text-muted:nth-of-type(3)"
+  },
+  {
+    "type": "text",
+    "target": null,
+    "text": "You can also click here to see some examples",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div:nth-of-type(2) > a"
+  },
+  {
+    "type": "sleep",
+    "target": null,
+    "time": 2,
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div:nth-of-type(2) > a"
+  },
+  {
+    "type": "text",
+    "target": null,
+    "text": "",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div:nth-of-type(2) > a"
+  },
+  {
+    "type": "event",
+    "target": null,
+    "eventType": "click",
+    "targetPath": "body > div.container-fluid > div.row:nth-of-type(2) > div.col-sm-8.offset-md-2 > div.card.my-3.py-1 > div.card-body > div:nth-of-type(2) > a"
+  }
+]
