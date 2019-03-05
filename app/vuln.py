@@ -52,9 +52,8 @@ def vuln_view(vuln_id=None):
   try:
     vulnerability_details = VulnerabilityDetails(vuln_id)
     vulnerability_details.validate()
-    vulnerability = vulnerability_details.vulnerability
     # Drop everything else.
-    if not vulnerability_details.nvd_data and not vulnerability:
+    if not vulnerability_details.vulnerability_view:
       abort(404)
   except InvalidIdentifierException as e:
     abort(404)
@@ -82,18 +81,19 @@ def embed(vuln_id):
     start_line = int(request.args.get('start_line', 1))
     end_line = int(request.args.get('end_line', -1))
     vulnerability_details = VulnerabilityDetails(vuln_id)
-    vulnerability = vulnerability_details.vulnerability
-    if not vulnerability:
+    vuln_view = vulnerability_details.vulnerability_view
+    if not vuln_view:
       return bp.make_response(('No vulnerability found', 404))
-    if not vulnerability.commits:
+    if not vuln_view.master_commit:
       return bp.make_response(
-          ('Vuln (id: {:d}) has no linked Git commits!'.format(
-              vulnerability.id), 404))
-    main_commit = vulnerability_details.getMainCommit()
+          ('Vuln (id: {:d}) has no linked Git commits!'.format(vuln_view.id),
+           404))
+
+    master_commit = vulnerability_details.getMasterCommit()
     files_schema = RepositoryFilesSchema(many=True)
     # Hack to quickly retrieve the full data.
     custom_data = json.loads(
-        files_schema.jsonify(main_commit.repository_files).data)
+        files_schema.jsonify(master_commit.repository_files).data)
     settings = {
         'section_id': section_id,
         'startLine': start_line,

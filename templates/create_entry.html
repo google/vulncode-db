@@ -39,7 +39,7 @@
             {{ wtf.form_field(form.submit, button_map={'submit':'primary'}) }}
           </form>
 
-          {% if vulnerability_details.vulnerability %}
+          {% if vulnerability_details.vulnerability_view %}
             <form class="form w-100" method="post" role="form"
                   onsubmit="return confirm('This will delete the complete entry, proceed?');">
               {{ form.hidden_tag() }}

@@ -77,7 +77,7 @@
           {% endif %}
         </td>
         <td>
-          {% if vuln_view.has_patch %}
+          {% if vuln_view.master_commit is not none %}
             <i class="fa fa-check" style="color: #00FF00"></i>
           {% else %}
             <i class="fa fa-times" style="color: #FF0000"></i>

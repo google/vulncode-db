@@ -91,7 +91,7 @@ CSRF_SESSION_KEY = os.environ['CSRF_SESSION_KEY']
 # Secret key for signing cookies
 SECRET_KEY = os.environ['COOKIE_SECRET_KEY']
 
-PATCH_REGEX = '.*(github\.com|\.git|\.patch|\/hg\.)'
+PATCH_REGEX = '.*(github\.com|\.git|\.patch|\/hg\.|\/\+\/)'
 
 GOOGLE_OAUTH = {
     'consumer_key': os.environ['OAUTH_CONSUMER_KEY'],

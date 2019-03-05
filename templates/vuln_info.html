@@ -1,34 +1,73 @@
 {% set vuln_view = vulnerability_details.vulnerability_view %}
 
-{% set commit_link = vulnerability_details.commit_link %}
-{% set cve_id = vulnerability_details.cve_id %}
-{% set vuln_id = vulnerability_details.id %}
 {% set commit_hash = vulnerability_details.commit_hash %}
 {% set repo_url = vulnerability_details.repo_url %}
 
 <div class="row">
-  <div class="col-md-6">
+  <div class="col-md-12">
     <div class="card">
       <div class="card-body">
-        {% if vulnerability_details.vulnerability and vuln_id %}
+        {% if vuln_view %}
+        {% set vuln_id = vuln_view.id %}
           <div class="flex-md-row mb-4 box-shadow h-md-250">
             <h5 class="mb-0 d-inline">Vulnerability Info</h5>
             <span class="d-inline-block mb-1 text-muted">
-            <a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(Edit Entry)</a>
-          </span>
-            <span class="d-inline-block mb-1 text-muted">
-
-            <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
-              <button type="button" class="btn btn-primary">Annotate</button>
-            </a>
-          </span>
+              <a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a>
+            </span>
           </div>
 
-          {% if vuln_view.cve_id %}<p class="text-info"><b>{{ vuln_view.cve_id }}</b></p>
-          {% endif %}
+        <p class="text-info"><b>{{ vuln_view.id }}</b></p>
+        <p><b>Description</b><br/>
+        {% if vuln_view.comment %}<p>{{ vuln_view.comment }}</p>{% else %}-{% endif %}</p>
 
-          <p>Description:<br/>{% if vuln_view.comment %}
-            <b>{{ vuln_view.comment }}</b>{% else %}-{% endif %}</p>
+        <div class="table-responsive">
+            {% macro print_formatted(data) -%}
+              {% if data is iterable and data is not string %}
+                {% for entry in data %}
+                  {% if entry.startswith('http') %}
+                    &#8226;
+                    <a href="{{ entry }}" class="text-info" target="_blank">{{ entry }}</a>
+                  {% else %}
+                    &#8226; {{ entry }}
+                  {% endif %}
+                  <br/>
+                {% endfor %}
+              {% else %}
+                {% if data.startswith('http') %}
+                  <a href="{{ data }}" class="text-info" target="_blank">{{ data }}</a>
+                {% else %}
+                  {{ data }}
+                {% endif %}
+              {% endif %}
+            {%- endmacro %}
+            <table class="table table-hover table-dark">
+              <tr>
+                <td>Products</td>
+                {% set products = vuln_view.products %}
+                <td>{{ (products and print_formatted(products)) or "N/A" }}</td>
+              </tr>
+              <tr>
+                <td>Score</td>
+                <td>{{ '%0.1f' % vuln_view.score }}</td>
+              </tr>
+              <tr>
+                <td>Patches</td>
+                {% set patches = vuln_view.known_patches %}
+                <td>
+                {% if patches %}
+                  {{ print_formatted(vuln_view.known_patches) }}
+                {% else %}
+                  <i class="fa fa-times" style="color: #FF0000"></i> Unknown
+                {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td>Links</td>
+                {% set links = vuln_view.link_references %}
+                <td>{{ (links and print_formatted(links)) or "N/A" }}</td>
+              </tr>
+            </table>
+          </div>
 
           {% if vuln_view.additional_resources %}
             <h5>Additional Resources</h5>
@@ -38,18 +77,6 @@
               {% endfor %}
             </div>
           {% endif %}
-
-
-          <b>Associated Patches</b>
-          <div class="list-group">
-            {% for commit_link in vuln_view.commits %}
-              <div class="list-group-item">
-                <a href="{{ commit_link.commit_link }}"
-                   target="_blank">{{ commit_link.commit_link }}</a>
-              </div>
-            {% endfor %}
-          </div>
-          <br/>
 
         {% else %}
         <form action="{{ url_for('vuln.create_vuln', vuln_id=None) }}" method="post">
@@ -80,17 +107,12 @@
         {% endif %}
       </div>
     </div>
-  </div>
 
-  <div class="col-md-6">
-    <div class="card">
-      {% if vulnerability_details.nvd_data is not none %}
-      {% set nvd_data = vulnerability_details.nvd_data %}
-      <div class="card-body d-flex flex-column align-items-start"
-           style="{% if vulnerability_details.vulnerability and vulnerability_details.hasCustomData() %}max-height: 20em;{% endif %} overflow:auto">
-        {% include 'nvd_view.html' %}
-      </div>
-      {% endif %}
-    </div>
+    <span class="d-inline-block mb-1 text-muted">
+      <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
+        <button type="button" class="btn btn-primary">Annotate</button>
+      </a>
+    </span>
   </div>
 </div>
+

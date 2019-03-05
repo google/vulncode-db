@@ -25,20 +25,13 @@
   {%- endmacro %}
   <table class="table table-hover table-dark">
     <tr>
-      <td>Date</td>
-      <td>{{ nvd_data.published_date.strftime('%Y-%m-%d') }}</td>
-    </tr>
-    <tr>
-      <td>CVE ID</td>
-      <td>{{ nvd_data.cve_id }}</td>
-    </tr>
-    <tr>
       <td>Summary</td>
       <td>{{ nvd_data.summary }}</td>
     </tr>
     <tr>
       <td>Products</td>
-      <td>{{ print_formatted(nvd_data.get_products()) }}</td>
+      {% set products = nvd_data.get_products() %}
+      <td>{{ (products and print_formatted(nvd_data.get_products())) or "N/A" }}</td>
     </tr>
     <tr>
       <td>Score</td>

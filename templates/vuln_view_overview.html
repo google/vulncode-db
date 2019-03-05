@@ -1,9 +1,9 @@
 {% extends "vuln_view.html" %}
 {% block vulnerability_content %}
   {% set vuln_id = vulnerability_details.id %}
-  {% set vulnerability = vulnerability_details.vulnerability %}
-  {% set main_commit = vulnerability.commits[0] %}
-  {% if main_commit.comments|length > 0 %}
+  {% set vuln_view = vulnerability_details.vulnerability_view %}
+  {% set master_commit = vuln_view.master_commit %}
+  {% if master_commit.comments|length > 0 %}
   {#
     Deprecated check: {% if vulnerability_details.hasCustomData() %}
   #}
@@ -13,7 +13,7 @@
           <div class="card-body">
             <a href="{{ url_for('vuln.vuln_view_details', vuln_id=vuln_id) }}">Goto detailed repository view</a><br />
             <hr />
-            {% for comment in main_commit.comments|sort(attribute='sort_pos') %}
+            {% for comment in master_commit.comments|sort(attribute='sort_pos') %}
             {{ comment.text }}
             <script src="{{ url_for('serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}">
             </script>

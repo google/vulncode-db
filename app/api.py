@@ -34,17 +34,17 @@ def bug_editor_data():
     vulnerability_details.validate()
   except InvalidIdentifierException as e:
     return createJsonResponse(str(e), 400)
-  vulnerability = vulnerability_details.vulnerability
-  if not vulnerability:
+  vuln_view = vulnerability_details.vulnerability_view
+  if not vuln_view:
     return createJsonResponse('No vulnerability found.', 404)
-  if not vulnerability.commits:
+  if not vuln_view.master_commit:
     current_app.logger.error(
-        'Vuln (id: {:d}) has no linked Git commits!'.format(vulnerability.id))
+        'Vuln (id: {:d}) has no linked Git commits!'.format(vuln_view.id))
     return createJsonResponse('Entry has no linked Git link!', 404)
 
-  main_commit = vulnerability_details.getMainCommit()
+  master_commit = vulnerability_details.getMasterCommit()
   files_schema = RepositoryFilesSchema(many=True)
-  return files_schema.jsonify(main_commit.repository_files)
+  return files_schema.jsonify(master_commit.repository_files)
 
 
 def calculate_revision_updates(wrapper, old, new, attrs):
@@ -155,21 +155,21 @@ def bug_save_editor_data():
     vulnerability_details.validate()
   except InvalidIdentifierException as e:
     return createJsonResponse(str(e), 400)
-  vulnerability = vulnerability_details.vulnerability
+  vuln_view = vulnerability_details.vulnerability_view
 
   if request.method == 'POST':
-    if not vulnerability:
+    if not vuln_view:
       return createJsonResponse('Please create an entry first', 404)
 
-    if not vulnerability.commits:
+    if not vuln_view.master_commit:
       current_app.logger.error(
-          'Vuln (id: {:d}) has no linked Git commits!'.format(vulnerability.id))
+          'Vuln (id: {:d}) has no linked Git commits!'.format(vuln_view.id))
       return createJsonResponse('Entry has no linked Git link!', 404)
 
-    main_commit = vulnerability_details.getMainCommit()
+    master_commit = vulnerability_details.getMasterCommit()
 
     #print("DATA: {:s}".format(str(request.json)))
-    old_files = main_commit.repository_files
+    old_files = master_commit.repository_files
     current_app.logger.debug('%d old files', len(old_files))
     # Flush any old custom content of this vulnerability first.
     new_files = []
@@ -218,7 +218,7 @@ def bug_save_editor_data():
       new_files.append(file_obj)
 
     current_app.logger.debug('Setting %d files', len(new_files))
-    main_commit.repository_files = new_files
+    master_commit.repository_files = new_files
 
     # Update / Insert entries into the database.
     db.session.commit()
