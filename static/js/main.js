@@ -202,8 +202,8 @@ $(function() {
   // Set the "relevant" filter by default.
   $('#jstree_filter_relevant').prop('checked', true);
 
-  // Enable all tooltips in the document.
-  $(document).ready(function() {
+
+  function initClickableElements() {
     $('[data-toggle="tooltip"]').tooltip();
     $('.clickable-row .link').click(function(e) {
       e.stopPropagation();
@@ -214,6 +214,32 @@ $(function() {
         win.focus();
       }
     });
+  }
+
+  // Enable all tooltips in the document.
+  $(document).ready(function() {
+    initClickableElements();
+  });
+
+  let searchTimeout;
+  $('#searchKeyword').on('input', function() {
+    const value = $(this).val();
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(function() {
+      $.ajax({
+        url: '/list_entries',
+        type: 'get',
+        data: {
+          keyword: value,
+        },
+        success: (response) => {
+          // TODO: Refactor .html usage and AJAX handling to use JSON instead.
+          $('#vulnEntries').html(response);
+          initClickableElements();
+        },
+      });
+    }, 500);
   });
 });
 

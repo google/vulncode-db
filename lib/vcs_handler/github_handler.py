@@ -70,13 +70,17 @@ class GithubHandler(VcsHandler):
     for patched_file in files:
       patched_files[patched_file.filename] = []
 
-      patch_str = io.StringIO()
-      patch_str.write('--- a\n+++ b\n')
-      patch_str.write(patched_file.patch)
-      patch_str.seek(0)
-      logging.debug('Parsing diff\n%s', patch_str.getvalue())
-
-      patch = PatchSet(patch_str, encoding=None)
+      # patch_str = io.StringIO()
+      # patch_str.write('--- a\n+++ b\n')
+      # patch_str.write(str(patched_file.patch))
+      # patch_str.seek(0)
+      # logging.debug('Parsing diff\n%s', patch_str.getvalue())
+      #
+      # patch = PatchSet(patch_str, encoding=None)
+      # TODO: Migrate this to io.StringIO().
+      patch_str = '--- a\n+++ b\n' + str(patched_file.patch)
+      logging.debug('Parsing diff\n%s', patch_str)
+      patch = PatchSet(patch_str, encoding='utf-8')
 
       for hunk in patch[0]:
         for line in hunk:

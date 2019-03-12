@@ -1,0 +1,17 @@
+{% from 'macros/generate_vuln_table.html' import display_entries_table, render_pagination %}
+<div id="vulnEntries">
+  {% if vcdb.vcdb_pagination.pages > 0 %}
+    {{ display_entries_table(vcdb.vcdb_pagination, 'vcdb') }}
+    {{ render_pagination(vcdb.vcdb_pagination, 'serve_index', 'vcdb', vcdb.keyword) }}
+    <hr />
+  {% endif %}
+  {% if vcdb.nvd_pagination.pages > 0 %}
+    NVD entries (unprocessed):
+    {{ display_entries_table(vcdb.nvd_pagination, 'nvd') }}
+    {{ render_pagination(vcdb.nvd_pagination, 'serve_index', 'nvd', vcdb.keyword) }}
+  {% endif %}
+  {% if vcdb.vcdb_pagination.pages == 0 and vcdb.nvd_pagination.pages == 0 %}
+  No results found.
+  {% endif %}
+</div>
+

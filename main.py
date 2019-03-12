@@ -75,8 +75,13 @@ def serve_static(path):
 @app.route('/')
 def serve_index():
   vcdb = VulncodeDB()
-  # TODO: add pagination for the entries here.
   return render_template('index.html', cfg=cfg, vcdb=vcdb)
+
+
+@app.route('/list_entries')
+def list_entries():
+  vcdb = VulncodeDB()
+  return render_template('list_vuln_entries.html', cfg=cfg, vcdb=vcdb)
 
 
 def check_db_state():

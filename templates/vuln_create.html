@@ -1,0 +1,75 @@
+<div>
+  <div class="form-group">
+    <label for="id">
+      Please provide a
+      <a href="#" class="text-muted" data-toggle="tooltip" data-html="true"
+         title="CVE-<b>XXXX-YYYY</b>">
+        CVE-ID
+      </a>,
+      <a href="#" class="text-muted" data-toggle="tooltip" data-html="true"
+         title="https://github.com/<b>[owner]</b>/<b>[repo]</b>/commit/<b>[sha_hash]</b> or<br />Cgit/Gitweb/Gitles Commit URL">
+        Commit Link
+      </a>
+      or
+      <a href="#" class="text-muted" data-toggle="tooltip" data-html="true"
+         title="https://<b>[HOST]</b>/<b>[PATH]</b>.git">
+        GIT repository URL
+      </a>
+      :
+    </label>
+    <div class="input-group mb-2">
+      <div class="input-group-prepend">
+        <div class="input-group-text has-success" id="id_type" style="display: none"></div>
+      </div>
+      <input type="text" class="form-control" id="id" placeholder="">
+    </div>
+
+    <div class="help-block with-errors" id="unknown_input_msg" style="display: none">
+      <ul class="list-unstyled">
+        <li>Couldn't recognize the URL. You might want to provide a direct .git URL.</li>
+      </ul>
+    </div>
+
+    <div id="repository_information" style="display: none">
+      <em>Please also provide a
+        <a href="#" class="text-secondary" data-toggle="tooltip" data-html="true"
+           title="This url can be used to clone the repository to the local directory.">
+          GIT repository url
+        </a>
+      </em>
+      <div class="input-group mb-2">
+        <div class="input-group-prepend">
+          <div class="input-group-text">git clone</div>
+        </div>
+        <input type="text" class="form-control" id="repo_url" placeholder="[URL]/repo.git">
+      </div>
+    </div>
+
+    <div id="commit_information" style="display: none">
+      <div class="input-group mb-2">
+        <div class="input-group-prepend">
+          <div class="input-group-text">commit</div>
+        </div>
+        <input type="text" class="form-control" id="commit_hash" placeholder="[commit_hash]">
+      </div>
+    </div>
+
+  </div>
+  <div>
+    <a href="#" data-toggle="collapse" data-target="#show_examples">Show/hide examples</a>
+  </div>
+  <div id="show_examples" class="collapse">
+    <div class="list-group" id="commitLinkSelection">
+      <a href="#" class="list-group-item">http://thekelleys.org.uk/gitweb/?p=dnsmasq.git;a=commit;h=51eadb692a5123b9838e5a68ecace3ac579a3a45</a>
+      <a href="#" class="list-group-item" data-url="http://thekelleys.org.uk/git/dnsmasq.git"
+         data-hash="0549c73b7ea6b22a3c49beb4d432f185a81efcbc">http://thekelleys.org.uk/git/dnsmasq.git
+        - 0549c73b7ea6b22a3c49beb4d432f185a81efcbc</a>
+      <a href="#" class="list-group-item" data-url="https://git.centos.org/r/rpms/dhcp.git"
+         data-hash="e768f3a02b1e035bb9dffd89df86a403e0ef69e0">https://git.centos.org/r/rpms/dhcp.git
+        - e768f3a02b1e035bb9dffd89df86a403e0ef69e0</a>
+      <a href="#" class="list-group-item">https://github.com/python/cpython/commit/fbf648ebba32bbc5aa571a4b09e2062a65fd2492</a>
+      <a href="#" class="list-group-item">CVE-2014-1912</a>
+    </div>
+  </div>
+  <button type="button" id="fetchGitCommitBtn" class="btn btn-primary">Fetch</button>
+</div>

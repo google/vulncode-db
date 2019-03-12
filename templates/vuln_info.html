@@ -42,16 +42,16 @@
             {%- endmacro %}
             <table class="table table-hover table-dark">
               <tr>
-                <td>Products</td>
+                <td style="width: 5%"><b>Products</b></td>
                 {% set products = vuln_view.products %}
-                <td>{{ (products and print_formatted(products)) or "N/A" }}</td>
+                <td style="width: 95%">{{ (products and print_formatted(products)) or "N/A" }}</td>
               </tr>
               <tr>
-                <td>Score</td>
+                <td><b>Score</b></td>
                 <td>{{ '%0.1f' % vuln_view.score }}</td>
               </tr>
               <tr>
-                <td>Patches</td>
+                <td><b>Patches</b></td>
                 {% set patches = vuln_view.known_patches %}
                 <td>
                 {% if patches %}
@@ -62,7 +62,7 @@
                 </td>
               </tr>
               <tr>
-                <td>Links</td>
+                <td><b>Links</b></td>
                 {% set links = vuln_view.link_references %}
                 <td>{{ (links and print_formatted(links)) or "N/A" }}</td>
               </tr>
