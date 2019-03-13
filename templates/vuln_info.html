@@ -3,157 +3,157 @@
 {% set commit_hash = vulnerability_details.commit_hash %}
 {% set repo_url = vulnerability_details.repo_url %}
 
-<div class="row">
-  <div class="col-md-12">
-    <div class="card">
-      <div class="card-body">
-        {% if vuln_view %}
-        {% set vuln_id = vuln_view.id %}
-          <div class="flex-md-row mb-4 box-shadow h-md-250">
-            <h5 class="mb-0 d-inline">Vulnerability Info</h5>
-            <span class="d-inline-block mb-1 text-muted">
-              <a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a>
-            </span>
+<div class="card">
+  <div class="card-body">
+    {% if vuln_view %}
+    {% set vuln_id = vuln_view.id %}
+
+    <h5 class="card-title">
+      ID: <p class="text-info" style="display:inline"><b>{{ vuln_view.id }}</b></p> -
+      Vulnerability Info <a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a>
+    </h5>
+
+    <p><b>Description</b><br/></p>
+    <div class="row mb-1">
+      <div class="col-sm-6">
+        <div class="card">
+          <div class="card-body">
+            {% if vuln_view.comment %}
+              {{ vuln_view.comment }}
+            {% else %}-{% endif %}
           </div>
-
-        ID: <p class="text-info" style="display:inline"><b>{{ vuln_view.id }}</b></p>
-
-        <p><b>Description</b><br/>
-        {% if vuln_view.comment %}<p>{{ vuln_view.comment }}</p>{% else %}-{% endif %}</p>
-
-        <div class="table-responsive">
-            {% macro print_formatted(data) -%}
-              {% if data is iterable and data is not string %}
-                {% for entry in data %}
-                  {% if entry.startswith('http') %}
-                    &#8226;
-                    <a href="{{ entry }}" class="text-info" target="_blank">{{ entry }}</a>
-                  {% else %}
-                    &#8226; {{ entry }}
-                  {% endif %}
-                  <br/>
-                {% endfor %}
-              {% else %}
-                {% if data.startswith('http') %}
-                  <a href="{{ data }}" class="text-info" target="_blank">{{ data }}</a>
-                {% else %}
-                  {{ data }}
-                {% endif %}
-              {% endif %}
-            {%- endmacro %}
-            <table class="table table-hover table-dark">
-              <tr>
-                <td style="width: 5%"><b>Products</b></td>
-                {% set products = vuln_view.products %}
-                <td style="width: 95%">{{ (products and print_formatted(products)) or "N/A" }}</td>
-              </tr>
-              {% if vuln_view.score %}
-                <tr>
-                  <td><b>Score</b></td>
-                  <td>
-                    {{ '%0.1f' % vuln_view.score }}
-                  </td>
-                </tr>
-              {% endif %}
-
-              {% set master_commit = vuln_view.master_commit %}
-              {% set master_commit_link = vuln_view.master_commit.commit_link %}
-              <tr>
-                <td><b>Main patch</b></td>
-                <td>
-                  {% if vuln_view.master_commit %}
-                    <b><a href="{{ master_commit_link }}" class="text-info">{{ master_commit_link }}</a></b><br />
-                  {% else %}
-                    <i class="fa fa-times" style="color: #FF0000"></i> None
-                  {% endif %}
-                </td>
-              </tr>
-
-              <tr>
-                <td><b>Patches</b></td>
-                {% set patches = vuln_view.known_patches %}
-                <td>
-                {% if patches %}
-                  {{ print_formatted(vuln_view.known_patches) }}
-                {% else %}
-                  <i class="fa fa-times" style="color: #FF0000"></i> Unknown
-                {% endif %}
-                </td>
-              </tr>
-              {% set links = vuln_view.link_references %}
-              {% if links %}
-                <tr>
-                  <td><b>Links</b></td>
-
-                  <td>{{ (links and print_formatted(links)) }}</td>
-                </tr>
-              {% endif %}
-
-              <tr>
-                <td><b>Annotation</b></td>
-                <td>
-                  {% if not vuln_view.master_commit %}
-                    <b><p class="text-warning" style="display:inline">Note:</p></b>
-                    <p style="display:inline"><b>This entry has no patch assigned and/or repository details are missing.</b></p>
-                  {% elif vuln_view.master_commit.comments|length == 0 %}
-                    <b><p class="text-warning" style="display:inline">Note:</p></b>
-                    <p style="display:inline"><b>This entry has not been annotated yet.</b></p>
-                    Please consider adding data:
-                    <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
-                    <button type="button" class="btn-primary btn-tb">Annotate entry</button>
-                    </a>
-                  {% else %}
-                    <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
-                    <button type="button" class="btn-primary btn-tb">Edit annotation</button>
-                    </a>
-                  {% endif %}
-                </td>
-              </tr>
-
-
-            </table>
-          </div>
-
-          {% if vuln_view.additional_resources %}
-            <h5>Additional Resources</h5>
-            <div class="list-group">
-              {% for resource_link in vuln_view.additional_resources %}
-                <a href="#" class="list-group-item">{{ resource_link.link }}</a>
-              {% endfor %}
-            </div>
-          {% endif %}
-
-        {% else %}
-        <form action="{{ url_for('vuln.create_vuln', vuln_id=None) }}" method="post">
-            <input type="hidden" name="id" value="{{vuln_id}}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          {% if commit_link %}
-          Commit Link:
-          <h5>
-            <a href="{{ commit_link }}" target="_blank">{{ commit_link }}</a>
-          </h5>
-          <input type="hidden" name="commits-0-commit_link" value="{{ commit_link }}">
-          {% endif %}
-          {% if repo_url and commit_hash %}
-          Repository:
-          <h5>{{ repo_url }}</h5>
-          Commit:
-          <h5>{{ commit_hash }}</h5>
-          <input type="hidden" name="commits-0-repo_url" value="{{ repo_url }}">
-          <input type="hidden" name="commits-0-commit_hash" value="{{ commit_hash }}">
-          {% else %}
-          <h5>{{ vuln_id }}</h5>
-          {% endif %}
-            <div class="alert alert-primary" role="alert">
-            No entry for this data found.
-            <button type="submit" class="btn btn-link">Create new entry</button>
-            </div>
-          </form>
-        {% endif %}
+        </div>
       </div>
     </div>
 
+    <div class="table-responsive">
+        {% macro print_formatted(data) -%}
+          {% if data is iterable and data is not string %}
+            {% for entry in data %}
+              {% if entry.startswith('http') %}
+                &#8226;
+                <a href="{{ entry }}" class="text-info" target="_blank">{{ entry }}</a>
+              {% else %}
+                &#8226; {{ entry }}
+              {% endif %}
+              <br/>
+            {% endfor %}
+          {% else %}
+            {% if data.startswith('http') %}
+              <a href="{{ data }}" class="text-info" target="_blank">{{ data }}</a>
+            {% else %}
+              {{ data }}
+            {% endif %}
+          {% endif %}
+        {%- endmacro %}
+        <table class="table table-hover table-dark mb-0">
+          <tr>
+            <td style="width: 5%"><b>Products</b></td>
+            {% set products = vuln_view.products %}
+            <td style="width: 95%">{{ (products and print_formatted(products)) or "N/A" }}</td>
+          </tr>
+          {% if vuln_view.score %}
+            <tr>
+              <td><b>Score</b></td>
+              <td>
+                {{ '%0.1f' % vuln_view.score }}
+              </td>
+            </tr>
+          {% endif %}
 
+          {% set master_commit = vuln_view.master_commit %}
+          {% set master_commit_link = vuln_view.master_commit.commit_link %}
+          <tr>
+            <td><b>Main patch</b></td>
+            <td>
+              {% if vuln_view.master_commit %}
+                <b><a href="{{ master_commit_link }}" class="text-info">{{ master_commit_link }}</a></b><br />
+              {% else %}
+                <i class="fa fa-times" style="color: #FF0000"></i> None
+              {% endif %}
+            </td>
+          </tr>
+
+          <tr>
+            <td><b>Patches</b></td>
+            {% set patches = vuln_view.known_patches %}
+            <td>
+            {% if patches %}
+              {{ print_formatted(vuln_view.known_patches) }}
+            {% else %}
+              <i class="fa fa-times" style="color: #FF0000"></i> Unknown
+            {% endif %}
+            </td>
+          </tr>
+          {% set links = vuln_view.link_references %}
+          {% if links %}
+            <tr>
+              <td><b>Links</b></td>
+
+              <td>{{ (links and print_formatted(links)) }}</td>
+            </tr>
+          {% endif %}
+
+          <tr>
+            <td><b>Annotation</b></td>
+            <td>
+              {% if not vuln_view.master_commit %}
+                <b><p class="text-warning" style="display:inline">Note:</p></b>
+                <p style="display:inline"><b>This entry has no patch assigned and/or repository details are missing.</b></p>
+              {% elif vuln_view.master_commit.comments|length == 0 %}
+                <b><p class="text-warning" style="display:inline">Note:</p></b>
+                <p style="display:inline"><b>This entry has not been annotated yet.</b></p>
+                Please consider adding data:
+                <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
+                <button type="button" class="btn-primary btn-tb">Annotate entry</button>
+                </a>
+              {% else %}
+                <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
+                <button type="button" class="btn-primary btn-tb">Edit annotation</button>
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+
+
+        </table>
+      </div>
+
+      {% if vuln_view.additional_resources %}
+        <h5>Additional Resources</h5>
+        <div class="list-group">
+          {% for resource_link in vuln_view.additional_resources %}
+            <a href="#" class="list-group-item">{{ resource_link.link }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+    {% else %}
+    <form action="{{ url_for('vuln.create_vuln', vuln_id=None) }}" method="post">
+        <input type="hidden" name="id" value="{{vuln_id}}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      {% if commit_link %}
+      Commit Link:
+      <h5>
+        <a href="{{ commit_link }}" target="_blank">{{ commit_link }}</a>
+      </h5>
+      <input type="hidden" name="commits-0-commit_link" value="{{ commit_link }}">
+      {% endif %}
+      {% if repo_url and commit_hash %}
+      Repository:
+      <h5>{{ repo_url }}</h5>
+      Commit:
+      <h5>{{ commit_hash }}</h5>
+      <input type="hidden" name="commits-0-repo_url" value="{{ repo_url }}">
+      <input type="hidden" name="commits-0-commit_hash" value="{{ commit_hash }}">
+      {% else %}
+      <h5>{{ vuln_id }}</h5>
+      {% endif %}
+        <div class="alert alert-primary" role="alert">
+        No entry for this data found.
+        <button type="submit" class="btn btn-link">Create new entry</button>
+        </div>
+      </form>
+    {% endif %}
   </div>
 </div>
-

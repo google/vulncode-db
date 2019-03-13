@@ -5,15 +5,12 @@
     window.EDITOR_SETTINGS = EDITOR_SETTINGS;
   </script>
 
-  <div class="row vuln_infobox_header">
-    <div class="col-md-12">
-      <div class="card flex-md-row mb-4 box-shadow">
-        <div class="card-body">
-          {% include 'vuln_info.html' %}
-        </div>
-      </div>
+  <div class="row mb-3">
+    <div class="col-sm-8 offset-md-2">
+    {% include 'vuln_info.html' %}
     </div>
   </div>
+
 
   {% if vulnerability_details.vulnerability_view %}
     {% block vulnerability_content %}

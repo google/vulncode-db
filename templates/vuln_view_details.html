@@ -4,8 +4,8 @@
   {% set vuln_view = vulnerability_details.vulnerability_view %}
   {% set master_commit = vuln_view.master_commit %}
   {% if master_commit %}
-    <div class="row form-group">
-        <div class="col-md-2">
+    <div class="row">
+        <div class="col-md-3">
           <div class="card box-shadow">
             <div class="card-body d-flex flex-column align-items-start">
               {% include 'editor/file_tree.html' %}
@@ -13,7 +13,7 @@
           </div>
         </div>
 
-        <div class="col-md-7">
+        <div class="col-md-6">
           <div class="card flex-md-row mb-4 box-shadow h-md-250 h-100">
             <div class="card-body d-flex flex-column align-items-start h-100">
               <strong class="d-inline-block mb-2 text-dark">

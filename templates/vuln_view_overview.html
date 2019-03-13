@@ -4,16 +4,18 @@
   {% set vuln_view = vulnerability_details.vulnerability_view %}
   {% set master_commit = vuln_view.master_commit %}
   {% if master_commit and master_commit.comments|length > 0 %}
-    <div class="col-md-12">
-      <div class="card flex-md-row mb-4 box-shadow">
-        <div class="card-body">
-          <b><a href="{{ url_for('vuln.vuln_view_details', vuln_id=vuln_id) }}" class="text-info">View detailed repository view</a></b><br />
-          <hr />
-          {% for comment in master_commit.comments|sort(attribute='sort_pos') %}
-          {{ comment.text }}
-          <script src="{{ url_for('serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}">
-          </script>
-          {% endfor %}
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <div class="card flex-md-row mb-4 box-shadow">
+          <div class="card-body">
+            <b><a href="{{ url_for('vuln.vuln_view_details', vuln_id=vuln_id) }}" class="text-info">View detailed repository view</a></b><br />
+            <hr />
+            {% for comment in master_commit.comments|sort(attribute='sort_pos') %}
+            {{ comment.text }}
+            <script src="{{ url_for('serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}">
+            </script>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>

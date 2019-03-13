@@ -2,11 +2,14 @@
 
 {% extends "base.html" %}
 {% block main_content %}
-  <h2>Add a new vulnerability</h2>
+
 
   <div class="row">
+    <div class="col-md-4 offset-md-4">
+      <h2 class="text-center">Add a new vulnerability</h2>
+    </div>
 
-    <div class="col-md-4">
+    <div class="col-md-4 offset-md-2">
       <div class="card flex-md-row mb-4 box-shadow h-md-250 w-100">
         <div class="card-body d-flex flex-column align-items-start w-100">
 
@@ -58,12 +61,8 @@
       </div>
     </div>
 
-    <div class="col-md-8">
-      <div class="card flex-md-row mb-4 box-shadow h-md-250">
-        <div class="card-body d-flex flex-column align-items-start">
-          {% include 'vuln_info.html' %}
-        </div>
-      </div>
+    <div class="col-sm-4">
+      {% include 'vuln_info.html' %}
     </div>
   </div>
 
