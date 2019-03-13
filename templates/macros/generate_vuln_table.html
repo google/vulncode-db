@@ -54,6 +54,7 @@
       {# TODO: Implement OSS flag.
       <th>OSS</th>
       #}
+      <th>Annotated</th>
     </tr>
     </thead>
     <tbody>
@@ -62,7 +63,7 @@
       <td>
         {{ vuln_view.date_created }}
       </td>
-      <td>{{ vuln_view.cve_id or "N/A" }}</td>
+      <td>{{ vuln_view.id or "N/A" }}</td>
       <td>{{ vuln_view.comment | truncate(500) or "N/A" }}</td>
       <td>{{ vuln_view.products or "N/A" }}</td>
       <td>
@@ -74,14 +75,21 @@
       </td>
       <td>
         {% if vuln_view.master_commit is not none %}
-        <i class="fa fa-check" style="color: #00FF00"></i>
+          <i class="fa fa-check" style="color: #00FF00"></i>
         {% else %}
-        <i class="fa fa-times" style="color: #FF0000"></i>
+          <i class="fa fa-times" style="color: #FF0000"></i>
         {% endif %}
       </td>
       {# TODO: Implement OSS flag.
       <td><i class="fa fa-question" style="color: #777777"></i></td>
       #}
+      <td>
+        {% if vuln_view.annotated %}
+          <i class="fa fa-check" style="color: #00FF00"></i>
+        {% else %}
+          <i class="fa fa-times" style="color: #FF0000"></i>
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
     </tbody>

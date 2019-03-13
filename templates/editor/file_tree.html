@@ -1,5 +1,9 @@
 {% set vuln_id = vulnerability_details.id %}
+{% set vuln_view = vulnerability_details.vulnerability_view %}
+
+{% if vuln_view.annotated %}
 <a href="{{ url_for('vuln.vuln_view', vuln_id=vuln_id) }}">Goto simplified view</a>
+{% endif %}
 <strong class="d-inline-block mb-2 text-dark">Repository (<span id="num_files">?</span> files)</strong>
 
 <div class="mb-1 text-muted">Filter Settings</div>

@@ -57,10 +57,13 @@ def vuln_view(vuln_id=None):
       abort(404)
   except InvalidIdentifierException as e:
     abort(404)
+
+  vuln_view = vulnerability_details.vulnerability_view
+  use_template = 'vuln_view_details.html'
+  if vuln_view.annotated:
+    use_template = 'vuln_view_overview.html'
   return render_template(
-      'vuln_view_overview.html',
-      cfg=cfg,
-      vulnerability_details=vulnerability_details)
+      use_template, cfg=cfg, vulnerability_details=vulnerability_details)
 
 
 @bp.route('/<vuln_id>/details')

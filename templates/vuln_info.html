@@ -16,7 +16,8 @@
             </span>
           </div>
 
-        <p class="text-info"><b>{{ vuln_view.id }}</b></p>
+        ID: <p class="text-info" style="display:inline"><b>{{ vuln_view.id }}</b></p>
+
         <p><b>Description</b><br/>
         {% if vuln_view.comment %}<p>{{ vuln_view.comment }}</p>{% else %}-{% endif %}</p>
 
@@ -46,10 +47,28 @@
                 {% set products = vuln_view.products %}
                 <td style="width: 95%">{{ (products and print_formatted(products)) or "N/A" }}</td>
               </tr>
+              {% if vuln_view.score %}
+                <tr>
+                  <td><b>Score</b></td>
+                  <td>
+                    {{ '%0.1f' % vuln_view.score }}
+                  </td>
+                </tr>
+              {% endif %}
+
+              {% set master_commit = vuln_view.master_commit %}
+              {% set master_commit_link = vuln_view.master_commit.commit_link %}
               <tr>
-                <td><b>Score</b></td>
-                <td>{{ '%0.1f' % vuln_view.score }}</td>
+                <td><b>Main patch</b></td>
+                <td>
+                  {% if vuln_view.master_commit %}
+                    <b><a href="{{ master_commit_link }}" class="text-info">{{ master_commit_link }}</a></b><br />
+                  {% else %}
+                    <i class="fa fa-times" style="color: #FF0000"></i> None
+                  {% endif %}
+                </td>
               </tr>
+
               <tr>
                 <td><b>Patches</b></td>
                 {% set patches = vuln_view.known_patches %}
@@ -61,11 +80,37 @@
                 {% endif %}
                 </td>
               </tr>
+              {% set links = vuln_view.link_references %}
+              {% if links %}
+                <tr>
+                  <td><b>Links</b></td>
+
+                  <td>{{ (links and print_formatted(links)) }}</td>
+                </tr>
+              {% endif %}
+
               <tr>
-                <td><b>Links</b></td>
-                {% set links = vuln_view.link_references %}
-                <td>{{ (links and print_formatted(links)) or "N/A" }}</td>
+                <td><b>Annotation</b></td>
+                <td>
+                  {% if not vuln_view.master_commit %}
+                    <b><p class="text-warning" style="display:inline">Note:</p></b>
+                    <p style="display:inline"><b>This entry has no patch assigned and/or repository details are missing.</b></p>
+                  {% elif vuln_view.master_commit.comments|length == 0 %}
+                    <b><p class="text-warning" style="display:inline">Note:</p></b>
+                    <p style="display:inline"><b>This entry has not been annotated yet.</b></p>
+                    Please consider adding data:
+                    <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
+                    <button type="button" class="btn-primary btn-tb">Annotate entry</button>
+                    </a>
+                  {% else %}
+                    <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
+                    <button type="button" class="btn-primary btn-tb">Edit annotation</button>
+                    </a>
+                  {% endif %}
+                </td>
               </tr>
+
+
             </table>
           </div>
 
@@ -108,11 +153,7 @@
       </div>
     </div>
 
-    <span class="d-inline-block mb-1 text-muted">
-      <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
-        <button type="button" class="btn btn-primary">Annotate</button>
-      </a>
-    </span>
+
   </div>
 </div>
 

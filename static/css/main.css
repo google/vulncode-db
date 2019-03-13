@@ -137,7 +137,6 @@ body {
 .vuln_infobox_header {
   /* height:200px; */
   overflow:auto;
-  margin-top: 15px;
 }
 
 .clickable-row {
