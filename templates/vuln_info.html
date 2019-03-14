@@ -3,6 +3,52 @@
 {% set commit_hash = vulnerability_details.commit_hash %}
 {% set repo_url = vulnerability_details.repo_url %}
 
+
+{% macro print_link(value) -%}
+  {% if value is string and value.startswith('http') %}
+    <a href="{{ value }}" class="text-info" target="_blank">{{ value }}</a>
+  {% else %}
+    {{ value }}
+  {% endif %}
+{%- endmacro %}
+
+{% macro print_formatted(data, expand_label) -%}
+  {% if data is iterable and data is not string %}
+    {% set max_limit = 5 %}
+
+    {% for entry in data %}
+      {% if loop.index0 < max_limit %}
+        &#8226; {{ print_link(entry) }} <br/>
+      {% endif %}
+    {% endfor %}
+
+    {% if data|length > max_limit %}
+      {% set remaining = data|length - max_limit %}
+      <div>
+        <a href="#" class="text-light" data-toggle="collapse" data-target="#expand_{{ expand_label }}">
+          <i class="fa fa-caret-square-o-right" aria-hidden="true"></i>
+          More/Less ({{ remaining }})
+        </a>
+      </div>
+      <div id="expand_{{ expand_label }}" class="collapse">
+    {% endif %}
+
+    {% for entry in data %}
+      {% if loop.index0 >= max_limit %}
+        &#8226; {{ print_link(entry) }} <br/>
+      {% endif %}
+    {% endfor %}
+
+    {% if data|length > max_limit %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    {{ print_link(data) }}
+  {% endif %}
+{% endmacro %}
+
+
 <div class="card">
   <div class="card-body">
     {% if vuln_view %}
@@ -13,11 +59,13 @@
       Vulnerability Info <a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a>
     </h5>
 
-    <p><b>Description</b><br/></p>
     <div class="row mb-1">
-      <div class="col-sm-6">
+      <div class="col-sm-12">
         <div class="card">
           <div class="card-body">
+            <div class="card-title">
+              <b>Description</b>
+            </div>
             {% if vuln_view.comment %}
               {{ vuln_view.comment }}
             {% else %}-{% endif %}
@@ -27,30 +75,11 @@
     </div>
 
     <div class="table-responsive">
-        {% macro print_formatted(data) -%}
-          {% if data is iterable and data is not string %}
-            {% for entry in data %}
-              {% if entry.startswith('http') %}
-                &#8226;
-                <a href="{{ entry }}" class="text-info" target="_blank">{{ entry }}</a>
-              {% else %}
-                &#8226; {{ entry }}
-              {% endif %}
-              <br/>
-            {% endfor %}
-          {% else %}
-            {% if data.startswith('http') %}
-              <a href="{{ data }}" class="text-info" target="_blank">{{ data }}</a>
-            {% else %}
-              {{ data }}
-            {% endif %}
-          {% endif %}
-        {%- endmacro %}
         <table class="table table-hover table-dark mb-0">
           <tr>
             <td style="width: 5%"><b>Products</b></td>
             {% set products = vuln_view.products %}
-            <td style="width: 95%">{{ (products and print_formatted(products)) or "N/A" }}</td>
+            <td style="width: 95%">{{ (products and print_formatted(products, 'products')) or "N/A" }}</td>
           </tr>
           {% if vuln_view.score %}
             <tr>
@@ -79,7 +108,7 @@
             {% set patches = vuln_view.known_patches %}
             <td>
             {% if patches %}
-              {{ print_formatted(vuln_view.known_patches) }}
+              {{ print_formatted(vuln_view.known_patches, 'patches') }}
             {% else %}
               <i class="fa fa-times" style="color: #FF0000"></i> Unknown
             {% endif %}
@@ -89,8 +118,7 @@
           {% if links %}
             <tr>
               <td><b>Links</b></td>
-
-              <td>{{ (links and print_formatted(links)) }}</td>
+              <td>{{ (links and print_formatted(links, 'links')) }}</td>
             </tr>
           {% endif %}
 

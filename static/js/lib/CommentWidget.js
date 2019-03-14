@@ -15,20 +15,8 @@
  */
 
 import {ZoneViewWidget} from './ZoneViewWidget.js';
+import {UI} from './UI.js';
 
-let CONVERTER = null;
-if (typeof showdown !== 'undefined') {
-  // Open all links in new tabs!
-  showdown.extension('targetlink', function() {
-    return [{
-      type: 'html',
-      filter: function(text) {
-        return ('' + text).replace(/<a\s+href=/gi, '<a target="_blank" href=');
-      },
-    }];
-  });
-  CONVERTER = new showdown.Converter({extensions: ['targetlink']});
-}
 
 /**
  * Renders a comment widget inside the editor. Based on the CommentThreadWidget
@@ -99,7 +87,7 @@ export class CommentWidget extends ZoneViewWidget {
    */
   _fillBody(container) {
     const commentArea = container.appendChild(document.createElement('div'));
-    commentArea.innerHTML = CONVERTER.makeHtml(this._comment.text);
+    commentArea.innerHTML = UI.toMarkdown(this._comment.text);
 
     if (this._isEditMode) {
       const textarea =
@@ -156,7 +144,7 @@ export class CommentWidget extends ZoneViewWidget {
         render.style.display = 'none';
         edit.style.display = null;
         commentArea.style.display = null;
-        commentArea.innerHTML = CONVERTER.makeHtml(textarea.value);
+        commentArea.innerHTML = UI.toMarkdown(textarea.value);
         this._refresh();
       });
 

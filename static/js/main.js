@@ -19,7 +19,6 @@ import {Editor} from './lib/Editor.js';
 import {FileTree} from './lib/FileTree.js';
 import {UI} from './lib/UI.js';
 
-
 const ui = new UI();
 let editor = null;
 let fileTree = null;
@@ -219,6 +218,12 @@ $(function() {
   // Enable all tooltips in the document.
   $(document).ready(function() {
     initClickableElements();
+    // Convert all markdown comments.
+    $('.markdown_comment').each(function(index) {
+      const comment = $( this ).text();
+      const markdown_comment = UI.toMarkdown(comment);
+      $( this ).html(markdown_comment);
+    });
   });
 
   let searchTimeout;

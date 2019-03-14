@@ -8,12 +8,12 @@
       <div class="col-md-8 offset-md-2">
         <div class="card flex-md-row mb-4 box-shadow">
           <div class="card-body">
-            <b><a href="{{ url_for('vuln.vuln_view_details', vuln_id=vuln_id) }}" class="text-info">View detailed repository view</a></b><br />
+            <b><a href="{{ url_for('vuln.vuln_view_details', vuln_id=vuln_id) }}" class="text-info">
+            <i class="fa fa-search"></i> Detailed repository view</a></b>
             <hr />
             {% for comment in master_commit.comments|sort(attribute='sort_pos') %}
-            {{ comment.text }}
-            <script src="{{ url_for('serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}">
-            </script>
+              <div class="markdown_comment comment_widget card pt-3 px-3 shadow-textarea mb-1">{{ comment.text }}</div>
+              <script src="{{ url_for('serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}"></script>
             {% endfor %}
           </div>
         </div>

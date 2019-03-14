@@ -97,6 +97,28 @@ class UI {
   }
 
   /**
+   * Converts a given message to its markdown representation.
+   * @param message
+   * @return {*}
+   */
+  static toMarkdown(message) {
+    if (typeof showdown !== 'undefined') {
+      // Open all links in new tabs!
+      showdown.extension('targetlink', function() {
+        return [{
+          type: 'html',
+          filter: function(text) {
+            return ('' + text).replace(/<a\s+href=/gi, '<a target="_blank" href=');
+          },
+        }];
+      });
+      const converter = new showdown.Converter({extensions: ['targetlink']});
+      return converter.makeHtml(message);
+    }
+    return null;
+  }
+
+  /**
    * Displays a notification that can be clicked away.
    * @param message
    * @param type

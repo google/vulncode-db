@@ -133,11 +133,6 @@ body {
   margin-left: -1.3em;
 }
 
-.vuln_infobox_header {
-  /* height:200px; */
-  overflow:auto;
-}
-
 .clickable-row {
   cursor: pointer;
 }
