@@ -7,13 +7,15 @@
 {% macro print_link(value) -%}
   {% if value is string and value.startswith('http') %}
     <a href="{{ value }}" class="text-info" target="_blank">{{ value }}</a>
+  {% elif value is iterable and value is not string %}
+    {{ print_link(value[0]) }}
   {% else %}
     {{ value }}
   {% endif %}
 {%- endmacro %}
 
 {% macro print_formatted(data, expand_label) -%}
-  {% if data is iterable and data is not string %}
+  {% if data is iterable and data is not string and data|length > 1 %}
     {% set max_limit = 5 %}
 
     {% for entry in data %}
@@ -55,9 +57,18 @@
     {% set vuln_id = vuln_view.id %}
 
     <h5 class="card-title">
-      ID: <p class="text-info d-inline"><b>{{ vuln_view.id }}</b></p> -
-      Vulnerability Info <a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a>
+      ID:
+      <p class="text-info d-inline">
+        <b>{{ vuln_view.id }}</b>
+        {% if vuln_view.cve_id %}
+        <small>(<a href="https://nvd.nist.gov/vuln/detail/{{ vuln_view.cve_id }}" target="_blank">NVD</a>)</small>
+        {% endif %}
+      </p>
+      - Vulnerability Info
+      <small><a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a></small>
     </h5>
+
+    <h6 class="card-subtitle mb-2 text-muted">{{ vuln_view.date_created }}</h6>
 
     <div class="row mb-1">
       <div class="col-sm-12">
@@ -74,46 +85,85 @@
       </div>
     </div>
 
+    {% set master_commit = vuln_view.master_commit %}
     <div class="table-responsive">
         <table class="table table-hover table-dark mb-0">
           <tr>
-            <td style="width: 5%"><b>Products</b></td>
+            <td style="width: 7%"><b>Products</b></td>
             {% set products = vuln_view.products %}
-            <td style="width: 95%">{{ (products and print_formatted(products, 'products')) or "N/A" }}</td>
+
+            <td>
+              {% if products %}
+                {{ print_formatted(products, 'products') }}
+              {% elif master_commit.repo_name %}
+                {{ master_commit.repo_name }} (repository)
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
           </tr>
-          {% if vuln_view.score %}
+
+          {% if vuln_view.cwe_id %}
+          <tr>
+            <td><b>Type</b></td>
+            <td>
+              <b>{{ vuln_view.cwe_name or "?" }}</b> (<a href="http://cwe.mitre.org/data/definitions/{{ vuln_view.cwe_id | replace("CWE-", "") }}.html" class="text-info" target="_blank">{{ vuln_view.cwe_id }}</a>)
+            </td>
+          </tr>
+          {% endif %}
+
+          {# TODO: Decide if we want to display the NVD score.
+            {% if vuln_view.score %}
             <tr>
               <td><b>Score</b></td>
               <td>
                 {{ '%0.1f' % vuln_view.score }}
               </td>
             </tr>
-          {% endif %}
+            {% endif %}
+          #}
 
-          {% set master_commit = vuln_view.master_commit %}
-          {% set master_commit_link = vuln_view.master_commit.commit_link %}
           <tr>
-            <td><b>Main patch</b></td>
+            <td><b>First patch</b></td>
             <td>
-              {% if vuln_view.master_commit %}
-                <b><a href="{{ master_commit_link }}" class="text-info">{{ master_commit_link }}</a></b><br />
+              {% if master_commit %}
+                {% set master_commit_link = master_commit.commit_link %}
+                <b><a href="{{ master_commit_link }}" class="text-info" target="_blank">{{ master_commit_link }}</a></b><br />
+                {# TODO: add more commit information: message, #modified files and date?
+                  <i class="fa fa-check" style="color: #00FF00"></i>
+                  <table class="mb-0">
+                    <tr>
+                      <td class="py-0" style="width: 5%"><b>FOO</b></td>
+                      <td class="py-0" style="width: 95%"><b>BAR</b></td>
+                    </tr>
+                    <tr>
+                      <td class="py-0" style="width: 5%"><b>FOO</b></td>
+                      <td class="py-0" style="width: 95%"><b>BAR</b></td>
+                    </tr>
+                  </table>
+                #}
               {% else %}
                 <i class="fa fa-times" style="color: #FF0000"></i> None
               {% endif %}
             </td>
           </tr>
 
+          {% set patches = vuln_view.known_patches %}
+          {% if patches %}
           <tr>
-            <td><b>Patches</b></td>
-            {% set patches = vuln_view.known_patches %}
-            <td>
-            {% if patches %}
-              {{ print_formatted(vuln_view.known_patches, 'patches') }}
-            {% else %}
-              <i class="fa fa-times" style="color: #FF0000"></i> Unknown
-            {% endif %}
-            </td>
+            <td><b>More patches</b></td>
+            <td>{{ print_formatted(vuln_view.known_patches, 'patches') }}</td>
           </tr>
+          {% endif %}
+
+          {% set relevant_files = vuln_view.relevant_files %}
+          {% if relevant_files %}
+          <tr>
+            <td><b>Relevant file/s</b></td>
+            <td>{{ (relevant_files and print_formatted(relevant_files, 'relevant-files')) }}</td>
+          </tr>
+          {% endif %}
+
           {% set links = vuln_view.link_references %}
           {% if links %}
             <tr>
@@ -127,7 +177,7 @@
             <td>
               {% if not vuln_view.master_commit %}
                 <b><p class="text-warning d-inline">Note:</p></b>
-                <p class="d-inline"><b>This entry has no patch assigned and/or repository details are missing.</b></p>
+                <p class="d-inline">No patch was assigned yet.</p>
               {% elif vuln_view.master_commit.comments|length == 0 %}
                 <b><p class="text-warning d-inline">Note:</p></b>
                 <p class="d-inline"><b>This entry has not been annotated yet.</b></p>

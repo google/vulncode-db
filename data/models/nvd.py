@@ -20,6 +20,7 @@
 import re
 import cfg
 from data.models.vulnerability import Vulnerability
+from data.models.cwe import Cwe
 from data.models.base import DefaultBase
 from data.utils import populate_models
 from sqlalchemy import Column, Float, String, TIMESTAMP, ForeignKey, Index
@@ -114,7 +115,7 @@ class Nvd(DefaultBase):
   confidentiality_impact = Column(String(255))
   integrity_impact = Column(String(255))
   availability_impact = Column(String(255))
-  cwe_id = Column(String(255))
+  cwe_id = Column(String(255), ForeignKey(Cwe.cwe_id))
   published_date = Column(TIMESTAMP)
   last_modified_date = Column(TIMESTAMP)
 

@@ -111,7 +111,7 @@ require(['vs/editor/editor.main'], () => {
     if (editorSettings) {
       $('#' + EMBED_FILE_PATH_ID).text('./' + filePath);
       const fileUrl = (
-          editorSettings.file_url + filePath);
+        editorSettings.file_url + filePath);
       $('#' + EMBED_FILE_PATH_ID).attr('href', fileUrl);
     }
 

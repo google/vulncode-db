@@ -103,6 +103,12 @@ class GithubHandler(VcsHandler):
         repo=self.repo_name,
         commit_hash=self.commit_hash))
 
+  def getTreeUrl(self):
+    return ('https://github.com/{owner}/{repo}/tree/{commit_hash}/'.format(
+        owner=self.repo_owner,
+        repo=self.repo_name,
+        commit_hash=self.commit_hash))
+
   def fetchCommitData(self, commit_hash=None):
     """Args:
 

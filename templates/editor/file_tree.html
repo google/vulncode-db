@@ -1,14 +1,17 @@
 {% set vuln_id = vulnerability_details.id %}
 {% set vuln_view = vulnerability_details.vulnerability_view %}
+{% set tree_url = vulnerability_details.tree_url %}
 {% set master_commit = vuln_view.master_commit %}
+{% set commit_hash = master_commit.commit_hash %}
 {% if vuln_view.annotated %}
   <a href="{{ url_for('vuln.vuln_view', vuln_id=vuln_id) }}">Goto simplified view</a>
 {% endif %}
 
-<p class="h4 d-inline">
+<p class="h4 d-inline mb-0">
   <strong class="mb-2 text-dark d-inline">
-    <a class="d-inline" href="{{ master_commit.repo_url }}">{{ master_commit.repo_name }}</a>
+    <a class="d-inline" href="{{ master_commit.repo_url }}" target="_blank">{{ master_commit.repo_name }}</a>
   </strong>
+  - <small>Tree: <a href="{{ tree_url }}" target="_blank">{{ commit_hash[:10] }}</a></small>
 </p>
 <p class="d-inline">(<span id="num_files">?</span> files)</p>
 

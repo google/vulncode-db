@@ -167,6 +167,10 @@ class GitRepoHandler(VcsHandler):
     # A custom repository doesn't necessarily have a VCS web interface.
     return ''
 
+  def getTreeUrl(self):
+    # A custom repository doesn't necessarily have a VCS web interface.
+    return ''
+
   def _fetch_remote(self):
     repo = GitPythonRepo(self.repo.path)
     repo.remote().fetch('+refs/heads/*:refs/remotes/origin/*')
