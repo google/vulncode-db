@@ -133,6 +133,7 @@ def nvdToVcdb(nvd, commit_link):
               commit_link=commit_link,
               commit_hash=vcs_handler.commit_hash,
               repo_name=vcs_handler.repo_name,
+              repo_owner=vcs_handler.repo_owner,
               repo_url=vcs_handler.repo_url)
       ],
       comment='',
@@ -168,6 +169,10 @@ def storeOrUpdateVcdbEntries(github_commit_candidates):
                                 vulnerability_suggestion.cve_id))
         raise Exception('Incorrect vulnerability cve_id!')
 
+      if (existing_vcdb_vulnerability.master_commit.repo_owner !=
+          vulnerability_suggestion.master_commit.repo_owner):
+        has_changed = True
+
       if (existing_vcdb_vulnerability.master_commit.commit_link !=
           vulnerability_suggestion.master_commit.commit_link):
         print('{} != {}'.format(
@@ -175,13 +180,19 @@ def storeOrUpdateVcdbEntries(github_commit_candidates):
             vulnerability_suggestion.master_commit.commit_link))
         has_changed = True
 
-      stats['idle'] += 1
       if has_changed:
-        pass
-        # We don't update entries atm.
-        # TODO: Consider doing so if required.
+        stats['updated'] += 1
+        # TODO: Consider updating more attributes here.
+        # Update only the commit_link and repo_owner for now.
+        existing_vcdb_vulnerability.master_commit.commit_link = (
+            vulnerability_suggestion.master_commit.commit_link)
+        existing_vcdb_vulnerability.master_commit.repo_owner = (
+            vulnerability_suggestion.master_commit.repo_owner)
+        db.session.add(existing_vcdb_vulnerability)
+        db.session.commit()
+      else:
+        stats['idle'] += 1
     else:
-
       # Add the new suggested Vcdb entry to the database.
       db.session.add(vulnerability_suggestion)
       db.session.commit()

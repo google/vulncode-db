@@ -1,3 +1,16 @@
+{% set vuln_view = vulnerability_details.vulnerability_view %}
+{% set master_commit = vuln_view.master_commit %}
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark w-100">
+  <ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+      <a class="nav-link py-0" href="#" id="open_file_path">
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link py-0" href="{{ master_commit.repo_url }}">{{ master_commit.repo_name }}</a>
+    </li>
+  </ul>
+</nav>
 <div id="editor"></div>
 <div id="editor_theme" class="btn-group btn-group-toggle" data-toggle="buttons">
   <label class="btn btn-secondary active">

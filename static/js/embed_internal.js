@@ -107,7 +107,14 @@ require(['vs/editor/editor.main'], () => {
   });
   */
   if (targetFile) {
-    $('#' + EMBED_FILE_PATH_ID).text(filePath);
+    const editorSettings = window.EDITOR_SETTINGS;
+    if (editorSettings) {
+      $('#' + EMBED_FILE_PATH_ID).text('./' + filePath);
+      const fileUrl = (
+          editorSettings.file_url + filePath);
+      $('#' + EMBED_FILE_PATH_ID).attr('href', fileUrl);
+    }
+
     editor.displayFile(targetFile, true).then(() => {
       editor.showOnlyRange(startLine, endLine);
       editor.collapseAllIrrelevantLines();

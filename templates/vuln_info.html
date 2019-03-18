@@ -55,7 +55,7 @@
     {% set vuln_id = vuln_view.id %}
 
     <h5 class="card-title">
-      ID: <p class="text-info" style="display:inline"><b>{{ vuln_view.id }}</b></p> -
+      ID: <p class="text-info d-inline"><b>{{ vuln_view.id }}</b></p> -
       Vulnerability Info <a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a>
     </h5>
 
@@ -126,11 +126,11 @@
             <td><b>Annotation</b></td>
             <td>
               {% if not vuln_view.master_commit %}
-                <b><p class="text-warning" style="display:inline">Note:</p></b>
-                <p style="display:inline"><b>This entry has no patch assigned and/or repository details are missing.</b></p>
+                <b><p class="text-warning d-inline">Note:</p></b>
+                <p class="d-inline"><b>This entry has no patch assigned and/or repository details are missing.</b></p>
               {% elif vuln_view.master_commit.comments|length == 0 %}
-                <b><p class="text-warning" style="display:inline">Note:</p></b>
-                <p style="display:inline"><b>This entry has not been annotated yet.</b></p>
+                <b><p class="text-warning d-inline">Note:</p></b>
+                <p class="d-inline"><b>This entry has not been annotated yet.</b></p>
                 Please consider adding data:
                 <a href="{{ url_for('vuln.vuln_editor', vuln_id=vuln_id) }}">
                 <button type="button" class="btn-primary btn-tb">Annotate entry</button>

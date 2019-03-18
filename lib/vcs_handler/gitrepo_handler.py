@@ -163,6 +163,10 @@ class GitRepoHandler(VcsHandler):
     return url_for(
         'git.api_git', repo_url=self.repo_url, item_hash=HASH_PLACEHOLDER)
 
+  def getFileUrl(self):
+    # A custom repository doesn't necessarily have a VCS web interface.
+    return ''
+
   def _fetch_remote(self):
     repo = GitPythonRepo(self.repo.path)
     repo.remote().fetch('+refs/heads/*:refs/remotes/origin/*')

@@ -39,7 +39,11 @@ def api_git():
 
   commit_link = request.args.get('commit_link', '', type=str)
   repo_url = request.args.get('repo_url', '', type=str)
-  resource_url = repo_url if repo_url else commit_link
+
+  if 'github.com' in commit_link:
+    resource_url = commit_link
+  else:
+    resource_url = repo_url if repo_url else commit_link
 
   vcs_handler = getVcsHandler(app, resource_url)
   if not vcs_handler:

@@ -46,6 +46,9 @@ class VcsHandler(object):
   def getFileProviderUrl(self):
     pass
 
+  def getFileUrl(self):
+    pass
+
   def _CreateData(self, repo_name, commit_hash, patched_files, git_tree):
     # Create a JStree structure.
     root = {}

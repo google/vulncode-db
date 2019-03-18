@@ -744,8 +744,7 @@ class Editor {
     metadata['editor']['vuln_markers'] = markers;
     metadata['editor']['open_file_path'] = '';
     if (this._currently_open_file) {
-      metadata['editor']['open_file_path'] =
-          ('./' + this._currently_open_file.path);
+      metadata['editor']['open_file_path'] = this._currently_open_file.path;
     }
     return metadata;
   }

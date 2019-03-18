@@ -499,7 +499,14 @@ class UI {
     const editorMetadata = newMetadata['editor'];
     const sectionsEl = $('#' + METADATA_DOM_ID + ' #vulnerable_sections');
     sectionsEl.text(editorMetadata['vuln_markers'].length);
-    $('#open_file_path').text(editorMetadata['open_file_path']);
+
+    const editorSettings = window.EDITOR_SETTINGS;
+    if (editorSettings) {
+      $('#open_file_path').text('./' + editorMetadata['open_file_path']);
+      const fileUrl = (
+        editorSettings.file_url + editorMetadata['open_file_path']);
+      $('#open_file_path').attr('href', fileUrl);
+    }
   }
 }
 
