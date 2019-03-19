@@ -1,8 +1,8 @@
-<div class="card">
+<div class="card mb-2">
   <div class="card-body">
     <div class="form-group">
-      <label for="searchKeyword">Search</label>
-      <input type="text" class="form-control" id="searchKeyword" placeholder="CVE-ID/Product/File" value="{{ vcdb.keyword or '' }}">
+      <h4 class="mb-0"><label class="mb-0" for="searchKeyword">Search</label></h4>
+      <input type="text" class="form-control border-primary" id="searchKeyword" placeholder="CVE-ID/Product/File" value="{{ vcdb.keyword or '' }}">
     </div>
 
     {#
@@ -18,6 +18,8 @@
     #}
     {% include 'list_vuln_entries.html' %}
 
+    {#
+    This part won't be used until public contributions are enabled.
     <div id="top_contributors">
       <h3>TOP 10 contributors</h3>
         <div class="table-responsive">
@@ -37,7 +39,7 @@
           </table>
         </div>
     </div>
-
+    #}
 
   </div>
 </div>
