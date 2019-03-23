@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
-from flask import Blueprint, request, current_app, g
+from flask import Blueprint, request, current_app, g, jsonify
 
 from app.auth import login_required
 from app.exceptions import InvalidIdentifierException
@@ -175,7 +173,7 @@ def bug_save_editor_data():
     new_files = []
     for file in request.get_json():
       for of in old_files:
-        if of.file_id == file['id'] or of.file_hash == file['hash']:
+        if of.path == file['path'] or of.file_hash == file['hash']:
           current_app.logger.debug('Found old file: %s',
                                    (file['id'], file['hash'], file['name']))
           file_obj = of
@@ -184,10 +182,9 @@ def bug_save_editor_data():
         current_app.logger.debug('Creating new file: %s',
                                  (file['id'], file['hash'], file['name']))
         file_obj = RepositoryFiles(
-            file_id=file['id'],
             file_name=file['name'],
             file_path=file['path'],
-            file_patch=json.dumps(file['patch']),
+            file_patch=jsonify(file['patch']),
             file_hash=file['hash'],
         )
       # Create comment objects.

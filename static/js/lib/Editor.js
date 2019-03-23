@@ -103,10 +103,12 @@ class Editor {
   }
   /**
    * Create a new editor based on _display_patch_data.
+   * @param allowDiffMode {Boolean} Whether to allow the editor's diff mode.
+   * @private
    */
-  _createEditor() {
+  _createEditor(allowDiffMode=true) {
     // Create the editor based on the current display mode
-    if (this._display_patch_data) {
+    if (this._display_patch_data && allowDiffMode) {
       this._diffEditor();
     } else {
       this._normalEditor();
@@ -641,44 +643,54 @@ class Editor {
   /**
    * Retrieves and setups any file data currently stored in the backend.
    * Attention: this will DROP all current custom data like comments etc.
+   * @return {Promise<any>}
    */
   restoreFileBackendData() {
-    $.when(this.retrieveFileDataFromBackend()).then((filesData) => {
-      // Reset the editor state.
-      this.flushCustomFileContent();
-      let allComments = [];
-      filesData.forEach((fileData) => {
-        const targetFileId = fileData.file_id;
-        if (!(targetFileId in this._known_files)) {
-          const newFile =
-              new File(null, fileData.file_name, fileData.file_hash, null);
-          this._known_files[targetFileId] = newFile;
+    return new Promise((resolve) => {
+      $.when(this.retrieveFileDataFromBackend()).then((filesData) => {
+        if (!filesData || filesData.length === 0) {
+          resolve(false);
         }
-        // TODO: add proper checks here (e.g. does the target id exist?)
-        const targetFile = this._known_files[targetFileId];
-        // Overwrite the target file's custom content.
-        targetFile.customContent = fileData;
-        allComments = allComments.concat(targetFile.comments);
-        targetFile.markers.forEach((marker) => {
-          // TODO: make the node class support more generic.
-          targetFile.highlightNodes(marker.class);
+
+        // Reset the editor state.
+        this.flushCustomFileContent();
+        let allComments = [];
+        filesData.forEach((fileData) => {
+          const targetFilePath = fileData.file_path;
+          if (!(targetFilePath in this._known_files)) {
+            console.log('[!] restoreFileBackendData: restoring unknown file:', fileData.file_name);
+            const newFile =
+                new File(null, fileData.file_name, fileData.file_hash, null);
+            this._known_files[targetFilePath] = newFile;
+          }
+          // TODO: add proper checks here (e.g. does the target id exist?)
+          const targetFile = this._known_files[targetFilePath];
+          // Overwrite the target file's custom content.
+          targetFile.customContent = fileData;
+          allComments = allComments.concat(targetFile.comments);
+          targetFile.markers.forEach((marker) => {
+            // TODO: make the node class support more generic.
+            targetFile.highlightNodes(marker.class);
+          });
         });
+        allComments.sort(function(a, b) {
+          return a.sort_pos - b.sort_pos;
+        });
+        // Render essential UI elements for this custom data.
+        allComments.forEach((comment) => {
+          this.paintCommentSortable(comment);
+        });
+        const currentlyOpenFile = this._getCurrentlyOpenFile();
+        if (currentlyOpenFile) {
+          // Refresh everything that is displayed!
+          this.displayFile(currentlyOpenFile, true);
+          this.reloadFileFilter();
+        }
+        // Load the first comment if available.
+        this._ui.gotoNextComment();
+
+        resolve(true);
       });
-      allComments.sort(function(a, b) {
-        return a.sort_pos - b.sort_pos;
-      });
-      // Render essential UI elements for this custom data.
-      allComments.forEach((comment) => {
-        this.paintCommentSortable(comment);
-      });
-      const currentlyOpenFile = this._getCurrentlyOpenFile();
-      if (currentlyOpenFile) {
-        // Refresh everything that is displayed!
-        this.displayFile(currentlyOpenFile, true);
-        this.reloadFileFilter();
-      }
-      // Load the first comment if available.
-      this._ui.gotoNextComment();
     });
   }
   /**
@@ -984,8 +996,23 @@ class Editor {
    */
   _restoreOldFileState(file) {
     let result = null;
+
+    // TODO: Add proper toggling between diff and non-diff editor.
+    // let displayPatches = this._display_patch_data;
+    // if (this._display_patch_data && !file.patch) {
+    //   this.displayPatches(false);
+    // }
+    //      this.displayPatches(true);
+
     if (this._display_patch_data) {
-      result = file.content.then((content) => {
+      let useContent = file.content;
+      if (file.status === 'added' && file.patch.length > 0) {
+        useContent = new Promise((resolve) => {
+          resolve('');
+        });
+      }
+
+      result = useContent.then((content) => {
         const patchedContent = this.applyPatchDeltas(content, file.patch);
         this._editor.setModel({
           original: this._getOrCreateModel(content, monaco.Uri.file(file.path)),
@@ -1009,8 +1036,6 @@ class Editor {
           for (const marker of file.markers) {
             this.paintMarker(marker);
           }
-        })
-        .then(() => {
           // Restore any previous comments:
           for (const comment of file.comments) {
             this.paintCommentWidget(comment);
@@ -1169,7 +1194,11 @@ class Editor {
     if (!patchData) {
       return content;
     }
-    const sep = content.match(/\r?\n/)[0];
+    let sep ='\n';
+    const lineSeparatorMaches = content.match(/\r?\n/);
+    if (lineSeparatorMaches) {
+      sep = content.match(/\r?\n/)[0];
+    }
     const contentLines = content.split(sep);
     let offset = 0;
     patchData.sort((a, b) => a.diff_line_no - b.diff_line_no);

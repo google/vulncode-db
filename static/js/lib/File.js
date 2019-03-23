@@ -23,12 +23,20 @@ import {FileMarker} from './FileMarker.js';
  * content to custom data like comments and markers.
  */
 class File {
-  constructor(fileTree, fileName, fileHash, filePatch) {
+  /**
+   *
+   * @param fileTree
+   * @param fileName
+   * @param fileHash
+   * @param filePatch
+   * @param status {?String} Whether this file was added, modified or removed.
+   */
+  constructor(fileTree, fileName, fileHash, filePatch, status=null) {
     this._file_tree = fileTree;
     this.name = fileName;
     this.hash = fileHash;
     this.patch = filePatch;
-
+    this.status = status;
 
     // File content usually pulled from the Github API.
     this._content = null;
@@ -48,26 +56,43 @@ class File {
 
   _getFileContent() {
     let fileProviderUrl = null;
+    let fileRefProviderUrl = null;
+    let parentHashRef = null;
 
     const editorSettings = window.EDITOR_SETTINGS;
     if (editorSettings) {
       if (editorSettings.hasOwnProperty('file_provider_url')) {
         fileProviderUrl = editorSettings.file_provider_url;
       }
+      if (editorSettings.hasOwnProperty('file_ref_provider_url')) {
+        fileRefProviderUrl = editorSettings.file_ref_provider_url;
+      }
+      if (editorSettings.hasOwnProperty('parent_hash')) {
+        parentHashRef = editorSettings.parent_hash;
+      }
     }
 
-    if (!fileProviderUrl && this._file_tree) {
-      fileProviderUrl = this._file_tree.getFileProviderUrl();
-    }
-    if (!fileProviderUrl) {
+    if (!fileProviderUrl && !fileRefProviderUrl) {
       console.log('No file provider url given for _getFileContent!');
       return null;
+    }
+    let targetUrl = fileProviderUrl.replace(
+        editorSettings.HASH_PLACEHOLDER, this.hash);
+
+    // If this is a patched file we will fetch the previous file state.
+    if (this.patch && this.status !== 'added' ) {
+      if (!fileProviderUrl || !parentHashRef) {
+        console.log('No reference file provider given. Can not fetch previous file state.');
+        return null;
+      }
+      targetUrl = fileRefProviderUrl.replace(
+          editorSettings.PATH_PLACEHOLDER, encodeURIComponent(this.path));
+      targetUrl = targetUrl.replace(editorSettings.HASH_PLACEHOLDER, parentHashRef);
     }
 
     // Check if the file is already cached and serve it if so.
     const req = $.get({
-      url: fileProviderUrl.replace(
-          editorSettings.HASH_PLACEHOLDER, this.hash),
+      url: targetUrl,
       beforeSend: function(xhr) {
         xhr.setRequestHeader('Accept', 'application/vnd.github-blob.raw');
       },

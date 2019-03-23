@@ -14,7 +14,7 @@
 
 import logging
 from lib.vcs_handler import *
-from lib.vcs_handler.vcs_handler import VcsHandler, HASH_PLACEHOLDER
+from lib.vcs_handler.vcs_handler import VcsHandler, HASH_PLACEHOLDER, PATH_PLACEHOLDER
 from app.exceptions import InvalidIdentifierException
 
 

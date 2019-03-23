@@ -124,12 +124,21 @@
           #}
 
           <tr>
-            <td><b>First patch</b></td>
+            <td>
+              <b>First patch</b>
+              {% if vuln_view.master_commit_message %}
+                <br />{{ vuln_view.master_commit_date }}
+              {% endif %}
+            </td>
             <td>
               {% if master_commit %}
                 {% set master_commit_link = master_commit.commit_link %}
                 <b><a href="{{ master_commit_link }}" class="text-info" target="_blank">{{ master_commit_link }}</a></b><br />
-                {# TODO: add more commit information: message, #modified files and date?
+                {% if vuln_view.master_commit_message %}
+                  "<b>{{ vuln_view.master_commit_message }}</b>"<br />
+                  Stats: <b>+{{ vuln_view.master_commit_stats.additions }} / -{{ vuln_view.master_commit_stats.deletions }} (total: {{ vuln_view.master_commit_stats.total }})</b><br />
+                {% endif %}
+              {# TODO: add more commit information: message, #modified files and date?
                   <i class="fa fa-check" style="color: #00FF00"></i>
                   <table class="mb-0">
                     <tr>

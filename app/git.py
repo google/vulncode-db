@@ -26,6 +26,8 @@ bp = Blueprint('git', __name__)
 
 @bp.route('/api/git')
 def api_git():
+  # TODO: Support is only needed for custom repositories,
+  #  remove other functionality.
   proxy_target = cfg.GCE_VCS_PROXY_URL + request.full_path[1:]
 
   try:

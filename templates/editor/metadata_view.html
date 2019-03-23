@@ -1,14 +1,12 @@
 <strong class="d-inline-block mb-2 text-success">Navigation</strong>
 
 <div id="metadata">
-  <h3 class="mb-0">
-    <a class="text-dark" href="#">Custom Data</a>
-  </h3>
-  <hr/>
-  Marked lines:
-  <p class="card-text mb-auto">(current file)</p>
-  <div id="vulnerable_sections"></div>
-  <hr/>
+  {# TODO: Should we display this in the first place?
+    Marked lines:
+    <p class="card-text mb-auto">(current file)</p>
+    <div id="vulnerable_sections"></div>
+    <hr/>
+  #}
   Patch data:
   <p class="card-text mb-auto">(on by default)</p>
   <div class="btn-group" id="toggle_patch_visibility">
@@ -16,16 +14,29 @@
     <button type="button" class="btn btn-sm btn-primary unlocked_active">ON</button>
   </div>
   <hr/>
-  Sections:
+
+  Patched area:
   <nav>
-    <div>
-      <button type="button" class="btn btn-primary btn-sm" id="prev_comment">Previous</button>
-      <button type="button" class="btn btn-secondary btn-sm" id="next_comment">Next</button>
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary btn-sm" id="prev_patch">Previous</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="next_patch">Next</button>
     </div>
   </nav>
-  <div id="comments">
-    <ul id="sortable">
-    </ul>
-  </div>
-  <hr/>
+
+  {% set vuln_view = vulnerability_details.vulnerability_view %}
+  {% set master_commit = vuln_view.master_commit %}
+  {% if master_commit and master_commit.comments|length > 0 %}
+    <hr />
+    Sections:
+    <nav>
+      <div class="btn-group">
+        <button type="button" class="btn btn-primary btn-sm" id="prev_comment">Previous</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="next_comment">Next</button>
+      </div>
+    </nav>
+    <div id="comments">
+      <ul id="sortable">
+      </ul>
+    </div>
+  {% endif %}
 </div>

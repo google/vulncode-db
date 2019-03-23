@@ -53,12 +53,12 @@ class UI {
         },
         stop: (event, ui) => this._sortableUpdateHandler(event, ui),
       });
-
-      this._patch_previous_button = $('#' + PREVIOUS_PATCH_BUTTON_DOM_ID);
-      this._patch_next_button = $('#' + NEXT_PATCH_BUTTON_DOM_ID);
-      this._patch_previous_button.click(() => this.gotoPreviousPatch());
-      this._patch_next_button.click(() => this.gotoNextPatch());
     }
+
+    this._patch_previous_button = $('#' + PREVIOUS_PATCH_BUTTON_DOM_ID);
+    this._patch_next_button = $('#' + NEXT_PATCH_BUTTON_DOM_ID);
+    this._patch_previous_button.click(() => this.gotoPreviousPatch());
+    this._patch_next_button.click(() => this.gotoNextPatch());
 
     this._alert_placeholder = $('#' + UI_ALERT_PLACEHOLDER_ID);
     this._dialog_placeholder = $('#' + UI_DIALOG_PLACEHOLDER_ID);
@@ -497,8 +497,9 @@ class UI {
     }
 
     const editorMetadata = newMetadata['editor'];
-    const sectionsEl = $('#' + METADATA_DOM_ID + ' #vulnerable_sections');
-    sectionsEl.text(editorMetadata['vuln_markers'].length);
+    // TODO: Decide if / where we want to display the number of modified lines.
+    // const sectionsEl = $('#' + METADATA_DOM_ID + ' #vulnerable_sections');
+    // sectionsEl.text(editorMetadata['vuln_markers'].length);
 
     const editorSettings = window.EDITOR_SETTINGS;
     if (editorSettings) {

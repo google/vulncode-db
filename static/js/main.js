@@ -248,23 +248,14 @@ $(function() {
   });
 });
 
-function fetchGitCommitLink(commitLink, commitHash, repoUrl) {
+function fetchGitCommitLink(treeUrl) {
   if (!$('#editor').length) return;
-
-  /*
-  // Skip the file tree data for the view only mode.
-  if (!constants.EDIT_MODE_ACTIVE) {
-    initEditor(null).then(editor => editor.restoreFileBackendData());
-    return;
-  }
-  */
 
   // Fetch the file tree data and initialize the editor after that.
   $.getJSON(
-      '/api/git',
-      {commit_link: commitLink, commit_hash: commitHash, repo_url: repoUrl},
+      treeUrl,
       function(jsonContent) {
-        initEditor(jsonContent).then((editor) => editor.loadFirstPatchFile());
+        initEditor(jsonContent);
       })
       .fail(function(jqXHR) {
         ui.showError(
@@ -276,11 +267,9 @@ function fetchGitCommitLink(commitLink, commitHash, repoUrl) {
 
 const editorSettings = window.EDITOR_SETTINGS;
 if (editorSettings) {
-  const commitLink = editorSettings.commit_link;
-  const commitHash = editorSettings.commit_hash;
-  const repoUrl = editorSettings.repo_url;
+  const treeUrl = editorSettings.tree_url;
   // Default commit link.
-  fetchGitCommitLink(commitLink, commitHash, repoUrl);
+  fetchGitCommitLink(treeUrl);
 } else {
   console.log('[-] No editor settings found to proceed.');
 }

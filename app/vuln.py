@@ -11,12 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import time
 
-from flask import Blueprint, redirect, flash, request, render_template, abort, g, url_for
+from flask import Blueprint, redirect, flash, request, render_template, abort, g, url_for, Response
 
 import cfg
 import json
 import logging
+
+try:
+  import urllib2
+except ImportError:
+  import urllib.request as urllib2
 
 from app import flashError
 from app.auth import login_required
@@ -46,18 +52,22 @@ def vuln_view_post():
   return view_vuln(None, 'vuln_view_overview.html')
 
 
-# Create a catch all route for vulnerability identifiers.
-@bp.route('/<vuln_id>')
-def vuln_view(vuln_id=None):
+def _get_vulnerability_details(vuln_id):
   try:
     vulnerability_details = VulnerabilityDetails(vuln_id)
     vulnerability_details.validate()
     # Drop everything else.
     if not vulnerability_details.vulnerability_view:
       abort(404)
+    return vulnerability_details
   except InvalidIdentifierException as e:
     abort(404)
 
+
+# Create a catch all route for vulnerability identifiers.
+@bp.route('/<vuln_id>')
+def vuln_view(vuln_id=None):
+  vulnerability_details = _get_vulnerability_details(vuln_id)
   vuln_view = vulnerability_details.vulnerability_view
   use_template = 'vuln_view_details.html'
   if vuln_view.annotated:
@@ -77,6 +87,32 @@ def vuln_editor(vuln_id):
   return view_vuln(vuln_id, 'vuln_edit.html')
 
 
+@bp.route('/<vuln_id>/tree')
+def vuln_file_tree(vuln_id):
+  vulnerability_details = _get_vulnerability_details(vuln_id)
+  vuln_view = vulnerability_details.vulnerability_view
+  master_commit = vuln_view.master_commit
+
+  if not master_commit.tree_cache:
+    # Fetch the required data from our VCS proxy.
+    proxy_target = cfg.GCE_VCS_PROXY_URL + url_for(
+        'git.api_git',
+        commit_link=vulnerability_details.commit_link,
+        commit_hash=vulnerability_details.commit_hash,
+        repo_url=vulnerability_details.repo_url)[1:]
+    try:
+      result = urllib2.urlopen(proxy_target, timeout=30)
+    except urllib2.HTTPError as e:
+      return Response(
+          response=e.read(), status=e.code, content_type='text/plain')
+
+    master_commit.tree_cache = result.read()
+    vulnerability_details.update_details()
+
+  return Response(
+      response=master_commit.tree_cache, status=200, content_type='text/json')
+
+
 @bp.route('/<vuln_id>/embed')
 def embed(vuln_id):
   try:
@@ -84,6 +120,7 @@ def embed(vuln_id):
     start_line = int(request.args.get('start_line', 1))
     end_line = int(request.args.get('end_line', -1))
     vulnerability_details = VulnerabilityDetails(vuln_id)
+    vulnerability_details.validate()
     vuln_view = vulnerability_details.vulnerability_view
     if not vuln_view:
       return bp.make_response(('No vulnerability found', 404))

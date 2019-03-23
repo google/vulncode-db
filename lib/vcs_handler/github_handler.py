@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import datetime
 import io
-import json
 import logging
 import os
 import re
@@ -23,11 +22,12 @@ try:
 except ImportError:
   from urllib.parse import urlparse
 
-from github import Github
+from github import Github, InputGitTreeElement
 from unidiff import PatchSet
+from flask import jsonify
 
 from app.exceptions import InvalidIdentifierException
-from lib.vcs_handler.vcs_handler import VcsHandler, HASH_PLACEHOLDER
+from lib.vcs_handler.vcs_handler import VcsHandler, HASH_PLACEHOLDER, PATH_PLACEHOLDER, CommitStats, CommitFilesMetadata, CommitMetadata
 import lib.utils
 
 CACHE_DIR = 'cache/'
@@ -41,14 +41,18 @@ CACHE_DIR = 'cache/'
 
 
 class GithubHandler(VcsHandler):
-  use_cache = True
 
   def __init__(self, app, resource_url):
     """Initializes the questionnaire object."""
     super(GithubHandler, self).__init__(app, resource_url)
-    self.cache = None
+    # We're currently using DB caching for file tree data.
+    self.use_cache = False
 
-    self.github = Github()
+    use_token = None
+    if 'GITHUB_API_ACCESS_TOKEN' in app.config:
+      use_token = app.config['GITHUB_API_ACCESS_TOKEN']
+
+    self.github = Github(login_or_token=use_token)
     self.parseResourceURL(resource_url)
 
   def parseResourceURL(self, resource_url):
@@ -68,25 +72,26 @@ class GithubHandler(VcsHandler):
     patched_files = {}
     # Process all patches provided by Github and save them in a new per file per line representation.
     for patched_file in files:
-      patched_files[patched_file.filename] = []
+      patched_files[patched_file.filename] = {
+          'status': patched_file.status,
+          'sha': patched_file.sha,
+          'deltas': []
+      }
 
-      # patch_str = io.StringIO()
-      # patch_str.write('--- a\n+++ b\n')
-      # patch_str.write(str(patched_file.patch))
-      # patch_str.seek(0)
-      # logging.debug('Parsing diff\n%s', patch_str.getvalue())
-      #
-      # patch = PatchSet(patch_str, encoding=None)
-      # TODO: Migrate this to io.StringIO().
-      patch_str = '--- a\n+++ b\n' + str(patched_file.patch)
-      logging.debug('Parsing diff\n%s', patch_str)
-      patch = PatchSet(patch_str, encoding='utf-8')
+      patch_str = io.StringIO()
+      patch_str.write(u'--- a\n+++ b\n')
+      if patched_file.patch is not None:
+        patch_str.write(patched_file.patch)
+      patch_str.seek(0)
+      logging.debug('Parsing diff\n%s', patch_str.getvalue())
+      patch = PatchSet(patch_str, encoding=None)
 
       for hunk in patch[0]:
         for line in hunk:
           if line.is_context:
             continue
-          patched_files[patched_file.filename].append(vars(line))
+          patched_files[patched_file.filename]['deltas'].append(vars(line))
+
     return patched_files
 
   def getFileProviderUrl(self):
@@ -95,6 +100,15 @@ class GithubHandler(VcsHandler):
         .format(
             owner=self.repo_owner,
             repo=self.repo_name,
+            HASH_PLACEHOLDER=HASH_PLACEHOLDER))
+
+  def getRefFileProviderUrl(self):
+    return (
+        'https://api.github.com/repos/{owner}/{repo}/contents/{PATH_PLACEHOLDER}?ref={HASH_PLACEHOLDER}'
+        .format(
+            owner=self.repo_owner,
+            repo=self.repo_name,
+            PATH_PLACEHOLDER=PATH_PLACEHOLDER,
             HASH_PLACEHOLDER=HASH_PLACEHOLDER))
 
   def getFileUrl(self):
@@ -108,6 +122,18 @@ class GithubHandler(VcsHandler):
         owner=self.repo_owner,
         repo=self.repo_name,
         commit_hash=self.commit_hash))
+
+  def _getFilesMetadata(self, github_files_metadata):
+    files_metadata = []
+    for file in github_files_metadata:
+      file_metadata = CommitFilesMetadata(file.filename, file.status,
+                                          file.additions, file.deletions)
+      files_metadata.append(file_metadata)
+    return files_metadata
+
+  def _getPatchStats(self, commit_stats):
+    return CommitStats(commit_stats.additions, commit_stats.deletions,
+                       commit_stats.total)
 
   def fetchCommitData(self, commit_hash=None):
     """Args:
@@ -135,18 +161,23 @@ class GithubHandler(VcsHandler):
       parent_commit_hash = commit_parents[0].sha
 
     # Fetch the list of all files in the previous "vulnerable" state.
-    git_tree = github_repo.get_git_tree(parent_commit_hash, True)
+    # Note: We use recursive=False (default) to only fetch the highest layer.
+    git_tree = github_repo.get_git_tree(parent_commit_hash)
     """commit_url = commit.html_url commit_message = commit.commit.message affected_files = commit.files commit_parents = commit.commit.parents"""
     patched_files = self._ParsePatchPerFile(commit.files)
-    editor_data = self._CreateData(self.repo_name, commit_hash, patched_files,
-                                   git_tree.tree)
 
-    data = {
-        'file_provider_url': self.getFileProviderUrl(),
-        'files': editor_data
-    }
+    commit_stats = self._getPatchStats(commit.stats)
+    files_metadata = self._getFilesMetadata(commit.files)
 
-    json_content = json.dumps(data)
+    commit_date = int((commit.commit.committer.date - datetime.datetime(
+        1970, 1, 1)).total_seconds())
+    commit_metadata = CommitMetadata(parent_commit_hash, commit_date,
+                                     commit.commit.message, commit_stats,
+                                     files_metadata)
+
+    data = self._CreateData(git_tree.tree, patched_files, commit_metadata)
+
+    json_content = jsonify(data)
     if self.use_cache:
       lib.utils.write_contents(cache_file, json_content)
     return json_content

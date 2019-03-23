@@ -22,14 +22,24 @@ import {File} from './File.js';
  */
 class FileTree {
   constructor(editor, jsonContent) {
-    const treeData = jsonContent['files'];
+    const repositoryFiles = jsonContent['files'];
+    const patchFiles = jsonContent['patched_files'];
+    const commitData = jsonContent['commit'];
+    // TODO: This should be refactored.
+    const editorSettings = window.EDITOR_SETTINGS;
+    if (editorSettings) {
+      editorSettings.parent_hash = commitData['parent_hash'];
+    }
+    // Merge the patch files into the other file representation.
+    this.mergePatchesToFiles(patchFiles, repositoryFiles);
+
+    const treeData = this.filesToTree(repositoryFiles);
     // Required to allow tree modifications (create, rename, move, delete).
     treeData['core']['check_callback'] = true;
     // Always escape HTML content in node names.
     treeData['core']['force_text'] = true;
     // Init new jstree:
     this._jstree = $('#files').jstree(treeData);
-    this.file_provider_url = jsonContent['file_provider_url'];
 
     this._editor = editor;
     this.all_files = {};
@@ -61,12 +71,184 @@ class FileTree {
         this._editor.reloadFileFilter();
         this._editor.updateUIMetadata();
 
-        // Load any data stored in the backend.
-        this._editor.restoreFileBackendData();
+        // Load any data stored in the backend or display the first patch entry.
+        this._editor.restoreFileBackendData().then(
+            (dataAvailable) => {
+              if (!dataAvailable) {
+                this._editor.loadFirstPatchFile();
+              }
+            });
         resolve(true);
       });
     });
   }
+
+  /**
+   * Takes a set of patch files and merges them to a list of repository files.
+   * @param patchFiles
+   * @param repoFiles
+   * @return {*}
+   */
+  mergePatchesToFiles(patchFiles, repoFiles) {
+    function getFile(path, sha, type, deltas=null, status=null) {
+      return {
+        'path': path,
+        'sha': sha,
+        'type': type,
+        'deltas': deltas,
+        'status': status,
+      };
+    }
+
+    function replaceInsert(files, newFile, newOffset) {
+      // Replace a potentially existing file..
+      let pos;
+      let replaceFiles = 0;
+      for (pos=0; pos < files.length; pos++) {
+        const file = files[pos];
+        if (file['type'] === newFile['type'] && file['path'] === newFile['path']) {
+          replaceFiles = 1;
+          newOffset = pos;
+          break;
+        }
+      }
+      files.splice(newOffset, replaceFiles, newFile);
+    }
+
+    for (const path in patchFiles) {
+      if (!patchFiles.hasOwnProperty(path)) {
+        continue;
+      }
+
+      const subDirectories = path.split('/').slice(0, -1);
+      let basePath = '';
+
+      // 1) Find correct offset for first directory.
+      const firstDir = subDirectories[0];
+      let pos;
+      for (pos=0; pos < repoFiles.length; pos++) {
+        const file = repoFiles[pos];
+        if (file['type'] !== 'tree') {
+          continue;
+        }
+        // If the sub path is already there ignore this
+        if (file['path'] === firstDir) {
+          basePath = subDirectories.shift() + '/';
+          break;
+        }
+        if (file['path'] > firstDir) {
+          break;
+        }
+      }
+      let insertOffset = pos + 1;
+
+      // 2) Insert each component consecutively at that offset.
+      subDirectories.forEach((directory_path) => {
+        if (!basePath) {
+          basePath = directory_path + '/';
+        }
+        const currentPath = basePath + directory_path;
+        basePath = currentPath + '/';
+        // create new component as it doesn't exist yet.
+        const file = getFile(currentPath, '?', 'tree');
+        replaceInsert(repoFiles, file, insertOffset);
+        insertOffset++;
+      });
+
+      // Attach our patch files to the global file listing.
+      const file = getFile(path, patchFiles[path]['sha'], 'blob',
+          patchFiles[path]['deltas'], patchFiles[path]['status']);
+      replaceInsert(repoFiles, file, insertOffset);
+    }
+    return repoFiles;
+  }
+
+  /**
+   * Takes a list of repository files and creates a recursive tree structure from it.
+   * @param files
+   * @return {} The root node of the tree.
+   */
+  filesToTree(files) {
+    const root = {};
+    root['core'] = {};
+    root['core']['data'] = [];
+    let repo_name = 'repo_name';
+    const editorSettings = window.EDITOR_SETTINGS;
+    if (editorSettings) {
+      repo_name = editorSettings.repo_name;
+    }
+
+    const root_node = {
+      'text': repo_name,
+      'data': {
+        'hash': '?',
+        'path': '/',
+      },
+      'state': {
+        'opened': true,
+      },
+      'children': [],
+    };
+    root['core']['data'].push(root_node);
+
+    function basename(path) {
+      return path.split('/').reverse()[0];
+    }
+
+    function append(current_root_node, items, last_depth=1) {
+      while (items.length > 0) {
+        const current_depth = items[0]['path'].split('/').length;
+        if (current_depth < last_depth) {
+          return;
+        }
+        const tree_item = items.shift();
+
+        const node = {};
+        node['text'] = basename(tree_item['path']);
+        node['data'] = {};
+        node['data']['path'] = tree_item['path'];
+        node['data']['hash'] = tree_item['sha'];
+
+
+        if ('deltas' in tree_item) {
+          node['data']['patch'] = tree_item['deltas'];
+        }
+        if ('status' in tree_item) {
+          node['data']['status'] = tree_item['status'];
+        }
+
+        if (tree_item['type'] === 'blob') {
+          node['icon'] = 'jstree-file';
+          current_root_node['children'].push(node);
+        } else {
+          node['children'] = [];
+          append(node, items, last_depth + 1);
+          current_root_node['children'].push(node);
+        }
+      }
+    }
+    append(root_node, files);
+    function sortme(node) {
+      node['children'].sort((x, y) => {
+        if ('children' in x) {
+          return -1;
+        }
+        if (x['path'] < y['path']) {
+          return 1;
+        }
+      });
+
+      node['children'].forEach((child) => {
+        if ('children' in child) {
+          sortme(child);
+        }
+      });
+    }
+    sortme(root_node);
+
+    return root;
+  }
+
 
   redraw() {
     this._jstree.jstree(true).redraw(true);
@@ -74,14 +256,6 @@ class FileTree {
 
   renameFileNode(file, newName) {
     this._jstree.jstree('rename_node', file.node, newName);
-  }
-
-  /**
-   * A file provider url can for example point to GitHub or the VCS proxy.
-   * @return {*}
-   */
-  getFileProviderUrl() {
-    return this.file_provider_url;
   }
 
   destroy() {
@@ -179,8 +353,8 @@ class FileTree {
    */
   _treeClickedCallback(e, data) {
     const node = data.instance.get_node(data.node);
-    // Ignore parent nodes...
-    if (node.children && node.children.length > 0) return;
+    // Ignore directories.
+    if (node.icon === true) return;
     const file = this._nodeToFile(node);
     this._editor.displayFile(file);
   }
@@ -192,20 +366,24 @@ class FileTree {
    * @private
    */
   _nodeToFile(node) {
-    const fileId = node.data.id;
+    const filePath = node.data.path;
     if (node.data.sha) console.log('noda.data.sha found...', node.data);
     const fileHash = node.data.hash;
-    if (this.all_files.hasOwnProperty(fileId)) return this.all_files[fileId];
+    if (this.all_files.hasOwnProperty(filePath)) return this.all_files[filePath];
 
     const fileName = node.text;
     let filePatch = null;
     if (node.data.hasOwnProperty('patch')) {
       filePatch = node.data.patch;
     }
-    const file = new File(this, fileName, fileHash, filePatch);
+    let status = null;
+    if (node.data.hasOwnProperty('status')) {
+      status = node.data.status;
+    }
+    const file = new File(this, fileName, fileHash, filePatch, status);
     file.node = node;
 
-    this.all_files[fileId] = file;
+    this.all_files[filePath] = file;
     return file;
   }
 
@@ -238,7 +416,7 @@ class FileTree {
    * @private
    */
   _walkTree(callback, inverseOrder = false) {
-    const rootFile = this.all_files[0];
+    const rootFile = this.all_files['/'];
     this._walkSubTree(rootFile, callback, inverseOrder);
   }
 

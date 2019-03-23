@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from lib.vcs_handler.vcs_handler import VcsHandler, HASH_PLACEHOLDER
+from lib.vcs_handler.vcs_handler import VcsHandler, PATH_PLACEHOLDER, HASH_PLACEHOLDER, CommitStats, CommitFilesMetadata, CommitMetadata
 import os
 
 from app.exceptions import InvalidIdentifierException
-from flask import url_for
+from flask import url_for, jsonify
 
+from io import BytesIO
+from unidiff import PatchSet
 from dulwich.repo import Repo
 # Packages like GitPython are not supported on GAE since they make use of
 # c libraries or other system utilities. We only use such packages on other
@@ -39,7 +41,6 @@ import dulwich.config
 import dulwich.objects
 from dulwich.patch import write_tree_diff
 from dulwich import porcelain
-import json
 import re
 
 REPO_PATH = 'vulnerable_code/'
@@ -56,7 +57,7 @@ class GitTreeElement:
   type = None
 
 
-def _file_list_dulwich(repo, tgt_env):
+def _file_list_dulwich(repo, tgt_env, recursive=False):
   """Get file list using dulwich"""
 
   def _traverse(tree, repo_obj, blobs, prefix):
@@ -76,7 +77,9 @@ def _file_list_dulwich(repo, tgt_env):
       elif isinstance(obj, dulwich.objects.Tree):
         foo.type = 'tree'
         blobs.append(foo)
-        _traverse(obj, repo_obj, blobs, foo.path)
+        # Check whether to fetch more than the most upper layer.
+        if recursive:
+          _traverse(obj, repo_obj, blobs, foo.path)
 
   tree = repo.get_object(tgt_env.tree)
   if not isinstance(tree, dulwich.objects.Tree):
@@ -110,18 +113,9 @@ class GitRepoHandler(VcsHandler):
     self.commit_hash = matches.group('commit')
     self.commit_link = resource_url
 
-  def _getPatchedFiles(self, old_commit, new_commit):
-    from io import BytesIO
-    from unidiff import PatchSet
-
-    patch_diff = BytesIO()
-    write_tree_diff(patch_diff, self.repo.object_store, old_commit.tree,
-                    new_commit.tree)
-    patch_diff.seek(0)
-
-    patch = PatchSet(patch_diff, encoding='utf-8')
+  def _getPatchDeltas(self, patch_set):
     patched_files = {}
-    for patched_file in patch:
+    for patched_file in patch_set:
       patched_files[patched_file.path] = []
       for hunk in patched_file:
         for line in hunk:
@@ -129,6 +123,15 @@ class GitRepoHandler(VcsHandler):
             continue
           patched_files[patched_file.path].append(vars(line))
     return patched_files
+
+  def _getPatcheSet(self, old_commit, new_commit):
+
+    patch_diff = BytesIO()
+    write_tree_diff(patch_diff, self.repo.object_store, old_commit.tree,
+                    new_commit.tree)
+    patch_diff.seek(0)
+    patch = PatchSet(patch_diff, encoding='utf-8')
+    return patch
 
   def _fetchOrInitRepo(self):
     if self.repo:
@@ -163,6 +166,13 @@ class GitRepoHandler(VcsHandler):
     return url_for(
         'git.api_git', repo_url=self.repo_url, item_hash=HASH_PLACEHOLDER)
 
+  def getRefFileProviderUrl(self):
+    return url_for(
+        'git.api_git',
+        repo_url=self.repo_url,
+        item_path=PATH_PLACEHOLDER,
+        item_hash=HASH_PLACEHOLDER)
+
   def getFileUrl(self):
     # A custom repository doesn't necessarily have a VCS web interface.
     return ''
@@ -174,6 +184,29 @@ class GitRepoHandler(VcsHandler):
   def _fetch_remote(self):
     repo = GitPythonRepo(self.repo.path)
     repo.remote().fetch('+refs/heads/*:refs/remotes/origin/*')
+
+  def _getFilesMetadata(self, patch_set):
+    files_metadata = []
+    for file in patch_set:
+      status = 'modified'
+      if file.is_added_file:
+        status = 'added'
+      elif file.is_removed_file:
+        status = 'removed'
+
+      file_metadata = CommitFilesMetadata(file.path, status, file.added,
+                                          file.removed)
+      files_metadata.append(file_metadata)
+    return files_metadata
+
+  def _getPatchStats(self, patch_set):
+    additions = 0
+    deletions = 0
+    for file in patch_set:
+      additions += file.added
+      deletions += file.removed
+    total = additions + deletions
+    return CommitStats(additions, deletions, total)
 
   def fetchCommitData(self, commit_hash):
     if not commit_hash:
@@ -209,19 +242,22 @@ class GitRepoHandler(VcsHandler):
     parent_commit = self.repo[parent_commit_hash]
 
     git_tree = _file_list_dulwich(self.repo, parent_commit)
-    patched_files = self._getPatchedFiles(parent_commit, commit)
+    patch_set = self._getPatcheSet(parent_commit, commit)
+    patched_files = self._getPatchDeltas(patch_set)
 
-    editor_data = self._CreateData(self.repo_name, commit_hash.decode('ascii'),
-                                   patched_files, git_tree)
-    data = {
-        'file_provider_url': self.getFileProviderUrl(),
-        'files': editor_data
-    }
+    commit_stats = self._getPatchStats(patch_set)
+    files_metadata = self._getFilesMetadata(patch_set)
 
-    json_content = json.dumps(data)
+    commit_date = commit.commit_time
+    commit_metadata = CommitMetadata(parent_commit_hash, commit_date,
+                                     commit.message, commit_stats,
+                                     files_metadata)
+    data = self._CreateData(git_tree, patched_files, commit_metadata)
+
+    json_content = jsonify(data)
     return json_content
 
-  def getFileContent(self, item_sha):
+  def getFileContent(self, item_sha, item_path=None):
     if not self._fetchOrInitRepo():
       return None
 
@@ -229,5 +265,15 @@ class GitRepoHandler(VcsHandler):
     if not hasattr(item_sha, 'decode'):
       item_sha = item_sha.encode('ascii')
 
-    if item_sha in self.repo.object_store:
-      return self.repo.object_store[item_sha].data
+    # Fetch by item path and target environment.
+    if item_path:
+      git_tree = _file_list_dulwich(self.repo, self.repo[item_sha], True)
+      for f in git_tree:
+        if f.path == item_path:
+          target_sha = f.sha
+          return self.repo.object_store[target_sha].data
+    else:
+      if item_sha in self.repo.object_store:
+        return self.repo.object_store[item_sha].data
+
+    return None

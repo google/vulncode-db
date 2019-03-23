@@ -1,4 +1,6 @@
 app.yaml
+vcs_proxy.yaml
+error.log
 cache/*
 cert/*
 third_party/*

@@ -22,6 +22,7 @@ from sqlalchemy.orm import relationship
 
 class Cwe(DefaultBase):
   __bind_key__ = 'cwe'
+  __table_args__ = {'schema': 'cwe'}
   __tablename__ = 'cwe_data'
 
   cwe_id = Column(String(255), primary_key=True)

@@ -15,6 +15,34 @@
 import os
 
 HASH_PLACEHOLDER = '--ITEM_HASH--'
+PATH_PLACEHOLDER = '--PATH_PLACE--'
+
+
+class CommitStats(object):
+
+  def __init__(self, additions, deletions, total):
+    self.additions = additions
+    self.deletions = deletions
+    self.total = total
+
+
+class CommitFilesMetadata(object):
+
+  def __init__(self, path, status, additions, deletions):
+    self.path = path
+    self.status = status
+    self.additions = additions
+    self.deletions = deletions
+
+
+class CommitMetadata(object):
+
+  def __init__(self, parent_commit_hash, date, message, stats, files_metadata):
+    self.parent_commit_hash = parent_commit_hash
+    self.date = date
+    self.message = message
+    self.stats = stats
+    self.files_metadata = files_metadata
 
 
 class VcsHandler(object):
@@ -34,7 +62,7 @@ class VcsHandler(object):
     if self.app:
       return self.app.logger.error(error, *args, **kwargs)
 
-  def getFileContent(self, relative_repo_path):
+  def getFileContent(self, item_hash, item_path=None):
     pass
 
   def fetchCommitData(self, commit_hash):
@@ -46,66 +74,37 @@ class VcsHandler(object):
   def getFileProviderUrl(self):
     pass
 
+  def getRefFileProviderUrl(self):
+    pass
+
   def getFileUrl(self):
     pass
 
   def getTreeUrl(self):
     pass
 
-  def _CreateData(self, repo_name, commit_hash, patched_files, git_tree):
-    # Create a JStree structure.
-    root = {}
-    root['core'] = {}
-    root['core']['data'] = []
-    root_node = {
-        'text': repo_name,
-        'data': {
-            'id': 0,
-            'hash': commit_hash
-        },
-        'state': {
-            'opened': True
-        },
-        'children': []
+  def _CreateData(self, git_tree, patched_files, commit_metadata):
+    files = []
+
+    commit_data = {
+        'message': commit_metadata.message,
+        'date': commit_metadata.date,
+        'parent_hash': commit_metadata.parent_commit_hash,
+        'stats': commit_metadata.stats.__dict__,
+        'files': [f.__dict__ for f in commit_metadata.files_metadata]
     }
-    root['core']['data'].append(root_node)
 
-    # Attention: we need to start from 1 as the root id is already 0!
-    current_node_id = {'counter': 1}
+    for root_file in git_tree:
+      file = {
+          'path': root_file.path,
+          'sha': root_file.sha,
+          'type': root_file.type
+      }
+      files.append(file)
 
-    def append(current_root_node, items, last_depth=1):
-      while len(items) > 0:
-        current_depth = len(items[0].path.split('/'))
-        if current_depth < last_depth:
-          return
-        tree_item = items.pop(0)
-
-        node = {}
-        node['text'] = os.path.basename(tree_item.path)
-        node['data'] = {}
-        # Using a counter workaround here as python 2.x does not support the "nonlocal" keyword.
-        node['data']['id'] = current_node_id['counter']
-        current_node_id['counter'] += 1
-        node['data']['hash'] = tree_item.sha
-        # Append patch data if available.
-        if tree_item.path in patched_files:
-          node['data']['patch'] = patched_files[tree_item.path]
-        if tree_item.type == 'blob':
-          node['icon'] = 'jstree-file'
-          current_root_node['children'].append(node)
-        else:
-          node['children'] = []
-          append(node, items, last_depth + 1)
-          current_root_node['children'].append(node)
-
-    items_copy = [a for a in git_tree]
-    append(root_node, items_copy)
-
-    def sortme(node):
-      node['children'].sort(key=lambda x: ('children' not in x))
-      for i in node['children']:
-        if 'children' in i:
-          sortme(i)
-
-    sortme(root_node)
-    return root
+    data = {
+        'commit': commit_data,
+        'patched_files': patched_files,
+        'files': files
+    }
+    return data
