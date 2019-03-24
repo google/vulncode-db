@@ -106,7 +106,7 @@ class Nvd(DefaultBase):
   updated_at = Column(TIMESTAMP)
   deleted_at = Column(TIMESTAMP, index=True)
   cve_detail_id = Column(INTEGER(10), index=True)
-  cve_id = Column(String(255), ForeignKey(Vulnerability.cve_id))
+  cve_id = Column(String(255), unique=True)
   summary = Column(String(4096))
   score = Column(Float(asdecimal=True))
   access_vector = Column(String(255))
@@ -119,6 +119,7 @@ class Nvd(DefaultBase):
   published_date = Column(TIMESTAMP)
   last_modified_date = Column(TIMESTAMP)
 
+  cwe = relationship(Cwe, primaryjoin='foreign(Cwe.cwe_id) == Nvd.cwe_id')
   cpes = relationship(Cpe, backref='nvd_entry', single_parent=True)
   references = relationship(Reference, backref='nvd_entry', single_parent=True)
 

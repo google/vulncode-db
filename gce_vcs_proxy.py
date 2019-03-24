@@ -81,7 +81,7 @@ def get_github_api_token():
   token = None
   with open('vcs_proxy.yaml', 'r') as f:
     try:
-      yaml_context = yaml.load(f)
+      yaml_context = yaml.load(f, Loader=yaml.SafeLoader)
       token = yaml_context['GITHUB_ACCESS_TOKEN']
     except yaml.YAMLError as e:
       print(e)

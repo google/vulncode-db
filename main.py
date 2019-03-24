@@ -13,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from lib.utils import manuallyReadAppConfig
+if not 'MYSQL_CONNECTION_NAME' in os.environ:
+  print('[~] Executed outside AppEngine context. Manually loading config.')
+  manuallyReadAppConfig()
+
 import cfg
 import logging
-import os
 import sys
 
 from app.auth import bp as auth_bp
@@ -33,6 +38,7 @@ import alembic.script
 import alembic.runtime.environment
 from flask_bootstrap import Bootstrap
 from data.database import DEFAULT_DATABASE, init_app as init_db
+
 
 app = Flask(__name__, static_url_path='', template_folder='templates')
 app.register_blueprint(auth_bp)

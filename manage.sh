@@ -20,4 +20,4 @@ then
   exit 1
 fi
 
-FLASK_APP=main flask "$@"
+PYTHONPATH="third_party" FLASK_APP=main flask "$@"

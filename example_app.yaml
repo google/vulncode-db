@@ -38,8 +38,8 @@ env_variables:
   OAUTH_CONSUMER_SECRET: ''
 
   # Site settings.
-  CSRF_SESSION_KEY: ''
-  COOKIE_SECRET_KEY: ''
+  CSRF_SESSION_KEY: 'secret'
+  COOKIE_SECRET_KEY: 'secret'
 
   # Database settings.
   CLOUDSQL_PROXY_PORT: 3307

@@ -40,14 +40,12 @@ class Database:
       self.migrate.init_app(self.app)
       self.manager.app = self.app
 
-      flushMe = False
-      #flushMe = True
-      # Adjust to flush main database.
-      if flushMe:
-        self.reset_all()
+      # Create the database from all model definitions.
+      # Note: This is a no-op if the tables already exist.
+      self.db.create_all()
 
   def reset_all(self):
-    # Drop all tables.
+    # Attention: This will drop the complete database with all its entries.
     self.db.drop_all()
 
     # Hack to remove all indices from the database...

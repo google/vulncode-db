@@ -28,8 +28,6 @@ class Cwe(DefaultBase):
   cwe_id = Column(String(255), primary_key=True)
   cwe_name = Column(Text)
 
-  nvd = relationship('Nvd', backref='cwe')
-
 
 Index('cwe_id_index', Cwe.cwe_id)
 
