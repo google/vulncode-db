@@ -120,7 +120,7 @@ def getNvdGithubPatchCandidates():
 
 
 def nvdToVcdb(nvd, commit_link):
-  vcs_handler = getVcsHandler(None, commit_link)
+  vcs_handler = getVcsHandler(app, commit_link)
   if not vcs_handler:
     print("Can't parse Vcs link: {}".format(commit_link))
     #print(vars(nvd))

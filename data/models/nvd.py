@@ -115,13 +115,14 @@ class Nvd(DefaultBase):
   confidentiality_impact = Column(String(255))
   integrity_impact = Column(String(255))
   availability_impact = Column(String(255))
-  cwe_id = Column(String(255), ForeignKey(Cwe.cwe_id))
+  cwe_id = Column(String(255))
   published_date = Column(TIMESTAMP)
   last_modified_date = Column(TIMESTAMP)
 
   cwe = relationship(Cwe, primaryjoin='foreign(Cwe.cwe_id) == Nvd.cwe_id')
   cpes = relationship(Cpe, backref='nvd_entry', single_parent=True)
   references = relationship(Reference, backref='nvd_entry', single_parent=True)
+  vulns = relationship(Vulnerability)
 
   def get_products(self):
     return sorted(set([cpe.product for cpe in self.cpes]))

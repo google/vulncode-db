@@ -31,7 +31,7 @@ handlers:
   secure: always
 
 env_variables:
-  # Replace all settings according to your local / prod environment.
+  # Replace all settings according to your local / qa / prod environment.
 
   # OAuth settings.
   OAUTH_CONSUMER_KEY: ''
@@ -41,18 +41,31 @@ env_variables:
   CSRF_SESSION_KEY: 'secret'
   COOKIE_SECRET_KEY: 'secret'
 
-  # Database settings.
-  CLOUDSQL_PROXY_PORT: 3307
-  # This should have the form: google.com:[PROJECT_ID]:[AREA]:[PROJECT_NAME]
-  MYSQL_CONNECTION_NAME: ''
-
   # Database settings for local.
-  MYSQL_LOCAL_USER: ''
-  MYSQL_LOCAL_PASS: ''
+  MYSQL_LOCAL_USER: 'root'
+  MYSQL_LOCAL_PASS: 'pass'
+  VCS_PROXY_LOCAL_URL: 'https://1.2.3.4/'
+  # Enables connecting to the remote database using the cloud sql proxy.
+  # Proxy CloudSQL with
+  # ./cloud_sql_proxy -instances [MYSQL_CONNECTION_NAME]=tcp:3307
+  # USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY: FALSE
+  # CLOUDSQL_PORT: 3307
+  # CLOUDSQL_NAME: ''
+  # CLOUDSQL_PASS: ''
+
+  # Database settings for qa.
+  # QA_PROJECT_ID: '[PROJECT_ID]'
+  # MYSQL_QA_USER: ''
+  # MYSQL_QA_PASS: ''
+  # This should have the form: [PROJECT_ID]:[AREA]:[PROJECT_NAME]
+  # MYSQL_QA_CONNECTION_NAME: ''
+  # VCS_PROXY_QA_URL: ''
 
   # Database settings for prod.
-  MYSQL_PROD_USER: ''
-  MYSQL_PROD_PASS: ''
+  # PROD_PROJECT_ID: '[PROJECT_ID]'
+  # MYSQL_PROD_USER: ''
+  # MYSQL_PROD_PASS: ''
+  # This should have the form: [PROJECT_ID]:[AREA]:[PROJECT_NAME]
+  # MYSQL_PROD_CONNECTION_NAME: ''
+  # VCS_PROXY_PROD_URL: ''
 
-  # Version control proxy settings.
-  VCS_PROVIDER_URL: ''

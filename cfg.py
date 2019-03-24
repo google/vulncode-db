@@ -20,49 +20,68 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 
 # Statement for enabling the development environment.
 # Shows an interactive debugger for unhandled exceptions.
-DEBUG = True
+# Attention: This will be disabled by default.
+DEBUG = False
 
-# Enables connecting to the remote database using port 3307 on cloud sql proxy.
-USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = False
-# Proxy CloudSQL with
-# ./cloud_sql_proxy -instances [MYSQL_CONNECTION_NAME]=tcp:3307
-CLOUDSQL_PROXY_PORT = os.getenv('CLOUDSQL_PROXY_PORT', 3307)
+# Enables connecting to the remote database using the cloud sql proxy.
+USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = os.getenv(
+    'USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY', 'false').lower() == 'true'
 
-IS_PROD = False
+IS_PROD = IS_QA = IS_LOCAL = False
 if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine/'):
-  IS_PROD = True
+  # Running on GAE. This is either PROD or QA.
+  from google.appengine.api.app_identity import get_application_id
+  appname = get_application_id()
 
-TITLE = 'Vulncode-DB'
+  if appname == os.environ['QA_PROJECT_ID']:
+    IS_QA = True
+  elif appname == os.environ['PROD_PROJECT_ID']:
+    IS_PROD = True
+  else:
+    raise AssertionError("Deployed in unknown environment: %s.".format(appname))
 
-# Used to process and proxy remote VCS content.
-MYSQL_CONNECTION_NAME = os.environ['MYSQL_CONNECTION_NAME']
-MYSQL_LOCAL_USER = os.environ['MYSQL_LOCAL_USER']
-MYSQL_LOCAL_PASS = os.environ['MYSQL_LOCAL_PASS']
-MYSQL_PROD_USER = os.environ['MYSQL_PROD_USER']
-MYSQL_PROD_PASS = os.environ['MYSQL_PROD_PASS']
+if not IS_PROD and not IS_QA:
+  IS_LOCAL = True
+
+# Make sure exactly one mode is active at all times.
+assert (int(IS_PROD) + int(IS_QA) + int(IS_LOCAL) == 1)
 
 if IS_PROD:
-  MYSQL_USER = MYSQL_PROD_USER
-  GCE_VCS_PROXY_URL = os.environ['VCS_PROVIDER_URL']
+  DEBUG = False
+  MYSQL_USER = os.environ['MYSQL_PROD_USER']
+  MYSQL_PASS = os.environ['MYSQL_PROD_PASS']
+  MYSQL_CONNECTION_NAME = os.environ['MYSQL_PROD_CONNECTION_NAME']
+  GCE_VCS_PROXY_URL = os.environ['VCS_PROXY_PROD_URL']
+elif IS_QA:
+  DEBUG = True
+  MYSQL_USER = os.environ['MYSQL_QA_USER']
+  MYSQL_PASS = os.environ['MYSQL_QA_PASS']
+  MYSQL_CONNECTION_NAME = os.environ['MYSQL_QA_CONNECTION_NAME']
+  GCE_VCS_PROXY_URL = os.environ['VCS_PROXY_QA_URL']
+elif IS_LOCAL:
+  DEBUG = True
+  MYSQL_USER = os.environ['MYSQL_LOCAL_USER']
+  MYSQL_PASS = os.environ['MYSQL_LOCAL_PASS']
+  MYSQL_CONNECTION_NAME = os.environ['VCS_PROXY_LOCAL_URL']
+  GCE_VCS_PROXY_URL = os.environ['VCS_PROXY_LOCAL_URL']
 else:
-  MYSQL_USER = MYSQL_LOCAL_USER
-  # Requires port forwarding with: ssh -L 8088:localhost:8080 [VCS_IP]
-  GCE_VCS_PROXY_URL = 'https://localhost:8088/'
-
+  raise AssertionError("Invalid deployment mode detected.")
 
 def gen_connection_string():
   # if not on Google then use local MySQL
-  if IS_PROD:
+  if IS_PROD or IS_QA:
     conn_template = 'mysql+mysqldb://%s:%s@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/%s'
-    return conn_template % (MYSQL_USER, MYSQL_PROD_PASS, MYSQL_CONNECTION_NAME)
-  elif USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY:
-    # Use Cloudsql through the cloudsql proxy.
-    return ('mysql+mysqldb://root:%s@127.0.0.1:%d/_DB_NAME_' %
-            (MYSQL_PROD_PASS, int(CLOUDSQL_PROXY_PORT)))
+    return conn_template % (MYSQL_USER, MYSQL_PASS, MYSQL_CONNECTION_NAME)
   else:
-    # Use normal localhost database instance.
-    return (
-        'mysql+mysqldb://root:%s@127.0.0.1:3306/_DB_NAME_' % MYSQL_LOCAL_PASS)
+    use_name = MYSQL_USER
+    use_pass = MYSQL_PASS
+    use_port = 3306
+    if USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY:
+      use_name = os.environ['CLOUDSQL_NAME']
+      use_pass = os.environ['CLOUDSQL_PASS']
+      use_port = int(os.getenv('CLOUDSQL_PORT', 3307))
+    conn_template = 'mysql+mysqldb://%s:%s@127.0.0.1:%d/_DB_NAME_'
+    return conn_template % (use_name, use_pass, use_port)
 
 
 SQLALCHEMY_DATABASE_URI = gen_connection_string().replace('_DB_NAME_', 'main')

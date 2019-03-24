@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from flask import jsonify
-import yaml
 import os
 
 def get_file_contents(path):
@@ -37,6 +36,10 @@ def createJsonResponse(msg, status_code=200, **kwargs):
   # Load app.yaml environment variables manually.
 
 def manuallyReadAppConfig():
+  try:
+    import yaml
+  except ImportError:
+    return
   with open('app.yaml', 'r') as f:
     try:
       yaml_context = yaml.load(f, Loader=yaml.SafeLoader)

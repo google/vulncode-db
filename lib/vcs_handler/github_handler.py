@@ -49,7 +49,7 @@ class GithubHandler(VcsHandler):
     self.use_cache = False
 
     use_token = None
-    if 'GITHUB_API_ACCESS_TOKEN' in app.config:
+    if app and 'GITHUB_API_ACCESS_TOKEN' in app.config:
       use_token = app.config['GITHUB_API_ACCESS_TOKEN']
 
     self.github = Github(login_or_token=use_token)

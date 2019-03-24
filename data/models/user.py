@@ -15,12 +15,15 @@
 from data.utils import populate_models
 from data.models.base import Base
 from sqlalchemy import Column, String
-
+from sqlalchemy.orm import relationship
 
 class User(Base):
   email = Column(String(256), unique=True)
   full_name = Column(String(256))
   profile_picture = Column(String(256))
+  # TODO: Find a fix to import the relationship below. Otherwise, SQL will
+  #  complain when create_all is invoked due to problems resolving foreign keys.
+  # vulns = relationship('Vulnerability')
   # vulnerabilities = relationship('Vulnerability', back_populates='creator')
 
   @property
