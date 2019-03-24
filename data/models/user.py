@@ -17,6 +17,7 @@ from data.models.base import Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
+
 class User(Base):
   email = Column(String(256), unique=True)
   full_name = Column(String(256))

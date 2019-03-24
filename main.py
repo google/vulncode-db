@@ -39,7 +39,6 @@ import alembic.runtime.environment
 from flask_bootstrap import Bootstrap
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
-
 app = Flask(__name__, static_url_path='', template_folder='templates')
 app.register_blueprint(auth_bp)
 app.register_blueprint(api_bp)

@@ -15,6 +15,7 @@
 from flask import jsonify
 import os
 
+
 def get_file_contents(path):
   with open(path, 'r') as f:
     output = f.read()
@@ -34,6 +35,7 @@ def createJsonResponse(msg, status_code=200, **kwargs):
   return resp
 
   # Load app.yaml environment variables manually.
+
 
 def manuallyReadAppConfig():
   try:

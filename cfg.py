@@ -67,6 +67,7 @@ elif IS_LOCAL:
 else:
   raise AssertionError("Invalid deployment mode detected.")
 
+
 def gen_connection_string():
   # if not on Google then use local MySQL
   if IS_PROD or IS_QA:
