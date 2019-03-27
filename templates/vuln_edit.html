@@ -5,6 +5,17 @@
     window.EDITOR_SETTINGS = EDITOR_SETTINGS;
   </script>
 
+  {% if cfg.DEMO_MODE %}
+    <div class="row my-3">
+      <div class="col-sm-8 offset-md-2">
+        <div class="alert alert-danger" role="alert">
+          <h4 class="alert-heading">Attention!</h4>
+          <b>The application is running in demo mode. Permanent changes are restricted to administrators.</b>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
   <div class="row mb-3">
     <div class="col-sm-8 offset-md-2">
       {% include 'vuln_info.html' %}
@@ -23,11 +34,6 @@
     <div class="col-md-6">
       <div class="card flex-md-row mb-4 box-shadow h-md-250 h-100">
         <div class="card-body d-flex flex-column align-items-start h-100">
-          <nav>
-            Patch:
-            <button type="button" class="btn btn-primary btn-sm" id="prev_patch">Previous</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="next_patch">Next</button>
-          </nav>
           {% include 'editor/editor_container.html' %}
         </div>
       </div>

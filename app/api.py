@@ -14,7 +14,7 @@
 
 from flask import Blueprint, request, current_app, g, jsonify
 
-from app.auth import login_required
+from app.auth import login_required, admin_required
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability import VulnerabilityDetails
 from data.database import DEFAULT_DATABASE
@@ -23,26 +23,6 @@ from lib.utils import createJsonResponse
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 db = DEFAULT_DATABASE.db
-
-
-@bp.route('/get_editor_data')
-def bug_editor_data():
-  try:
-    vulnerability_details = VulnerabilityDetails()
-    vulnerability_details.validate()
-  except InvalidIdentifierException as e:
-    return createJsonResponse(str(e), 400)
-  vuln_view = vulnerability_details.vulnerability_view
-  if not vuln_view:
-    return createJsonResponse('No vulnerability found.', 404)
-  if not vuln_view.master_commit:
-    current_app.logger.error(
-        'Vuln (id: {:d}) has no linked Git commits!'.format(vuln_view.id))
-    return createJsonResponse('Entry has no linked Git link!', 404)
-
-  master_commit = vulnerability_details.getMasterCommit()
-  files_schema = RepositoryFilesSchema(many=True)
-  return files_schema.jsonify(master_commit.repository_files)
 
 
 def calculate_revision_updates(wrapper, old, new, attrs):
@@ -146,7 +126,7 @@ def update_file_markers(file_obj, new_markers):
 
 
 @bp.route('/save_editor_data', methods=['POST'])
-@login_required()
+@admin_required()
 def bug_save_editor_data():
   try:
     vulnerability_details = VulnerabilityDetails()
@@ -173,18 +153,18 @@ def bug_save_editor_data():
     new_files = []
     for file in request.get_json():
       for of in old_files:
-        if of.path == file['path'] or of.file_hash == file['hash']:
+        if of.file_path == file['path'] or of.file_hash == file['hash']:
           current_app.logger.debug('Found old file: %s',
-                                   (file['id'], file['hash'], file['name']))
+                                   (file['path'], file['hash'], file['name']))
           file_obj = of
           break
       else:
         current_app.logger.debug('Creating new file: %s',
-                                 (file['id'], file['hash'], file['name']))
+                                 (file['path'], file['hash'], file['name']))
         file_obj = RepositoryFiles(
             file_name=file['name'],
             file_path=file['path'],
-            file_patch=jsonify(file['patch']),
+            file_patch='DEPRECATED',
             file_hash=file['hash'],
         )
       # Create comment objects.

@@ -25,8 +25,56 @@ html, body {
 /* Show it is fixed to the top */
 body {
   min-height: 75rem;
-  padding-top: 4.5rem;
   margin-bottom: 60px;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+  color: #111 !important;
+  line-height: 125% !important;
+  margin-top: 0.5em !important;
+  font-weight: normal !important;
+}
+
+h4, h5, h6 {
+  font-weight: bold !important;
+}
+
+h1 {
+  font-size: 2.5em !important;
+}
+
+h2 {
+  font-size: 2em !important;
+}
+
+h3 {
+  font-size: 1.5em !important;
+}
+
+h4 {
+  font-size: 1.2em !important;
+}
+
+ul, ol {
+  margin: 1em 0;
+  padding: 0 0 0 2em;
+}
+
+ul ul, ol ol {
+  margin: .1em 0;
+}
+
+pre, code, kbd, samp {
+  color: #000;
+  font-family: monospace, monospace;
+  _font-family: 'courier new', monospace;
+  font-size: 0.98em;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 * {
@@ -68,7 +116,7 @@ body {
 
 /* --------------- Editor Marker Style ------------ */
 .vulnerableMarker {
-  background:rgb(114, 14, 36);
+  background:rgb(41, 0, 9);
 }
 
 .sectionMarker {

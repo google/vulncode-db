@@ -18,6 +18,7 @@
 import {Editor} from './lib/Editor.js';
 import {FileTree} from './lib/FileTree.js';
 import {UI} from './lib/UI.js';
+import {File} from './lib/File.js';
 
 const ui = new UI();
 let editor = null;
@@ -260,7 +261,7 @@ function fetchGitCommitLink(treeUrl) {
       .fail(function(jqXHR) {
         ui.showError(
             'Status (' + jqXHR.status +
-            ') when fetching /api/git (see console)!');
+            ') when fetching ' + treeUrl + ' (see console)!');
         console.log(jqXHR.responseText);
       });
 }
@@ -270,6 +271,79 @@ if (editorSettings) {
   const treeUrl = editorSettings.tree_url;
   // Default commit link.
   fetchGitCommitLink(treeUrl);
+
+  // TODO: Refcator this section (unify with embed_internal.js).
+  // Check the simplified view editors and load their files + content.
+  require(['vs/editor/editor.main'], () => {
+    const fileCache = {};
+
+    $('.mutli-editor').each(function(index) {
+      const targetElement = $(this);
+      const targetEditorId = targetElement.attr('id');
+      const targetData = targetElement.data();
+
+      if (!editorSettings.hasOwnProperty('custom_data')) {
+        return;
+      }
+
+      const sectionId = targetData.section_id;
+      let startLine = targetData.row_from + 1;
+      let endLine = targetData.row_to + 1;
+      // TODO: Refactor this whole area.
+      if (targetData.row_to === 'None') {
+        // Make up for undefined ranges (old format).
+        endLine = startLine + 5;
+        startLine = startLine - 5;
+        if (startLine < 0) startLine = 0;
+      }
+
+      if (startLine === endLine) {
+        endLine += 1;
+      }
+
+      const filePath = targetData.path;
+      const fileHash = targetData.hash;
+
+      const customDataAll = editorSettings.custom_data;
+      let targetFileData = null;
+      customDataAll.some((customData) => {
+        if (sectionId >= 0) {
+          let targetComment = null;
+          // Filter by section id.
+          customData.comments.some((comment) => {
+            if (comment.id === sectionId) {
+              targetComment = comment;
+              return true;
+            }
+            return false;
+          });
+          if (targetComment === null) return false;
+        }
+        targetFileData = customData;
+        return true;
+      });
+
+      const targetEditor = new Editor(targetEditorId, false);
+
+      const targetFile = new File(null, filePath, fileHash, null);
+      // Make sure to share the same file cache to avoid redundant requests.
+      if (filePath in fileCache) {
+        targetFile.content = fileCache[filePath].content;
+      } else {
+        fileCache[filePath] = targetFile;
+      }
+
+      // Overwrite the target file's custom content.
+      targetFile.customContent = targetFileData;
+      targetFile.comments = [];
+
+      targetEditor.displayFile(targetFile, true).then(() => {
+        targetEditor.showOnlyRange(startLine, endLine);
+        targetEditor.collapseAllIrrelevantLines();
+        targetEditor.fitEditorHeightToContent();
+      });
+    });
+  });
 } else {
   console.log('[-] No editor settings found to proceed.');
 }

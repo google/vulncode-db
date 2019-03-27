@@ -39,11 +39,12 @@ app = Flask(__name__, static_url_path='', template_folder='templates')
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 app.config['GITHUB_API_ACCESS_TOKEN'] = None
 
-bp = Blueprint('git', 'git')
+bp = Blueprint('vcs_proxy', 'main_api')
 
 
-@bp.route('/api/git')
-def api_git():
+# Note: This has to match the app/vcs_proxy.py blueprint.
+@bp.route('/main_api')
+def main_api():
   commit_hash = request.args.get('commit_hash', 0, type=str)
   item_hash = request.args.get('item_hash', 0, type=str)
   item_path = request.args.get('item_path', None, type=str)

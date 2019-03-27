@@ -3,6 +3,57 @@
   {% set vuln_id = vulnerability_details.id %}
   {% set vuln_view = vulnerability_details.vulnerability_view %}
   {% set master_commit = vuln_view.master_commit %}
+  {% macro show_snippet(section_id, file_path, file_hash, row_from, row_to) %}
+
+  <!-- Head navigation -->
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark py-0">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        {% set file_url = vulnerability_details.file_url %}
+        {% if vulnerability_details.file_url | length == 0 %}
+          {% set file_url = master_commit.commit_link %}
+        {% else %}
+          {% set file_url = file_url + file_path + '#L' + ((row_from + 1)|string) + '-L' + ((row_to|int + 1)|string) %}
+        {% endif %}
+        <a class="nav-link navbar-brand" id="embed_file_path" href="{{ file_url }}" target="_blank">{{ file_path }}</a>
+      </li>
+      <li class="nav-item">
+        {% set repo_url = master_commit.repo_url %}
+        {% if not repo_url.startswith('http') %}
+          {% set repo_url = master_commit.commit_link %}
+        {% endif %}
+        <a class="nav-link" href="{{ repo_url }}" target="_blank">{{ master_commit.repo_name }}</a>
+      </li>
+    </ul>
+    {#
+    <ul class="navbar-nav ">
+      <li class="nav-item">
+        <a class="nav-link" href="#">Options</a>
+      </li>
+    </ul>
+    #}
+  </nav>
+  <!-- Show section in editor -->
+  <div class="mutli-editor" id="editor_{{ section_id | int }}" data-section_id="{{ section_id }}" data-path="{{ file_path }}" data-hash="{{ file_hash }}" data-row_from="{{ row_from }}" data-row_to="{{ row_to }}"></div>
+  {#
+  <!-- Footer navigation -->
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href=" {{ url_for('vuln.vuln_view', vuln_id=vuln_id) }}">Vulncode-DB entry</a>
+      </li>
+
+      <li class="nav-item">
+        {% if 'github.com' in vulnerability_details.file_url %}
+          <a class="nav-link" href="{{ vulnerability_details.file_url + file_path }}">(view raw GitHub)</a>
+        {% else %}
+          <a class="nav-link" href="#">(non-Github file)</a>
+        {% endif %}
+      </li>
+    </ul>
+  </nav>
+  #}
+  {% endmacro %}
   {% if master_commit and master_commit.comments|length > 0 %}
     <div class="row">
       <div class="col-md-8 offset-md-2">
@@ -12,8 +63,16 @@
             <i class="fa fa-search"></i> Detailed repository view</a></b>
             <hr />
             {% for comment in master_commit.comments|sort(attribute='sort_pos') %}
-              <div class="markdown_comment comment_widget card pt-3 px-3 shadow-textarea mb-1">{{ comment.text }}</div>
+              {% set file_path = comment.repository_file.file_path %}
+              {% set file_hash = comment.repository_file.file_hash %}
+              {% set row_from = comment.row_from %}
+              {% set row_to = comment.row_to %}
+              {{ show_snippet(comment.id, file_path, file_hash, row_from, row_to) }}
+              <div class="markdown_comment comment_widget card pt-3 px-3 shadow-textarea mb-3">{{ comment.text }}</div>
+            {#
+              {% include 'snippet.html' %}
               <script src="{{ url_for('serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}"></script>
+            #}
             {% endfor %}
           </div>
         </div>

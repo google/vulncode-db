@@ -31,7 +31,7 @@ class FileTree {
       editorSettings.parent_hash = commitData['parent_hash'];
     }
     // Merge the patch files into the other file representation.
-    this.mergePatchesToFiles(patchFiles, repositoryFiles);
+    this.mergePatchesToFiles(repositoryFiles, patchFiles);
 
     const treeData = this.filesToTree(repositoryFiles);
     // Required to allow tree modifications (create, rename, move, delete).
@@ -85,11 +85,11 @@ class FileTree {
 
   /**
    * Takes a set of patch files and merges them to a list of repository files.
-   * @param patchFiles
    * @param repoFiles
+   * @param patchFiles
    * @return {*}
    */
-  mergePatchesToFiles(patchFiles, repoFiles) {
+  mergePatchesToFiles(repoFiles, patchFiles) {
     function getFile(path, sha, type, deltas=null, status=null) {
       return {
         'path': path,

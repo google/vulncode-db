@@ -16,6 +16,7 @@ import os
 
 HASH_PLACEHOLDER = '--ITEM_HASH--'
 PATH_PLACEHOLDER = '--PATH_PLACE--'
+VULN_ID_PLACEHOLDER = '--ID_PLACE--'
 
 
 class CommitStats(object):

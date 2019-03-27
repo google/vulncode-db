@@ -162,7 +162,7 @@ class File {
   get customContent() {
     if (this._markers.length === 0 && this._comments.length === 0) return null;
 
-    if (!this.node || !this.node.data.id) {
+    if (!this.node) {
       console.log('File:get customContent - invalid node detected...');
       return null;
     }
@@ -172,7 +172,6 @@ class File {
     data.hash = this.hash;
     data.path = this.path;
     data.patch = this.patch;
-    data.id = this.node.data.id;
 
     // Skip all section markers (they are saved in the FileComment already).
     const markers = [];
@@ -214,7 +213,10 @@ class File {
       this._comments.push(newComment);
     });
     if (data.file_path) this._path = data.file_path;
-    if (data.file_patch) this.patch = data.file_patch;
+    // TODO: Removed deprecated patch storing for editor data.
+    if (data.file_patch && data.file_patch !== 'DEPRECATED') {
+      this.patch = data.file_patch;
+    }
   }
 
   addComment(newComment) {

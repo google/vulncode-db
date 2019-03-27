@@ -4,12 +4,20 @@
   <h3 class="mb-0">
     <a class="text-dark" href="#">Editor</a>
   </h3>
-  <p class="card-text mb-auto">Information regading the editor setup</p>
-  Editor Mode:
-  <div id="editor_mode" style="font-weight: bold;"></div>
-  <hr/>
+  {# TODO: Should we display this in the first place?
   Marked lines:
+  <p class="card-text mb-auto">(current file)</p>
   <div id="vulnerable_sections"></div>
+  <hr/>
+  #}
+  Patched area:
+  <nav>
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary btn-sm" id="prev_patch">Previous</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="next_patch">Next</button>
+    </div>
+  </nav>
+
   <hr/>
   Sections:
   <nav>
@@ -31,5 +39,9 @@
   </ul>
   <hr/>
   <button id="reset_changes_btn" type="button" class="btn btn-primary">Reset changes</button>
-  <button id="save_changes_btn" type="button" class="btn btn-primary">Save changes</button>
+  {% if cfg.DEMO_MODE and not g.user %}
+    <button type="button" class="btn btn-link"><b>(saving disabled)</b></button>
+  {% else %}
+    <button id="save_changes_btn" type="button" class="btn btn-primary">Save changes</button>
+  {% endif %}
 </div>

@@ -72,16 +72,11 @@
 
     <div class="row mb-1">
       <div class="col-sm-12">
-        <div class="card">
-          <div class="card-body">
-            <div class="card-title">
-              <b>Description</b>
-            </div>
-            {% if vuln_view.comment %}
-              {{ vuln_view.comment }}
-            {% else %}-{% endif %}
-          </div>
-        </div>
+        <p>
+        {% if vuln_view.comment %}
+          {{ vuln_view.comment }}
+        {% else %}-{% endif %}
+        </p>
       </div>
     </div>
 
@@ -126,17 +121,34 @@
           <tr>
             <td>
               <b>First patch</b>
-              {% if vuln_view.master_commit_message %}
+              {% if vuln_view.master_commit_date %}
                 <br />{{ vuln_view.master_commit_date }}
               {% endif %}
             </td>
-            <td>
+            <td style="word-break:break-all;">
               {% if master_commit %}
                 {% set master_commit_link = master_commit.commit_link %}
                 <b><a href="{{ master_commit_link }}" class="text-info" target="_blank">{{ master_commit_link }}</a></b><br />
                 {% if vuln_view.master_commit_message %}
-                  "<b>{{ vuln_view.master_commit_message }}</b>"<br />
-                  Stats: <b>+{{ vuln_view.master_commit_stats.additions }} / -{{ vuln_view.master_commit_stats.deletions }} (total: {{ vuln_view.master_commit_stats.total }})</b><br />
+                  {% set maximum_message_words = 50 %}
+                  {% set message_words = vuln_view.master_commit_message.split(' ')  %}
+                  {% if message_words | length > maximum_message_words %}
+                    "<b>{{ message_words[:maximum_message_words]|join(' ') }}...</b>"
+                    {% set remaining_message = message_words[maximum_message_words:]|join(' ')  %}
+                    <div>
+                      <a href="#" class="text-light" data-toggle="collapse" data-target="#expand_commit_message">
+                        <i class="fa fa-caret-square-o-right" aria-hidden="true"></i>
+                        More/Less ({{ remaining_message.split("\n")|length }})
+                      </a>
+                    </div>
+                    <div id="expand_commit_message" class="collapse">
+                      <b><div style="white-space: pre-wrap;">{{ remaining_message }}</div></b><br />
+                    </div>
+                  {% else %}
+                    "<b>{{ vuln_view.master_commit_message }}</b>"<br />
+                  {% endif %}
+                  <br />
+                  Stats: <b>+{{ vuln_view.master_commit_stats.additions }} lines / -{{ vuln_view.master_commit_stats.deletions }} lines (total: {{ vuln_view.master_commit_stats.total }} lines)</b><br />
                 {% endif %}
               {# TODO: add more commit information: message, #modified files and date?
                   <i class="fa fa-check" style="color: #00FF00"></i>
@@ -161,7 +173,7 @@
           {% if patches %}
           <tr>
             <td><b>Patches</b></td>
-            <td>{{ print_formatted(vuln_view.known_patches, 'patches') }}</td>
+            <td style="word-break:break-all;">{{ print_formatted(vuln_view.known_patches, 'patches') }}</td>
           </tr>
           {% endif %}
 
@@ -169,7 +181,7 @@
           {% if relevant_files %}
           <tr>
             <td><b>Relevant file/s</b></td>
-            <td>{{ (relevant_files and print_formatted(relevant_files, 'relevant-files')) }}</td>
+            <td style="word-break:break-all;">{{ (relevant_files and print_formatted(relevant_files, 'relevant-files')) }}</td>
           </tr>
           {% endif %}
 
@@ -177,7 +189,7 @@
           {% if links %}
             <tr>
               <td><b>Links</b></td>
-              <td>{{ (links and print_formatted(links, 'links')) }}</td>
+              <td style="word-break:break-all;">{{ (links and print_formatted(links, 'links')) }}</td>
             </tr>
           {% endif %}
 

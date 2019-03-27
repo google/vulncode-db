@@ -13,7 +13,7 @@
 # limitations under the License.
 import time
 
-from flask import Blueprint, redirect, flash, request, render_template, abort, g, url_for, Response
+from flask import Blueprint, redirect, flash, request, render_template, abort, g, url_for, Response, send_file
 
 import cfg
 import json
@@ -25,13 +25,14 @@ except ImportError:
   import urllib.request as urllib2
 
 from app import flashError
-from app.auth import login_required
+from app.auth import login_required, admin_required
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability import VulnerabilityDetails
 from data.models import Vulnerability, VulnerabilityGitCommits, RepositoryFilesSchema
 from data.forms import VulnerabilityDeleteForm, VulnerabilityDetailsForm
 from data.database import DEFAULT_DATABASE
 from lib.vcs_management import getVcsHandler
+from lib.utils import createJsonResponse
 
 bp = Blueprint('vuln', __name__, url_prefix='/')
 db = DEFAULT_DATABASE
@@ -82,7 +83,6 @@ def vuln_view_details(vuln_id):
 
 
 @bp.route('/<vuln_id>/editor')
-@login_required(redirect=True)
 def vuln_editor(vuln_id):
   return view_vuln(vuln_id, 'vuln_edit.html')
 
@@ -93,24 +93,63 @@ def vuln_file_tree(vuln_id):
   vuln_view = vulnerability_details.vulnerability_view
   master_commit = vuln_view.master_commit
 
-  if not master_commit.tree_cache:
-    # Fetch the required data from our VCS proxy.
-    proxy_target = cfg.GCE_VCS_PROXY_URL + url_for(
-        'git.api_git',
-        commit_link=vulnerability_details.commit_link,
-        commit_hash=vulnerability_details.commit_hash,
-        repo_url=vulnerability_details.repo_url)[1:]
+  status_code = 200
+  content_type = 'text/json'
+  response_msg = master_commit.tree_cache
+  if not response_msg:
     try:
-      result = urllib2.urlopen(proxy_target, timeout=30)
-    except urllib2.HTTPError as e:
-      return Response(
-          response=e.read(), status=e.code, content_type='text/plain')
-
-    master_commit.tree_cache = result.read()
-    vulnerability_details.update_details()
+      vulnerability_details.fetch_tree_cache(skip_errors=False, max_timeout=10)
+      response_msg = master_commit.tree_cache
+    except Exception as e:
+      status_code = 400
+      content_type = 'text/plain'
+      response_msg = 'VCS proxy is unreachable (it might be down).'
+      if type(e) == urllib2.HTTPError:
+        status_code = e.code
+        response_msg += "\r\nHTTPError\r\n" + e.read()
+      if type(e) == urllib2.URLError:
+        status_code = 400
+        response_msg += "\r\nURLError\r\n" + e.reason
 
   return Response(
-      response=master_commit.tree_cache, status=200, content_type='text/json')
+      response=response_msg, status=status_code, content_type=content_type)
+
+
+@bp.route('/<vuln_id>/annotation_data')
+def annotation_data(vuln_id):
+  vulnerability_details = _get_vulnerability_details(vuln_id)
+  vulnerability_details.validate()
+  vuln_view = vulnerability_details.vulnerability_view
+  master_commit = vuln_view.master_commit
+  if not master_commit:
+    logging.error('Vuln (id: {:d}) has no linked Git commits!'.format(
+        vuln_view.id))
+    return createJsonResponse('Entry has no linked Git link!', 404)
+
+  master_commit = vulnerability_details.getMasterCommit()
+  files_schema = RepositoryFilesSchema(many=True)
+  return files_schema.jsonify(master_commit.repository_files)
+
+
+@bp.route('/<vuln_id>/file_provider')
+def file_provider(vuln_id):
+  vulnerability_details = _get_vulnerability_details(vuln_id)
+  vulnerability_details.validate()
+
+  item_hash = request.args.get('item_hash', 0, type=str)
+  item_path = request.args.get('item_path', None, type=str)
+
+  proxy_target = cfg.GCE_VCS_PROXY_URL + url_for(
+      'vcs_proxy.main_api',
+      repo_url=vulnerability_details.repo_url,
+      item_path=item_path,
+      item_hash=item_hash)[1:]
+
+  try:
+    result = urllib2.urlopen(proxy_target)
+  except urllib2.HTTPError as e:
+    return Response(response=e.read(), status=e.code, content_type='text/plain')
+  return send_file(result, mimetype='application/octet-stream')
 
 
 @bp.route('/<vuln_id>/embed')
@@ -138,8 +177,6 @@ def embed(vuln_id):
         'section_id': section_id,
         'startLine': start_line,
         'endLine': end_line,
-        'commit_link': request.args.get('commit_link'),
-        'commit_hash': request.args.get('commit_hash'),
         'entry_data': custom_data
     }
     return render_template(
@@ -153,7 +190,7 @@ def embed(vuln_id):
 
 @bp.route('/<vuln_id>/create', methods=['GET', 'POST'])
 @bp.route('/create', methods=['GET', 'POST'])
-@login_required(redirect=True)
+@admin_required()
 def create_vuln(vuln_id=None):
   return _create_vuln_internal(vuln_id)
 

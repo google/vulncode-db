@@ -73,9 +73,23 @@ def authorized():
   return redirect('/')
 
 
+def is_admin():
+  if is_authenticated():
+    email = session['user_info']['email']
+    if email in current_app.config['APPLICATION_ADMINS']:
+      return True
+  return False
+
+
 @bp.before_app_request
 def load_user():
   user = None
+
+  # Ignore all non-admin users for now.
+  if not is_admin():
+    g.user = None
+    return
+
   if is_authenticated():
     data = session['user_info']
     email = data['email']
@@ -121,6 +135,26 @@ def login_required(redirect=False):
     @wraps(func)
     def wrapper(*args, **kwargs):
       if not is_authenticated():
+        if redirect:
+          session['redirect_path'] = request.full_path
+          return google.authorize(
+              callback=url_for('auth.authorized', _external=True))
+        else:
+          return abort(401)
+      return func(*args, **kwargs)
+
+    return wrapper
+
+  return decorator
+
+
+def admin_required(redirect=False):
+
+  def decorator(func):
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+      if not is_admin():
         if redirect:
           session['redirect_path'] = request.full_path
           return google.authorize(

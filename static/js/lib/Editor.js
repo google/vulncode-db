@@ -26,8 +26,6 @@ function defaultQueryParameters() {
   const result = {};
   const editorSettings = window.EDITOR_SETTINGS;
   if (editorSettings) {
-    result.commit_hash = editorSettings.commit_hash;
-    result.repo_url = editorSettings.repo_url;
     result.id = editorSettings.id;
   }
   return result;
@@ -199,7 +197,7 @@ class Editor {
     this._editor = monaco.editor.create(
         this._editor_container, MONACO_EDITOR_BASE_SETTINGS);
     if (!content) {
-      content = 'MONACO EDITOR\nLoaded successfully.\n';
+      content = 'Editor loaded\nsuccessfully.\n';
     }
     // this.loadCustomMonacoTheme('darcula');
     let uri = null;
@@ -401,10 +399,10 @@ class Editor {
         this._editor_container,
         {...MONACO_EDITOR_BASE_SETTINGS, ...MONACO_DIFF_EDITOR_SETTINGS});
     if (!original) {
-      original = 'MONACO EDITOR\nLoaded successfully.\n';
+      original = 'Editor loaded\nsuccessfully.\n';
     }
     if (!modified) {
-      modified = 'MONACO EDITOR\nLoaded successfully.\n';
+      modified = 'Editor loaded\nsuccessfully.\n';
     }
     let uri = null;
     if (fileName) {
@@ -496,7 +494,7 @@ class Editor {
   }
   /**
    * Registers the file tree object's files as the main editor files.
-   * @param {Object.<int, File>} allFiles
+   * @param {Object.<String, File>} allFiles
    */
   initKnownFiles(allFiles) {
     this._known_files = allFiles;
@@ -604,14 +602,20 @@ class Editor {
    * @return {*|PromiseLike<T>|Promise<T>}
    */
   retrieveFileDataFromBackend() {
-    const params = defaultQueryParameters();
+    const params = {};
     if (!constants.EDIT_MODE_ACTIVE) params['only_custom_data'] = '1';
-    const backendTarget = '/api/get_editor_data';
-    const req = $.get({
-      url: backendTarget,
-      data: params,
-    });
-    return req;
+
+    const editorSettings = window.EDITOR_SETTINGS;
+    if (editorSettings) {
+      const backendTarget = (editorSettings.annotation_data_url);
+      const req = $.get({
+        url: backendTarget,
+        data: params,
+      });
+      return req;
+    } else {
+      console.log('[-] No editor settings found to proceed.');
+    }
   }
   /**
    * Requests entry removal from the backend.

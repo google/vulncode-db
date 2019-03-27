@@ -118,6 +118,12 @@ GOOGLE_OAUTH = {
     'consumer_secret': os.environ['OAUTH_CONSUMER_SECRET']
 }
 
+# Emails (checked with OAuth) of admins who are allowed to make admin changes.
+APPLICATION_ADMINS = os.getenv('APPLICATION_ADMINS', '')
+APPLICATION_ADMINS = APPLICATION_ADMINS.split(',')
+
+DEMO_MODE = os.getenv('DEMO_MODE', 'false').lower() == 'true'
+
 # Disable link intercepts for the Flask toolbar.
 DEBUG_TB_INTERCEPT_REDIRECTS = False
 

@@ -26,7 +26,7 @@ import sys
 from app.auth import bp as auth_bp
 from app.api import bp as api_bp
 from app.vuln import bp as vuln_bp
-from app.git import bp as git_bp
+from app.vcs_proxy import bp as vcs_proxy_bp
 from app.vulnerability import VulncodeDB
 
 from logging.handlers import RotatingFileHandler
@@ -43,7 +43,7 @@ app = Flask(__name__, static_url_path='', template_folder='templates')
 app.register_blueprint(auth_bp)
 app.register_blueprint(api_bp)
 app.register_blueprint(vuln_bp)
-app.register_blueprint(git_bp)
+app.register_blueprint(vcs_proxy_bp)
 
 # Load the Flask configuration parameters from a global config file.
 app.config.from_object('cfg')

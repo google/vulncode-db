@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from lib.vcs_handler.vcs_handler import VcsHandler, PATH_PLACEHOLDER, HASH_PLACEHOLDER, CommitStats, CommitFilesMetadata, CommitMetadata
+from lib.vcs_handler.vcs_handler import VcsHandler, VULN_ID_PLACEHOLDER, PATH_PLACEHOLDER, HASH_PLACEHOLDER, CommitStats, CommitFilesMetadata, CommitMetadata
 import os
 
 from app.exceptions import InvalidIdentifierException
@@ -164,14 +164,16 @@ class GitRepoHandler(VcsHandler):
 
   def getFileProviderUrl(self):
     return url_for(
-        'git.api_git', repo_url=self.repo_url, item_hash=HASH_PLACEHOLDER)
+        'vuln.file_provider',
+        item_hash=HASH_PLACEHOLDER,
+        vuln_id=VULN_ID_PLACEHOLDER)
 
   def getRefFileProviderUrl(self):
     return url_for(
-        'git.api_git',
-        repo_url=self.repo_url,
+        'vuln.file_provider',
         item_path=PATH_PLACEHOLDER,
-        item_hash=HASH_PLACEHOLDER)
+        item_hash=HASH_PLACEHOLDER,
+        vuln_id=VULN_ID_PLACEHOLDER)
 
   def getFileUrl(self):
     # A custom repository doesn't necessarily have a VCS web interface.
@@ -208,6 +210,13 @@ class GitRepoHandler(VcsHandler):
     total = additions + deletions
     return CommitStats(additions, deletions, total)
 
+  def _getItemHashFromPath(self, repo_hash, item_path):
+    git_tree = _file_list_dulwich(self.repo, self.repo[repo_hash], True)
+    for f in git_tree:
+      if f.path == item_path:
+        return f.sha
+    return None
+
   def fetchCommitData(self, commit_hash):
     if not commit_hash:
       commit_hash = self.commit_hash
@@ -243,15 +252,29 @@ class GitRepoHandler(VcsHandler):
 
     git_tree = _file_list_dulwich(self.repo, parent_commit)
     patch_set = self._getPatcheSet(parent_commit, commit)
-    patched_files = self._getPatchDeltas(patch_set)
+    patch_deltas = self._getPatchDeltas(patch_set)
 
     commit_stats = self._getPatchStats(patch_set)
-    files_metadata = self._getFilesMetadata(patch_set)
+    patch_files_metadata = self._getFilesMetadata(patch_set)
+
+    #patched_files = self._ParsePatchPerFile(commit.files)
+    patched_files = {}
+    for file in patch_files_metadata:
+      if file.status == 'added':
+        patched_file_sha = self._getItemHashFromPath(commit_hash, file.path)
+      else:
+        patched_file_sha = self._getItemHashFromPath(parent_commit_hash,
+                                                     file.path)
+      patched_files[file.path] = {
+          'status': file.status,
+          'sha': patched_file_sha,
+          'deltas': patch_deltas[file.path]
+      }
 
     commit_date = commit.commit_time
     commit_metadata = CommitMetadata(parent_commit_hash, commit_date,
                                      commit.message, commit_stats,
-                                     files_metadata)
+                                     patch_files_metadata)
     data = self._CreateData(git_tree, patched_files, commit_metadata)
 
     json_content = jsonify(data)

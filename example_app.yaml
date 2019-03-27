@@ -69,3 +69,6 @@ env_variables:
   # MYSQL_PROD_CONNECTION_NAME: ''
   # VCS_PROXY_PROD_URL: ''
 
+  # Admin emails separated by ','. This is required to make permanent changes to the database.
+  APPLICATION_ADMINS: 'user@gmail.com'
+

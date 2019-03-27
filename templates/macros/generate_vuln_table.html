@@ -40,9 +40,11 @@
 </nav>
 {% endmacro %}
 
-{% macro display_entries_table(pagination_obj, table_id) %}
-<div class="table-responsive" id="{{ table_id }}_tbl">
-  <table class="table table-hover table-light">
+{% macro display_entries_table(pagination_obj, endpoint, table_id, keyword) %}
+{% set pagination_param_key = table_id + '_p' %}
+{% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl", pagination_param_key:pagination_obj.page} %}
+<div class="table-responsive">
+  <table class="table table-hover table-light" id="{{ table_id }}_tbl">
     <thead>
     <tr>
       <th>Date</th>
@@ -53,6 +55,11 @@
       <th>Patch</th>
       {# TODO: Implement OSS flag.
       <th>OSS</th>
+      #}
+      {% set annotation_url_params = base_url_params %}
+      {% set _dummy = annotation_url_params.update({'sort_by':'annotation'}) %}
+      {# TODO: Add support to filter by columns here.
+          <a href="{{ url_for(endpoint, **annotation_url_params) }}"><i class="fa fa-caret-square-o-down" aria-hidden="true"></i></a>
       #}
       <th>Annotated</th>
     </tr>

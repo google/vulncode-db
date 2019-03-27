@@ -26,6 +26,7 @@ from data.utils import populate_models
 from sqlalchemy import Column, Float, String, TIMESTAMP, ForeignKey, Index
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
+from sqlalchemy_fulltext import FullText
 
 
 class Cpe(DefaultBase):
@@ -96,7 +97,8 @@ class Reference(DefaultBase):
   link = Column(String(512))
 
 
-class Nvd(DefaultBase):
+class Nvd(FullText, DefaultBase):
+  __fulltext_columns__ = ('summary',)
   __bind_key__ = 'cve'
   __table_args__ = {'schema': 'cve'}
   __tablename__ = 'nvds'
