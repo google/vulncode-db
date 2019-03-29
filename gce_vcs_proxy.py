@@ -24,11 +24,40 @@ from flask import Flask, request, Blueprint
 
 from lib.vcs_management import getVcsHandler
 from lib.utils import createJsonResponse
+import socket
 
-# Attention: Only enable for debugging.
+
+def manuallyReadAppConfig():
+  config = {}
+  try:
+    import yaml
+  except ImportError:
+    return
+  with open('vcs_proxy.yaml', 'r') as f:
+    try:
+      config = yaml.load(f, Loader=yaml.SafeLoader)
+    except yaml.YAMLError as e:
+      print(e)
+  return config
+
+vcs_config = manuallyReadAppConfig()
+
+
+# Attention: Only enabled for local / qa debugging.
 # This will enable pretty formatting of JSON and have other negative
 # side-effects when being run in prod.
-DEBUG = True
+DEBUG = False
+is_prod = False
+
+if'PROD_HOSTNAME' in vcs_config:
+  if vcs_config['PROD_HOSTNAME'] == socket.gethostname():
+    is_prod = True
+
+if not is_prod:
+  print('[!] Running in dev mode!')
+  DEBUG = True
+else:
+  print('[!] Running in prod mode!')
 
 # This will lead to UnicodeEncodeError: 'ascii' codec can't encode [...] errors
 # as it will try to log unicode results as str.
@@ -77,18 +106,6 @@ def main_api():
 
 app.register_blueprint(bp)
 
-
-def get_github_api_token():
-  token = None
-  with open('vcs_proxy.yaml', 'r') as f:
-    try:
-      yaml_context = yaml.load(f, Loader=yaml.SafeLoader)
-      token = yaml_context['GITHUB_ACCESS_TOKEN']
-    except yaml.YAMLError as e:
-      print(e)
-  return token
-
-
 def start():
   root_dir = os.path.dirname(os.path.realpath(__file__))
   error_file = os.path.join(root_dir, 'vcs_error.log')
@@ -102,7 +119,7 @@ def start():
   else:
     app.logger.setLevel(logging.INFO)
 
-  app.config['GITHUB_API_ACCESS_TOKEN'] = get_github_api_token()
+  app.config['GITHUB_API_ACCESS_TOKEN'] = vcs_config['GITHUB_ACCESS_TOKEN']
 
   cert_dir = os.path.join(root_dir, 'cert')
   cert_file = os.path.join(cert_dir, 'cert.pem')
