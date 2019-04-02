@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,17 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Not necessary as third_party is by default considered through the app.yaml config.
-#source env/bin/activate
-
-if [ ! -d "migrations" ]; then
-    # Initialize the database migrations first.
-  ./manage.sh db init
-fi
-
-PYTHONPATH="third_party" python -c "import main; main.check_db_state()" || exit 1
-
-# Start a local instance running on :8080 by default.
-dev_appserver.py "$@" app.yaml
-# Optionall you can start the server under a different port with:
-# dev_appserver.py --port=8090 --admin_port=8089 app.yaml
+# Set the following only if you have a dedicated production hostname.
+# PROD_HOSTNAME: example-host
+# You can setup a Github API access token to be used below.
+# GITHUB_API_ACCESS_TOKEN: SECRET_TOKEN

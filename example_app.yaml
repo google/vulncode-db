@@ -44,7 +44,7 @@ env_variables:
   # Database settings for local.
   MYSQL_LOCAL_USER: 'root'
   MYSQL_LOCAL_PASS: 'pass'
-  VCS_PROXY_LOCAL_URL: 'https://1.2.3.4/'
+  VCS_PROXY_LOCAL_URL: 'https://127.0.0.1:8088/'
   # Enables connecting to the remote database using the cloud sql proxy.
   # Proxy CloudSQL with
   # ./cloud_sql_proxy -instances [MYSQL_CONNECTION_NAME]=tcp:3307

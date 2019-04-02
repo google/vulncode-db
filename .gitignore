@@ -17,3 +17,4 @@ venv/
 local_cfg.py
 .idea
 node_modules
+docker/db-data

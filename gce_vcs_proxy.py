@@ -41,7 +41,8 @@ def manuallyReadAppConfig():
   return config
 
 vcs_config = manuallyReadAppConfig()
-
+if not vcs_config:
+  vcs_config = {}
 
 # Attention: Only enabled for local / qa debugging.
 # This will enable pretty formatting of JSON and have other negative
@@ -49,7 +50,7 @@ vcs_config = manuallyReadAppConfig()
 DEBUG = False
 is_prod = False
 
-if'PROD_HOSTNAME' in vcs_config:
+if 'PROD_HOSTNAME' in vcs_config:
   if vcs_config['PROD_HOSTNAME'] == socket.gethostname():
     is_prod = True
 
@@ -119,11 +120,13 @@ def start():
   else:
     app.logger.setLevel(logging.INFO)
 
-  app.config['GITHUB_API_ACCESS_TOKEN'] = vcs_config['GITHUB_ACCESS_TOKEN']
+  if 'GITHUB_ACCESS_TOKEN' in vcs_config:
+    app.config['GITHUB_API_ACCESS_TOKEN'] = vcs_config['GITHUB_ACCESS_TOKEN']
 
   cert_dir = os.path.join(root_dir, 'cert')
   cert_file = os.path.join(cert_dir, 'cert.pem')
   key_file = os.path.join(cert_dir, 'key.pem')
+
   app.run(
       host='0.0.0.0', port=8088, ssl_context=(cert_file, key_file), debug=DEBUG)
 

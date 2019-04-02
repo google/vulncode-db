@@ -76,13 +76,16 @@ def gen_connection_string():
   else:
     use_name = MYSQL_USER
     use_pass = MYSQL_PASS
+    use_host = '127.0.0.1'
+    if 'MYSQL_HOST' in os.environ:
+      use_host = os.environ['MYSQL_HOST']
     use_port = 3306
     if USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY:
       use_name = os.environ['CLOUDSQL_NAME']
       use_pass = os.environ['CLOUDSQL_PASS']
       use_port = int(os.getenv('CLOUDSQL_PORT', 3307))
-    conn_template = 'mysql+mysqldb://%s:%s@127.0.0.1:%d/_DB_NAME_'
-    return conn_template % (use_name, use_pass, use_port)
+    conn_template = 'mysql+mysqldb://%s:%s@%s:%d/_DB_NAME_'
+    return conn_template % (use_name, use_pass, use_host, use_port)
 
 
 SQLALCHEMY_DATABASE_URI = gen_connection_string().replace('_DB_NAME_', 'main')

@@ -5,11 +5,39 @@ services:
       context: ..
       dockerfile: ./docker/vcs_proxy/Dockerfile
     image: vcs-proxy
+    # The VCS proxy will be reachable from your host on http://127.0.0.1:8088
+    ports:
+      - "8088"
+
+  database:
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password --init-file /docker-entrypoint-initdb.d/db_schema.sql
+    volumes:
+      - ./db-data/:/var/lib/mysql
+      # Uncomment if you needs mysql logs.
+      #- ./db-logs/:/logs
+      - ./db_schema.sql:/docker-entrypoint-initdb.d/db_schema.sql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+    # Publishing mysql port as 3308 for debugging purposes.
+    ports:
+      - "3308:3306"
+    expose:
+      - "3306"
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: ./docker/frontend/Dockerfile
+    environment:
+      - MYSQL_HOST=database
+    depends_on:
+      - vcs-proxy
+      - database
+    links:
+      - "vcs-proxy"
+      - "database"
+    # The main application will be reachable from your host on http://127.0.0.1:8080
     ports:
       - "8080"
-  # frontend:
-  #   depends_on:
-  #     - vcs-proxy
-  #   links:
-  #     - "vcs-proxy"
-
