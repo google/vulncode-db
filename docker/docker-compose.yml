@@ -30,6 +30,8 @@ services:
     build:
       context: ..
       dockerfile: ./docker/frontend/Dockerfile
+    volumes:
+      - ../:/app
     environment:
       - MYSQL_HOST=database
     depends_on:
