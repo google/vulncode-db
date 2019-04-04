@@ -42,7 +42,7 @@ class Database:
 
       # Create the database from all model definitions.
       # Note: This is a no-op if the tables already exist.
-      self.db.create_all()
+      # self.db.create_all()
 
   def reset_all(self):
     # Attention: This will drop the complete database with all its entries.

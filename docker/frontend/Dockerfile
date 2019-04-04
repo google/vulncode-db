@@ -14,7 +14,6 @@ RUN pip install mysqlclient==1.4.1
 
 # Used as a bind-mount by docker-compose.
 WORKDIR /app
-
 EXPOSE 8080/tcp
 
 #USER nobody:nogroup

@@ -13,17 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Not necessary as third_party is by default considered through the app.yaml config.
-#source env/bin/activate
+function info() {
+  echo -e "[\e[94m*\e[0m]" "$@"
+}
 
-if [ ! -d "migrations" ]; then
-    # Initialize the database migrations first.
+if [[ ! -d "migrations" || ! $(ls -A migrations/versions) ]]; then
+  info "Initializing the database with Alembic. Attention: Alembic will likely not reflect all details of the database."
+  info "Please make sure to check the migrations/versions/[revision_hash].py against the model definitions in"
+  info "data/models/*.py"
   ./manage.sh db init
+  ./manage.sh db migrate
+  ./manage.sh db upgrade
 fi
 
 PYTHONPATH="third_party" python -c "import main; main.check_db_state()" || exit 1
 
-# Start a local instance running on :8080 by default.
-dev_appserver.py "$@" app.yaml
-# Optionall you can start the server under a different port with:
-# dev_appserver.py --port=8090 --admin_port=8089 app.yaml
+if which dev_appserver.py &>/dev/null
+then
+  # Use Google's cloud SDK to start this with a local AppEngine instance.
+  dev_appserver.py "$@" app.yaml
+  # Optionally, you can start the server under a different port with:
+  # dev_appserver.py --port=8090 --admin_port=8089 app.yaml
+else
+  # Start without GAE support.
+  python -m main
+fi

@@ -4,10 +4,15 @@ services:
     build:
       context: ..
       dockerfile: ./docker/vcs_proxy/Dockerfile
+    volumes:
+      - ../:/app
+      #- /etc/passwd:/etc/passwd:ro
+      #- /etc/group:/etc/group:ro
     image: vcs-proxy
+    #user: "${UID}:${GID}"
     # The VCS proxy will be reachable from your host on http://127.0.0.1:8088
     ports:
-      - "8088"
+      - "8088:8088"
 
   database:
     image: mysql:5.7
@@ -32,8 +37,11 @@ services:
       dockerfile: ./docker/frontend/Dockerfile
     volumes:
       - ../:/app
+      #- /etc/passwd:/etc/passwd:ro
+      #- /etc/group:/etc/group:ro
     environment:
       - MYSQL_HOST=database
+    #user: "${UID}:${GID}"
     depends_on:
       - vcs-proxy
       - database
@@ -42,4 +50,4 @@ services:
       - "database"
     # The main application will be reachable from your host on http://127.0.0.1:8080
     ports:
-      - "8080"
+      - "8080:8080"

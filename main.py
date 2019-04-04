@@ -135,8 +135,15 @@ def main():
   cert_dir = os.path.join(root_dir, 'cert')
   cert_file = os.path.join(cert_dir, 'cert.pem')
   key_file = os.path.join(cert_dir, 'key.pem')
-  app.run(ssl_context=(cert_file, key_file), debug=True)
 
+  ssl_context = None
+  # Uncomment line below if you prefer using SSL here.
+  #ssl_context = (cert_file, key_file)
+  use_host = '0.0.0.0'
+  use_port = 8080
+  use_protocol = "https" if ssl_context else "http"
+  print("[+] Listening on: %s://%s:%s" % (use_protocol, use_host, use_port))
+  app.run(host=use_host, port=use_port, ssl_context=ssl_context, debug=True)
 
 if __name__ == '__main__':
   main()

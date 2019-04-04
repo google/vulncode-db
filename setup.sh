@@ -45,12 +45,29 @@ function setup_yaml() {
   success "Created."
 }
 
+function setup_certs() {
+  if [[ -d "cert" && -f "cert/key.pem" && -f "cert/cert.pem" ]]; then
+      success "Available."
+      return
+  fi
+  mkdir cert &>/dev/null
+  cd cert
+  openssl req -nodes -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 9999 -subj "/C=US/ST=California/L=SF/O=FOO/OU=BAR/CN=example.com"
+  if [[ ! -f "key.pem" || ! -f "cert.pem" ]]; then
+    fatal "Can't create certificates."
+  fi
+  cd ..
+  success "Created."
+}
+
 info "Making sure all configuration files are available."
 setup_yaml app.yaml
 setup_yaml vcs_proxy.yaml
 
-info "Setting up all relevant docker containers."
+info "Making sure SSL certificates for the VCS proxy exist."
+setup_certs
 
+info "Setting up all relevant docker containers."
 if which docker-compose &>/dev/null
 then
   cd docker
@@ -60,4 +77,6 @@ else
 fi
 
 info "You should be able to start everything with: cd docker; sudo docker-compose up"
-
+info "Available resources when deployed:"
+success "Main application: http://127.0.0.1:8080"
+success "VCS proxy: https://127.0.0.1:8088"
