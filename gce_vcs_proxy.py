@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,28 +16,27 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+import socket
 import sys
-import traceback
-import yaml
+# import traceback
 
 from flask import Flask, request, Blueprint
 
 from lib.vcs_management import getVcsHandler
 from lib.utils import createJsonResponse
-import socket
 
 
-def manuallyReadAppConfig():
+def manually_read_app_config():
   config = {}
   try:
     import yaml
   except ImportError:
-    return
-  with open('vcs_proxy.yaml', 'r') as f:
+    return None
+  with open('vcs_proxy.yaml') as file:
     try:
-      config = yaml.load(f, Loader=yaml.SafeLoader)
-    except yaml.YAMLError as e:
-      print(e)
+      config = yaml.load(file, Loader=yaml.SafeLoader)
+    except yaml.YAMLError as err:
+      print(err)
   return config
 
 vcs_config = manuallyReadAppConfig()
@@ -85,7 +84,7 @@ def main_api():
   if 'github.com' in commit_link:
     resource_url = commit_link
   else:
-    resource_url = repo_url if repo_url else commit_link
+    resource_url = repo_url or commit_link
 
   vcs_handler = getVcsHandler(app, resource_url)
   if not vcs_handler:
