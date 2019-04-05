@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from data.utils import populate_models
-from data.models.base import Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
+
+from data.utils import populate_models
+from data.models.base import Base
 
 
 class User(Base):

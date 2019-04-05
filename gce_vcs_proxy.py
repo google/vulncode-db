@@ -22,8 +22,8 @@ import sys
 
 from flask import Flask, request, Blueprint
 
-from lib.vcs_management import getVcsHandler
-from lib.utils import createJsonResponse
+from lib.vcs_management import get_vcs_handler
+from lib.utils import create_json_response
 
 
 def manually_read_app_config():
@@ -39,7 +39,7 @@ def manually_read_app_config():
       print(err)
   return config
 
-vcs_config = manuallyReadAppConfig()
+vcs_config = manually_read_app_config()
 if not vcs_config:
   vcs_config = {}
 
@@ -86,9 +86,9 @@ def main_api():
   else:
     resource_url = repo_url or commit_link
 
-  vcs_handler = getVcsHandler(app, resource_url)
+  vcs_handler = get_vcs_handler(app, resource_url)
   if not vcs_handler:
-    return createJsonResponse('Please provide a valid resource URL.', 400)
+    return create_json_response('Please provide a valid resource URL.', 400)
 
   #try:
   # Return a specific file's content if requested instead.
@@ -97,11 +97,11 @@ def main_api():
     logging.info('Retrieved %s: %d bytes', item_hash, len(content))
     return content
   return vcs_handler.fetchCommitData(commit_hash)
-  #except Exception as e:
+  #except Exception as err:
   #  if DEBUG:
-  #    return createJsonResponse(str(e), 400, tb=traceback.format_exc())
+  #    return create_json_response(str(err), 400, tb=traceback.format_exc())
   #  else:
-  #    return createJsonResponse(str(e), 400)
+  #    return create_json_response(str(err), 400)
 
 
 app.register_blueprint(bp)
@@ -129,8 +129,8 @@ def start():
   ssl_context = (cert_file, key_file)
   use_host = '0.0.0.0'
   use_port = 8088
-  use_protocol = "https" if ssl_context else "http"
-  print("[+] Listening on: %s://%s:%s" % (use_protocol, use_host, use_port))
+  use_protocol = 'https' if ssl_context else 'http'
+  print('[+] Listening on: {}://{}:{}'.format(use_protocol, use_host, use_port))
   app.run(host=use_host, port=use_port, ssl_context=ssl_context, debug=DEBUG)
 
 
