@@ -18,6 +18,7 @@
 # Documentation: https://pypi.org/project/sqlacodegen/
 # Executed: ./sqlacodegen mysql://[name]:[pass]@localhost/cve
 import re
+
 import cfg
 from data.models.vulnerability import Vulnerability
 from data.models.cwe import Cwe
