@@ -19,7 +19,7 @@ from app.exceptions import InvalidIdentifierException
 from app.vulnerability import VulnerabilityDetails
 from data.database import DEFAULT_DATABASE
 from data.models import RepositoryFilesSchema, RepositoryFileComments, RepositoryFileMarkers, RepositoryFiles
-from lib.utils import createJsonResponse
+from lib.utils import create_json_response
 
 bp = Blueprint('api', __name__, url_prefix='/api')
 db = DEFAULT_DATABASE.db
@@ -132,17 +132,17 @@ def bug_save_editor_data():
     vulnerability_details = VulnerabilityDetails()
     vulnerability_details.validate()
   except InvalidIdentifierException as e:
-    return createJsonResponse(str(e), 400)
+    return create_json_response(str(e), 400)
   vuln_view = vulnerability_details.vulnerability_view
 
   if request.method == 'POST':
     if not vuln_view:
-      return createJsonResponse('Please create an entry first', 404)
+      return create_json_response('Please create an entry first', 404)
 
     if not vuln_view.master_commit:
       current_app.logger.error(
           'Vuln (id: {:d}) has no linked Git commits!'.format(vuln_view.id))
-      return createJsonResponse('Entry has no linked Git link!', 404)
+      return create_json_response('Entry has no linked Git link!', 404)
 
     master_commit = vulnerability_details.getMasterCommit()
 
@@ -199,5 +199,5 @@ def bug_save_editor_data():
 
     # Update / Insert entries into the database.
     db.session.commit()
-    return createJsonResponse('Update successful.')
-  return createJsonResponse('Accepting only POST requests.', 400)
+    return create_json_response('Update successful.')
+  return create_json_response('Accepting only POST requests.', 400)
