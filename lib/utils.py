@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import jsonify
 import os
+
+from flask import jsonify
 
 
 def get_file_contents(path):
-  with open(path, 'r') as f:
-    output = f.read()
+  with open(path) as file:
+    output = file.read()
   return output
 
 
@@ -27,26 +28,25 @@ def write_contents(path, content):
     f.write(content)
 
 
-def createJsonResponse(msg, status_code=200, **kwargs):
+def create_json_response(msg, status_code=200, **kwargs):
   message = {'msg': msg}
   message.update(kwargs)
   resp = jsonify(message)
   resp.status_code = status_code
   return resp
 
-  # Load app.yaml environment variables manually.
 
-
-def manuallyReadAppConfig():
+def manually_read_app_config():
+  """Load app.yaml environment variables manually."""
   try:
     import yaml
   except ImportError:
-    return
-  with open('app.yaml', 'r') as f:
+    return None
+  with open('app.yaml') as file:
     try:
-      yaml_context = yaml.load(f, Loader=yaml.SafeLoader)
+      yaml_context = yaml.load(file, Loader=yaml.SafeLoader)
       env_variables = yaml_context['env_variables']
       for key in env_variables:
         os.environ[key] = str(env_variables[key])
-    except yaml.YAMLError as e:
-      print(e)
+    except yaml.YAMLError as err:
+      print(err)
