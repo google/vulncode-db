@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright 2019 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +14,10 @@
 # limitations under the License.
 
 import os
-from lib.utils import manuallyReadAppConfig
-if not 'MYSQL_CONNECTION_NAME' in os.environ:
-  print('[~] Executed outside AppEngine context. Manually loading config.')
-  manuallyReadAppConfig()
-
-import cfg
 import logging
+from logging.handlers import RotatingFileHandler
 import sys
 
-from app.auth import bp as auth_bp
-from app.api import bp as api_bp
-from app.vuln import bp as vuln_bp
-from app.vcs_proxy import bp as vcs_proxy_bp
-from app.vulnerability import VulncodeDB
-
-from logging.handlers import RotatingFileHandler
 from flask import Flask, send_from_directory, render_template
 from flask_wtf.csrf import CSRFProtect
 from flask_debugtoolbar import DebugToolbarExtension
@@ -37,7 +25,19 @@ from flask_debugtoolbar import DebugToolbarExtension
 import alembic.script
 import alembic.runtime.environment
 from flask_bootstrap import Bootstrap
+
+from app.auth import bp as auth_bp
+from app.api import bp as api_bp
+from app.vuln import bp as vuln_bp
+from app.vcs_proxy import bp as vcs_proxy_bp
+from app.vulnerability import VulncodeDB
+import cfg
 from data.database import DEFAULT_DATABASE, init_app as init_db
+from lib.utils import manually_read_app_config
+
+if not 'MYSQL_CONNECTION_NAME' in os.environ:
+  print('[~] Executed outside AppEngine context. Manually loading config.')
+  manually_read_app_config()
 
 app = Flask(__name__, static_url_path='', template_folder='templates')
 app.register_blueprint(auth_bp)
@@ -132,17 +132,17 @@ def main():
   else:
     app.logger.setLevel(logging.INFO)
 
-  cert_dir = os.path.join(root_dir, 'cert')
-  cert_file = os.path.join(cert_dir, 'cert.pem')
-  key_file = os.path.join(cert_dir, 'key.pem')
+  # cert_dir = os.path.join(root_dir, 'cert')
+  # cert_file = os.path.join(cert_dir, 'cert.pem')
+  # key_file = os.path.join(cert_dir, 'key.pem')
 
   ssl_context = None
   # Uncomment line below if you prefer using SSL here.
   #ssl_context = (cert_file, key_file)
   use_host = '0.0.0.0'
   use_port = 8080
-  use_protocol = "https" if ssl_context else "http"
-  print("[+] Listening on: %s://%s:%s" % (use_protocol, use_host, use_port))
+  use_protocol = 'https' if ssl_context else 'http'
+  print('[+] Listening on: {}://{}:{}'.format(use_protocol, use_host, use_port))
   app.run(host=use_host, port=use_port, ssl_context=ssl_context, debug=True)
 
 if __name__ == '__main__':
