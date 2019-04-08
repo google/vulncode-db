@@ -15,12 +15,12 @@
 # Attention: DO NOT DELETE THE * IMPORT BELOW
 # -> Required to import all model definitions to allow database creation.
 
-from data.models import *
-from data.models.base import db, ma
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from sqlalchemy.engine import reflection
 
+from data.models import *
+from data.models.base import db, ma
 
 class Database:
   db = db
