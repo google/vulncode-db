@@ -14,7 +14,7 @@
 
 from functools import wraps
 
-from flask import session, request, jsonify, url_for, abort, redirect, Blueprint, g, current_app, abort
+from flask import session, request, url_for, abort, redirect, Blueprint, g, current_app
 from flask_oauthlib.client import OAuth
 from flask_oauthlib.contrib.apps import google
 
@@ -50,7 +50,7 @@ def logout():
 def authorized():
   try:
     resp = google.authorized_response()
-  except:
+  except Exception:
     current_app.logger.exception('Error during handling the oauth response')
     abort(400)
 
