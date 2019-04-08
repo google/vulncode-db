@@ -14,22 +14,26 @@
 # limitations under the License.
 
 import sys
-sys.path.append('third_party/')
-
-from lib.vcs_management import getVcsHandler
-import pandas as pd
-pd.set_option('display.max_colwidth', -1)
-from flask import Flask, request
-from sqlalchemy import or_, select, outerjoin, join
-from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits
-from data.database import DEFAULT_DATABASE, init_app as init_db
-import sqlparse
 import time
 
-from colorama import Fore, Back, Style
+import pandas as pd
+from flask import Flask
+from sqlalchemy import outerjoin, join
+
+import sqlparse
+
+from colorama import Fore, Style
 from pygments import highlight
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import SqlLexer
+
+from lib.vcs_management import get_vcs_handler
+from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits
+from data.database import DEFAULT_DATABASE, init_app as init_db
+
+sys.path.append('third_party/')
+
+pd.set_option('display.max_colwidth', -1)
 
 app = Flask(__name__, static_url_path='', template_folder='templates')
 # Load the Flask configuration parameters from a global config file.
@@ -44,7 +48,7 @@ ctx.push()
 CVE_DB_ENGINE = db.get_engine(app, 'cve')
 
 
-def writeHighlighted(text, color=Fore.WHITE, crlf=False):
+def write_highlighted(text, color=Fore.WHITE, crlf=False):
   highlighted = (Style.BRIGHT + color + '%s' + Style.RESET_ALL) % text
   if crlf:
     print(highlighted)
@@ -62,8 +66,8 @@ def _measure_exution_time(label):
       end = time.time()
 
       sys.stdout.write('[{}] '.format(label))
-      writeHighlighted('~{:.4f}s'.format(end - start), color=Fore.YELLOW)
-      print(' elapsed '.format(label))
+      write_highlighted('~{:.4f}s'.format(end - start), color=Fore.YELLOW)
+      print(' elapsed ')
       return res
 
     return wrapper
@@ -71,7 +75,7 @@ def _measure_exution_time(label):
   return decorator
 
 
-def dumpQuery(query, display_columns=[]):
+def dump_query(query, display_columns=None):
   """Small helper function to dump a SqlAlchemy SQL query + parameters.
 
   :param query:
@@ -95,14 +99,14 @@ def dumpQuery(query, display_columns=[]):
   print('-' * 15 + '\n%s' % highlighted_sql_query + '-' * 15)
 
   df = pd.read_sql(query.statement, CVE_DB_ENGINE)
-  if len(display_columns) > 0:
+  if display_columns:
     df = df[display_columns]
 
   print('Results: {}; showing first {}:'.format(df.shape[0], num_rows))
   print(df.head(num_rows))
 
 
-def getNvdGithubPatchCandidates():
+def get_nvd_github_patch_candidates():
   """Fetches concrete github.com commit links from the Nvd database.
 
   :return:
@@ -119,8 +123,8 @@ def getNvdGithubPatchCandidates():
   return github_commit_candidates
 
 
-def nvdToVcdb(nvd, commit_link):
-  vcs_handler = getVcsHandler(app, commit_link)
+def nvd_to_vcdb(nvd, commit_link):
+  vcs_handler = get_vcs_handler(app, commit_link)
   if not vcs_handler:
     print("Can't parse Vcs link: {}".format(commit_link))
     #print(vars(nvd))
@@ -141,8 +145,8 @@ def nvdToVcdb(nvd, commit_link):
   return vulnerability
 
 
-@_measure_exution_time('storeOrUpdateVcdbEntries')
-def storeOrUpdateVcdbEntries(github_commit_candidates):
+@_measure_exution_time('store_or_update_vcdb_entries')
+def store_or_update_vcdb_entries(github_commit_candidates):
   """Fetches or creates VCDB
 
   :param github_commit_candidates:
@@ -155,7 +159,7 @@ def storeOrUpdateVcdbEntries(github_commit_candidates):
     commit_link = nvd_candidate.link
     existing_vcdb_vulnerability = nvd_candidate.Vulnerability
 
-    vulnerability_suggestion = nvdToVcdb(nvd, commit_link)
+    vulnerability_suggestion = nvd_to_vcdb(nvd, commit_link)
     if not vulnerability_suggestion:
       print('[-] Invalid data detected for cve_id: {}'.format(nvd.cve_id))
       stats['skipped'] += 1
@@ -204,33 +208,33 @@ def storeOrUpdateVcdbEntries(github_commit_candidates):
   return stats
 
 
-def printStats(stats):
+def print_stats(stats):
   sys.stdout.write('STATS: created(')
-  writeHighlighted(stats['created'], Fore.GREEN)
+  write_highlighted(stats['created'], Fore.GREEN)
   sys.stdout.write(') updated(')
-  writeHighlighted(stats['updated'], Fore.GREEN)
+  write_highlighted(stats['updated'], Fore.GREEN)
   sys.stdout.write(') idle(')
-  writeHighlighted(stats['idle'], Fore.CYAN)
+  write_highlighted(stats['idle'], Fore.CYAN)
   sys.stdout.write(') skipped(')
-  writeHighlighted(stats['skipped'], Fore.RED)
+  write_highlighted(stats['skipped'], Fore.RED)
   print(')')
 
 
 @_measure_exution_time('Total')
-def startCrawling():
-  writeHighlighted(
+def start_crawling():
+  """- See how to best convert those entries into VCDB entries."""
+  write_highlighted(
       '1) Fetching entries from NVD with a direct github.com/*/commit/* commit link.',
       crlf=True)
-  github_commit_candidates = getNvdGithubPatchCandidates()
-  dumpQuery(github_commit_candidates, ['cve_nvds_id', 'references_link'])
+  github_commit_candidates = get_nvd_github_patch_candidates()
+  dump_query(github_commit_candidates, ['cve_nvds_id', 'references_link'])
 
-  writeHighlighted('2) Creating/updating existing Vcdb entries.', crlf=True)
-  stats = storeOrUpdateVcdbEntries(github_commit_candidates)
-  printStats(stats)
+  write_highlighted('2) Creating/updating existing Vcdb entries.', crlf=True)
+  stats = store_or_update_vcdb_entries(github_commit_candidates)
+  print_stats(stats)
 
   print('Done')
-  """- See how to best convert those entries into VCDB entries."""
 
 
 if __name__ == '__main__':
-  startCrawling()
+  start_crawling()
