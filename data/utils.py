@@ -14,6 +14,7 @@
 
 import sys
 import inspect
+
 from data.models.base import db, ma
 
 
