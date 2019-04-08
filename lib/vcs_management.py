@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+
 from lib.vcs_handler import *
 from lib.vcs_handler.vcs_handler import VcsHandler, VULN_ID_PLACEHOLDER, HASH_PLACEHOLDER, PATH_PLACEHOLDER
 from app.exceptions import InvalidIdentifierException
@@ -38,7 +39,7 @@ def get_inheritor_clases(klass):
   return subclasses
 
 
-def getVcsHandler(app, resource_url):
+def get_vcs_handler(app, resource_url):
   """Tries to instantiate a vcs handler with teh given resource url.
 
   Args:
