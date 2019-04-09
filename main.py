@@ -26,6 +26,10 @@ import alembic.script
 import alembic.runtime.environment
 from flask_bootstrap import Bootstrap
 
+from lib.utils import manually_read_app_config
+if not 'MYSQL_CONNECTION_NAME' in os.environ:
+  print('[~] Executed outside AppEngine context. Manually loading config.')
+  manually_read_app_config()
 from app.auth import bp as auth_bp
 from app.api import bp as api_bp
 from app.vuln import bp as vuln_bp
@@ -33,11 +37,6 @@ from app.vcs_proxy import bp as vcs_proxy_bp
 from app.vulnerability import VulncodeDB
 import cfg
 from data.database import DEFAULT_DATABASE, init_app as init_db
-from lib.utils import manually_read_app_config
-
-if not 'MYSQL_CONNECTION_NAME' in os.environ:
-  print('[~] Executed outside AppEngine context. Manually loading config.')
-  manually_read_app_config()
 
 app = Flask(__name__, static_url_path='', template_folder='templates')
 app.register_blueprint(auth_bp)
