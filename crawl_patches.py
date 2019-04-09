@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import sys
+sys.path.append('third_party/')
+
 import time
 
 import pandas as pd
@@ -30,8 +32,6 @@ from pygments.lexers import SqlLexer
 from lib.vcs_management import get_vcs_handler
 from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits
 from data.database import DEFAULT_DATABASE, init_app as init_db
-
-sys.path.append('third_party/')
 
 pd.set_option('display.max_colwidth', -1)
 
