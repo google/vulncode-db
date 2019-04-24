@@ -1,6 +1,7 @@
 app.yaml
 vcs_proxy.yaml
 *.log
+migrations
 cache/*
 cert
 cert/*

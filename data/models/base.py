@@ -29,12 +29,8 @@ class SQLAlchemy(SQLAlchemyBase):
 db = SQLAlchemy()
 ma = Marshmallow()
 
-DefaultBase = db.Model
-
-
-# Define a base model for other database tables to inherit
-class Base(db.Model):
-
+class MainBase(db.Model):
+  __table_args__ = {'schema': 'main'}
   __abstract__ = True
 
   id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -43,3 +39,14 @@ class Base(db.Model):
       db.DateTime,
       default=db.func.current_timestamp(),
       onupdate=db.func.current_timestamp())
+
+class NvdBase(db.Model):
+  __table_args__ = {'schema': 'cve'}
+  __bind_key__ = 'cve'
+  __abstract__ = True
+
+class CweBase(db.Model):
+  __table_args__ = {'schema': 'cwe'}
+  __bind_key__ = 'cwe'
+  __abstract__ = True
+

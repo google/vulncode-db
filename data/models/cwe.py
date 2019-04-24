@@ -14,15 +14,15 @@
 
 import re
 import cfg
-from data.models.base import DefaultBase
+from data.models.base import CweBase
 from data.utils import populate_models
 from sqlalchemy import Column, Text, String, Index
 from sqlalchemy.orm import relationship
 
 
-class Cwe(DefaultBase):
-  __bind_key__ = 'cwe'
-  __table_args__ = {'schema': 'cwe'}
+
+
+class Cwe(CweBase):
   __tablename__ = 'cwe_data'
 
   cwe_id = Column(String(255), primary_key=True)

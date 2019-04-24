@@ -7,7 +7,8 @@ Flask-OAuthlib==0.9.5
 requests-oauthlib>=0.6.2,<1.2.0
 Flask-Script==2.0.6
 Flask-SQLAlchemy==2.3.2
-SQLAlchemy-FullText-Search==0.2.5
+# Not in use due to a problem when matching against multiple fulltext columns with a joined table.
+# SQLAlchemy-FullText-Search==0.2.5
 Flask-WTF==0.14.2
 Werkzeug==0.14.1
 marshmallow-sqlalchemy==0.14.0

@@ -21,17 +21,17 @@ import re
 import cfg
 from data.models.vulnerability import Vulnerability
 from data.models.cwe import Cwe
-from data.models.base import DefaultBase
+from data.models.base import NvdBase
 from data.utils import populate_models
 from sqlalchemy import Column, Float, String, TIMESTAMP, ForeignKey, Index
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
-from sqlalchemy_fulltext import FullText
 
 
-class Cpe(DefaultBase):
-  __bind_key__ = 'cve'
-  __table_args__ = {'schema': 'cve'}
+
+
+
+class Cpe(NvdBase):
   __tablename__ = 'cpes'
 
   id = Column(INTEGER(10), primary_key=True)
@@ -50,8 +50,7 @@ class Cpe(DefaultBase):
   language = Column(String(255))
 
 
-class CveDetail(DefaultBase):
-  __bind_key__ = 'cve'
+class CveDetail(NvdBase):
   __tablename__ = 'cve_details'
 
   id = Column(INTEGER(10), primary_key=True)
@@ -62,8 +61,7 @@ class CveDetail(DefaultBase):
   cve_id = Column(String(255), index=True)
 
 
-class Jvn(DefaultBase):
-  __bind_key__ = 'cve'
+class Jvn(NvdBase):
   __tablename__ = 'jvns'
 
   id = Column(INTEGER(10), primary_key=True)
@@ -83,8 +81,7 @@ class Jvn(DefaultBase):
   last_modified_date = Column(TIMESTAMP)
 
 
-class Reference(DefaultBase):
-  __bind_key__ = 'cve'
+class Reference(NvdBase):
   __tablename__ = 'references'
 
   id = Column(INTEGER(10), primary_key=True)
@@ -97,10 +94,8 @@ class Reference(DefaultBase):
   link = Column(String(512))
 
 
-class Nvd(FullText, DefaultBase):
-  __fulltext_columns__ = ('summary',)
-  __bind_key__ = 'cve'
-  __table_args__ = {'schema': 'cve'}
+class Nvd(NvdBase):
+  #__fulltext_columns__ = ('summary',)
   __tablename__ = 'nvds'
 
   id = Column(INTEGER(10), primary_key=True)
