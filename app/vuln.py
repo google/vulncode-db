@@ -106,10 +106,10 @@ def vuln_file_tree(vuln_id):
       response_msg = 'VCS proxy is unreachable (it might be down).'
       if type(e) == urllib2.HTTPError:
         status_code = e.code
-        response_msg += "\r\nHTTPError\r\n" + e.read()
+        response_msg += "\r\nHTTPError\r\n" + str(e.read())
       if type(e) == urllib2.URLError:
         status_code = 400
-        response_msg += "\r\nURLError\r\n" + e.reason
+        response_msg += "\r\nURLError\r\n" + str(e.reason)
 
   return Response(
       response=response_msg, status=status_code, content_type=content_type)

@@ -13,6 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from lib.utils import manuallyReadAppConfig
+if not 'MYSQL_CONNECTION_NAME' in os.environ:
+    print('[~] Executed outside AppEngine context. Manually loading config.')
+    manuallyReadAppConfig()
+
 import sys
 sys.path.append('third_party/')
 
@@ -20,7 +26,7 @@ from lib.vcs_management import getVcsHandler
 import pandas as pd
 pd.set_option('display.max_colwidth', -1)
 from flask import Flask, request
-from sqlalchemy import or_, select, outerjoin, join
+from sqlalchemy import or_, select, outerjoin, join, func
 from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits
 from data.database import DEFAULT_DATABASE, init_app as init_db
 import sqlparse
@@ -110,11 +116,10 @@ def getNvdGithubPatchCandidates():
 
   patch_regex = 'github\.com/([^/]+)/([^/]+)/commit/([^/]+)'
 
-  github_commit_candidates = db.session.query(
-      Nvd, Reference.link, Vulnerability).select_from(
-          join(Nvd, Reference).outerjoin(Vulnerability)).filter(
-              Reference.link.op('regexp')(patch_regex)).group_by(
-                  Nvd.cve_id).with_labels()
+  sub_query = db.session.query(func.min(Reference.id)).filter(
+      Reference.link.op('regexp')(patch_regex)).group_by(Reference.nvd_json_id)
+  github_commit_candidates = db.session.query(Nvd, Reference.link, Vulnerability).select_from(
+          join(Nvd, Reference).outerjoin(Vulnerability)).filter(Reference.id.in_(sub_query)).with_labels()
 
   return github_commit_candidates
 
@@ -222,7 +227,7 @@ def startCrawling():
       '1) Fetching entries from NVD with a direct github.com/*/commit/* commit link.',
       crlf=True)
   github_commit_candidates = getNvdGithubPatchCandidates()
-  dumpQuery(github_commit_candidates, ['cve_nvds_id', 'references_link'])
+  dumpQuery(github_commit_candidates, ['cve_nvd_jsons_id', 'cve_references_link'])
 
   writeHighlighted('2) Creating/updating existing Vcdb entries.', crlf=True)
   stats = storeOrUpdateVcdbEntries(github_commit_candidates)

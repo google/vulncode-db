@@ -41,13 +41,16 @@ services:
       #- /etc/group:/etc/group:ro
     environment:
       - MYSQL_HOST=database
+      - VCS_PROXY_LOCAL_URL=http://vcs-proxy:8088/
     #user: "${UID}:${GID}"
     depends_on:
       - vcs-proxy
       - database
+    image: frontend
     links:
       - "vcs-proxy"
       - "database"
     # The main application will be reachable from your host on http://127.0.0.1:8080
     ports:
       - "8080:8080"
+

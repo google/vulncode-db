@@ -12,112 +12,80 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# This file was mostly generated with sqlacodegen which creates a SqlAlchemy
-# description from a given SQL schema which is useful since we only have the
-# DB schema for the NVD database.
-# Documentation: https://pypi.org/project/sqlacodegen/
-# Executed: ./sqlacodegen mysql://[name]:[pass]@localhost/cve
 import re
 import cfg
+import nvd_template
 from data.models.vulnerability import Vulnerability
-from data.models.cwe import Cwe
+from data.models.cwe import CweData
 from data.models.base import NvdBase
 from data.utils import populate_models
 from sqlalchemy import Column, Float, String, TIMESTAMP, ForeignKey, Index
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 
+class Affect(nvd_template.Affect, NvdBase):
+  pass
 
 
+class Cpe(nvd_template.Cpe, NvdBase):
+  nvd_json_id = Column(INTEGER(10), ForeignKey('cve.nvd_jsons.id'), index=True)
 
 
-class Cpe(NvdBase):
-  __tablename__ = 'cpes'
-
-  id = Column(INTEGER(10), primary_key=True)
-  created_at = Column(TIMESTAMP)
-  updated_at = Column(TIMESTAMP)
-  deleted_at = Column(TIMESTAMP, index=True)
-  jvn_id = Column(INTEGER(10), index=True)
-  nvd_id = Column(INTEGER(10), ForeignKey('cve.nvds.id'), index=True)
-  cpe_name = Column(String(255), index=True)
-  part = Column(String(255))
-  vendor = Column(String(255))
-  product = Column(String(255))
-  version = Column(String(255))
-  vendor_update = Column(String(255))
-  edition = Column(String(255))
-  language = Column(String(255))
+class CveDetail(nvd_template.CveDetail, NvdBase):
+  pass
 
 
-class CveDetail(NvdBase):
-  __tablename__ = 'cve_details'
-
-  id = Column(INTEGER(10), primary_key=True)
-  created_at = Column(TIMESTAMP)
-  updated_at = Column(TIMESTAMP)
-  deleted_at = Column(TIMESTAMP, index=True)
-  cve_info_id = Column(INTEGER(10))
-  cve_id = Column(String(255), index=True)
+class Cvss2(nvd_template.Cvss2, NvdBase):
+  pass
 
 
-class Jvn(NvdBase):
-  __tablename__ = 'jvns'
-
-  id = Column(INTEGER(10), primary_key=True)
-  created_at = Column(TIMESTAMP)
-  updated_at = Column(TIMESTAMP)
-  deleted_at = Column(TIMESTAMP, index=True)
-  cve_detail_id = Column(INTEGER(10), index=True)
-  cve_id = Column(String(255))
-  title = Column(String(255))
-  summary = Column(String(8192))
-  jvn_link = Column(String(255))
-  jvn_id = Column(String(255))
-  score = Column(Float(asdecimal=True))
-  severity = Column(String(255))
-  vector = Column(String(255))
-  published_date = Column(TIMESTAMP)
-  last_modified_date = Column(TIMESTAMP)
+class Cvss2Extra(nvd_template.Cvss2Extra, NvdBase):
+  pass
 
 
-class Reference(NvdBase):
-  __tablename__ = 'references'
-
-  id = Column(INTEGER(10), primary_key=True)
-  created_at = Column(TIMESTAMP)
-  updated_at = Column(TIMESTAMP)
-  deleted_at = Column(TIMESTAMP, index=True)
-  jvn_id = Column(INTEGER(10), index=True)
-  nvd_id = Column(INTEGER(10), ForeignKey('cve.nvds.id'), index=True)
-  source = Column(String(255))
-  link = Column(String(512))
+class Cvss3(nvd_template.Cvss3, NvdBase):
+  nvd_json_id = Column(INTEGER(10), ForeignKey('cve.nvd_jsons.id'), index=True)
 
 
-class Nvd(NvdBase):
-  #__fulltext_columns__ = ('summary',)
-  __tablename__ = 'nvds'
+class Cwe(nvd_template.Cwe, NvdBase):
+  nvd_json_id = Column(INTEGER(10), ForeignKey('cve.nvd_jsons.id'), index=True)
+  cwe_data = relationship(CweData, primaryjoin='foreign(CweData.cwe_id) == Cwe.cwe_id', uselist=False)
 
-  id = Column(INTEGER(10), primary_key=True)
-  created_at = Column(TIMESTAMP)
-  updated_at = Column(TIMESTAMP)
-  deleted_at = Column(TIMESTAMP, index=True)
-  cve_detail_id = Column(INTEGER(10), index=True)
-  cve_id = Column(String(255), unique=True)
-  summary = Column(String(4096))
-  score = Column(Float(asdecimal=True))
-  access_vector = Column(String(255))
-  access_complexity = Column(String(255))
-  authentication = Column(String(255))
-  confidentiality_impact = Column(String(255))
-  integrity_impact = Column(String(255))
-  availability_impact = Column(String(255))
-  cwe_id = Column(String(255))
-  published_date = Column(TIMESTAMP)
-  last_modified_date = Column(TIMESTAMP)
+  @property
+  def cwe_name(self):
+    return self.cwe_data.cwe_name if self.cwe_data else None
 
-  cwe = relationship(Cwe, primaryjoin='foreign(Cwe.cwe_id) == Nvd.cwe_id')
+
+class Description(nvd_template.Description, NvdBase):
+  nvd_json_id = Column(INTEGER(10), ForeignKey('cve.nvd_jsons.id'), index=True)
+
+
+class EnvCpe(nvd_template.EnvCpe, NvdBase):
+  pass
+
+
+class FeedMeta(nvd_template.FeedMeta, NvdBase):
+  pass
+
+
+class Jvn(nvd_template.Jvn, NvdBase):
+  pass
+
+
+class NvdXml(nvd_template.NvdXml, NvdBase):
+  pass
+
+
+class Reference(nvd_template.Reference, NvdBase):
+  nvd_json_id = Column(INTEGER(10), ForeignKey('cve.nvd_jsons.id'), index=True)
+
+
+class Nvd(nvd_template.NvdJson, NvdBase):
+  __tablename__ = 'nvd_jsons'
+  cwe = relationship(Cwe, uselist=False)
   cpes = relationship(Cpe, backref='nvd_entry', single_parent=True)
+  description = relationship(Description, uselist=False)
+  cvss3 = relationship(Cvss3, uselist=False)
   references = relationship(Reference, backref='nvd_entry', single_parent=True)
   vulns = relationship(Vulnerability)
 
@@ -143,15 +111,15 @@ class Nvd(NvdBase):
   @classmethod
   def get_all_by_link_substring(cls, substring):
     return cls.query.join(Nvd.references).filter(
-        Reference.link.contains(substring)).order_by(
-            Nvd.created_at.desc()).distinct()
+      Reference.link.contains(substring)).order_by(
+      Nvd.created_at.desc()).distinct()
 
   @classmethod
   def get_all_by_link_regex(cls, regex):
     return cls.query.join(
-        Nvd.references, aliased=True).filter(
-            Reference.link.op('regexp')(regex)).order_by(
-                Nvd.created_at.desc()).distinct()
+      Nvd.references, aliased=True).filter(
+      Reference.link.op('regexp')(regex)).order_by(
+      Nvd.created_at.desc()).distinct()
 
   @classmethod
   def get_by_commit_hash(cls, commit_hash):
@@ -161,8 +129,14 @@ class Nvd(NvdBase):
   def get_by_cve_id(cls, cve_id):
     return cls.query.filter_by(cve_id=cve_id).first()
 
+  @property
+  def summary(self):
+    return self.description.value if self.description else None
 
-Index('nvd_cve_id_index', Nvd.cve_id)
+  @property
+  def score(self):
+    return self.cvss3.base_score if self.cvss3 else None
+
 
 # must be set after all definitions
 __all__ = populate_models(__name__)

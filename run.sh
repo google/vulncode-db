@@ -17,7 +17,7 @@ function info() {
   echo -e "[\e[94m*\e[0m]" "$@"
 }
 
-if [[ ! -d "migrations" || ! $(ls -A migrations/versions) ]]; then
+if [[ ! -d "migrations/versions" || ! $(ls -A migrations/versions) ]]; then
   info "Initializing the database with Alembic. Attention: Alembic will likely not reflect all details of the database."
   info "Please make sure to check the migrations/versions/[revision_hash].py against the model definitions in"
   info "data/models/*.py"

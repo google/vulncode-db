@@ -127,7 +127,9 @@ def start():
   cert_file = os.path.join(cert_dir, 'cert.pem')
   key_file = os.path.join(cert_dir, 'key.pem')
 
-  ssl_context = (cert_file, key_file)
+  ssl_context = None
+  # Uncomment the following line if you want to use SSL instead.
+  #ssl_context = (cert_file, key_file)
   use_host = '0.0.0.0'
   use_port = 8088
   use_protocol = "https" if ssl_context else "http"

@@ -62,7 +62,6 @@ elif IS_LOCAL:
   DEBUG = True
   MYSQL_USER = os.environ['MYSQL_LOCAL_USER']
   MYSQL_PASS = os.environ['MYSQL_LOCAL_PASS']
-  MYSQL_CONNECTION_NAME = os.environ['VCS_PROXY_LOCAL_URL']
   GCE_VCS_PROXY_URL = os.environ['VCS_PROXY_LOCAL_URL']
 else:
   raise AssertionError("Invalid deployment mode detected.")

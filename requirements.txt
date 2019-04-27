@@ -18,4 +18,6 @@ flask-debugtoolbar==0.10.1
 setuptools==40.6.3
 sqlparse==0.2.4
 pygments==2.3.1
+pandas==0.24.2
+colorama==0.4.1
 # ---------------------------------------
