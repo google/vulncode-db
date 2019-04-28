@@ -26,10 +26,7 @@ import time
 
 import pandas as pd
 pd.set_option('display.max_colwidth', -1)
-from flask import Flask, request
 from sqlalchemy import or_, select, outerjoin, join, func
-from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits
-from data.database import DEFAULT_DATABASE, init_app as init_db
 from flask import Flask
 from sqlalchemy import outerjoin, join
 
