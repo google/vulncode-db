@@ -16,10 +16,10 @@ from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
 from data.utils import populate_models
-from data.models.base import Base
+from data.models.base import MainBase
 
 
-class User(Base):
+class User(MainBase):
   email = Column(String(256), unique=True)
   full_name = Column(String(256))
   profile_picture = Column(String(256))

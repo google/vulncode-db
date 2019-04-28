@@ -1,10 +1,13 @@
 app.yaml
 vcs_proxy.yaml
 *.log
+misc/*
 cache/*
 cert
 cert/*
 third_party/*
+# Permanent third party content.
+!third_party/go-cve-dictionary
 env/*
 vulnerable_code/*
 *.py[co]
@@ -18,3 +21,5 @@ local_cfg.py
 .idea
 node_modules
 docker/db-data
+docker/cve-data/*
+!docker/cve-data/fetch_cwe.sh

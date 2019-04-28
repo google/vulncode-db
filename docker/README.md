@@ -1,26 +1,31 @@
 Build
 -----
+The relevant services are:
+- database
+- frontend
+- vcs-proxy
+
 
 ```
 $ cd docker
 $ docker-compose build
 ```
 
-or (from repository root)
-
-```
-$ docker build -t vcs-proxy -f docker/vcs_proxy/Dockerfile .
-```
-
 Run
 ---
+You can run all services with:
+```
+$ cd docker
+$ docker-compose up
+```
+
+More
+---
+If you need to insert data into the database please refer to the commands available with:
 
 ```
-$ docker-compose start
+$ cd docker
+$ ./docker-admin.sh
 ```
 
-or 
 
-```
-$ docker run -p 8080:8080 -v path/to/cert:/proxy/cert --rm vcs-proxy
-```

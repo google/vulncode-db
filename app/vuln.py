@@ -108,9 +108,9 @@ def vuln_file_tree(vuln_id):
       status_code = 400
       response_msg = ''.join(['VCS proxy is unreachable (it might be down).',
                               '\r\nURLError\r\n',
-                              err.reason])
+                              str(err.reason)])
       content_type = 'text/plain'
-    except Exception as err:
+    except Exception:
       status_code = 400
       content_type = 'text/plain'
       response_msg = 'VCS proxy is unreachable (it might be down).'

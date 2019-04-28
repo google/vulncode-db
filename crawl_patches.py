@@ -13,12 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+from lib.utils import manually_read_app_config
+if not 'MYSQL_CONNECTION_NAME' in os.environ:
+    print('[~] Executed outside AppEngine context. Manually loading config.')
+    manually_read_app_config()
+
 import sys
 sys.path.append('third_party/')
 
 import time
 
 import pandas as pd
+pd.set_option('display.max_colwidth', -1)
+from sqlalchemy import or_, select, outerjoin, join, func
 from flask import Flask
 from sqlalchemy import outerjoin, join
 
@@ -114,11 +122,10 @@ def get_nvd_github_patch_candidates():
 
   patch_regex = 'github\.com/([^/]+)/([^/]+)/commit/([^/]+)'
 
-  github_commit_candidates = db.session.query(
-      Nvd, Reference.link, Vulnerability).select_from(
-          join(Nvd, Reference).outerjoin(Vulnerability)).filter(
-              Reference.link.op('regexp')(patch_regex)).group_by(
-                  Nvd.cve_id).with_labels()
+  sub_query = db.session.query(func.min(Reference.id)).filter(
+      Reference.link.op('regexp')(patch_regex)).group_by(Reference.nvd_json_id)
+  github_commit_candidates = db.session.query(Nvd, Reference.link, Vulnerability).select_from(
+          join(Nvd, Reference).outerjoin(Vulnerability)).filter(Reference.id.in_(sub_query)).with_labels()
 
   return github_commit_candidates
 
@@ -227,7 +234,7 @@ def start_crawling():
       '1) Fetching entries from NVD with a direct github.com/*/commit/* commit link.',
       crlf=True)
   github_commit_candidates = get_nvd_github_patch_candidates()
-  dump_query(github_commit_candidates, ['cve_nvds_id', 'references_link'])
+  dump_query(github_commit_candidates, ['cve_nvd_jsons_id', 'cve_references_link'])
 
   write_highlighted('2) Creating/updating existing Vcdb entries.', crlf=True)
   stats = store_or_update_vcdb_entries(github_commit_candidates)
