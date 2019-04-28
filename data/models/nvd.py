@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+
 import cfg
 import nvd_template
 from data.models.vulnerability import Vulnerability

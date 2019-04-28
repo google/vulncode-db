@@ -11,11 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import time
-
-from flask import Blueprint, redirect, flash, request, render_template, abort, g, url_for, Response, send_file
-
-import cfg
 import json
 import logging
 
@@ -24,15 +19,18 @@ try:
 except ImportError:
   import urllib.request as urllib2
 
+from flask import Blueprint, redirect, flash, request, render_template, abort, url_for, Response, send_file
+
 from app import flashError
-from app.auth import login_required, admin_required
+from app.auth import admin_required
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability import VulnerabilityDetails
-from data.models import Vulnerability, VulnerabilityGitCommits, RepositoryFilesSchema
+import cfg
+from data.models import RepositoryFilesSchema
 from data.forms import VulnerabilityDeleteForm, VulnerabilityDetailsForm
 from data.database import DEFAULT_DATABASE
-from lib.vcs_management import getVcsHandler
-from lib.utils import createJsonResponse
+from lib.vcs_management import get_vcs_handler
+from lib.utils import create_json_response
 
 bp = Blueprint('vuln', __name__, url_prefix='/')
 db = DEFAULT_DATABASE
@@ -42,8 +40,8 @@ def view_vuln(vuln_id, use_template):
   try:
     vulnerability_details = VulnerabilityDetails(vuln_id)
     vulnerability_details.validate()
-  except InvalidIdentifierException as e:
-    return flashError(str(e), 'serve_index')
+  except InvalidIdentifierException as err:
+    return flashError(str(err), 'serve_index')
   return render_template(
       use_template, cfg=cfg, vulnerability_details=vulnerability_details)
 
@@ -61,7 +59,7 @@ def _get_vulnerability_details(vuln_id):
     if not vulnerability_details.vulnerability_view:
       abort(404)
     return vulnerability_details
-  except InvalidIdentifierException as e:
+  except InvalidIdentifierException:
     abort(404)
 
 
@@ -100,16 +98,22 @@ def vuln_file_tree(vuln_id):
     try:
       vulnerability_details.fetch_tree_cache(skip_errors=False, max_timeout=10)
       response_msg = master_commit.tree_cache
-    except Exception as e:
+    except urllib2.HTTPError as err:
+      status_code = err.code
+      response_msg = ''.join(['VCS proxy is unreachable (it might be down).',
+                              '\r\nHTTPError\r\n',
+                              err.read()])
+      content_type = 'text/plain'
+    except urllib2.URLError as err:
+      status_code = 400
+      response_msg = ''.join(['VCS proxy is unreachable (it might be down).',
+                              '\r\nURLError\r\n',
+                              str(err.reason)])
+      content_type = 'text/plain'
+    except Exception:
       status_code = 400
       content_type = 'text/plain'
       response_msg = 'VCS proxy is unreachable (it might be down).'
-      if type(e) == urllib2.HTTPError:
-        status_code = e.code
-        response_msg += "\r\nHTTPError\r\n" + str(e.read())
-      if type(e) == urllib2.URLError:
-        status_code = 400
-        response_msg += "\r\nURLError\r\n" + str(e.reason)
 
   return Response(
       response=response_msg, status=status_code, content_type=content_type)
@@ -124,7 +128,7 @@ def annotation_data(vuln_id):
   if not master_commit:
     logging.error('Vuln (id: {:d}) has no linked Git commits!'.format(
         vuln_view.id))
-    return createJsonResponse('Entry has no linked Git link!', 404)
+    return create_json_response('Entry has no linked Git link!', 404)
 
   master_commit = vulnerability_details.getMasterCommit()
   files_schema = RepositoryFilesSchema(many=True)
@@ -147,8 +151,8 @@ def file_provider(vuln_id):
 
   try:
     result = urllib2.urlopen(proxy_target)
-  except urllib2.HTTPError as e:
-    return Response(response=e.read(), status=e.code, content_type='text/plain')
+  except urllib2.HTTPError as err:
+    return Response(response=err.read(), status=err.code, content_type='text/plain')
   return send_file(result, mimetype='application/octet-stream')
 
 
@@ -199,8 +203,8 @@ def _create_vuln_internal(vuln_id=None):
   try:
     vulnerability_details = VulnerabilityDetails(vuln_id)
     vulnerability = vulnerability_details.get_or_create_vulnerability()
-  except InvalidIdentifierException as e:
-    return flashError(str(e), 'serve_index')
+  except InvalidIdentifierException as err:
+    return flashError(str(err), 'serve_index')
 
   if vulnerability.id:
     logging.debug('Preexisting vulnerability entry found: %s', vulnerability.id)
@@ -217,7 +221,7 @@ def _create_vuln_internal(vuln_id=None):
   if not commit['repo_name']:
     logging.info('Empty repository name. %r', commit)
     repo_url = commit['repo_url']
-    vcs_handler = getVcsHandler(None, repo_url)
+    vcs_handler = get_vcs_handler(None, repo_url)
     if vcs_handler:
       logging.info('Found name. %r', vcs_handler.repo_name)
       form.commits[0].repo_name.process_data(vcs_handler.repo_name)
@@ -230,8 +234,8 @@ def _create_vuln_internal(vuln_id=None):
       logging.debug('Successfully created/updated entry: %s', vulnerability.id)
       flash('Successfully created/updated entry.', 'success')
       return redirect(url_for('vuln.vuln_view', vuln_id=vulnerability.id))
-    except InvalidIdentifierException as e:
-      flashError(str(e))
+    except InvalidIdentifierException as err:
+      flashError(str(err))
 
   return render_template(
       'create_entry.html',
