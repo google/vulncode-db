@@ -29,6 +29,7 @@ pd.set_option('display.max_colwidth', -1)
 from sqlalchemy import or_, select, outerjoin, join, func
 from flask import Flask
 from sqlalchemy import outerjoin, join
+from sqlalchemy.orm import lazyload
 
 import sqlparse
 
@@ -125,7 +126,8 @@ def get_nvd_github_patch_candidates():
   sub_query = db.session.query(func.min(Reference.id)).filter(
       Reference.link.op('regexp')(patch_regex)).group_by(Reference.nvd_json_id)
   github_commit_candidates = db.session.query(Nvd, Reference.link, Vulnerability).select_from(
-          join(Nvd, Reference).outerjoin(Vulnerability)).filter(Reference.id.in_(sub_query)).with_labels()
+          join(Nvd, Reference).outerjoin(Vulnerability)).options(lazyload(Nvd.references)
+                                                                 ).filter(Reference.id.in_(sub_query)).with_labels()
 
   return github_commit_candidates
 

@@ -50,7 +50,7 @@ class Cvss3(nvd_template.Cvss3, NvdBase):
 
 class Cwe(nvd_template.Cwe, NvdBase):
   nvd_json_id = Column(INTEGER(10), ForeignKey('cve.nvd_jsons.id'), index=True)
-  cwe_data = relationship(CweData, primaryjoin='foreign(CweData.cwe_id) == Cwe.cwe_id', uselist=False)
+  cwe_data = relationship(CweData, primaryjoin='foreign(CweData.cwe_id) == Cwe.cwe_id', uselist=False, lazy='joined')
 
   @property
   def cwe_name(self):
@@ -83,11 +83,11 @@ class Reference(nvd_template.Reference, NvdBase):
 
 class Nvd(nvd_template.NvdJson, NvdBase):
   __tablename__ = 'nvd_jsons'
-  cwe = relationship(Cwe, uselist=False)
+  cwe = relationship(Cwe, uselist=False, lazy='joined')
   cpes = relationship(Cpe, backref='nvd_entry', single_parent=True)
-  description = relationship(Description, uselist=False)
-  cvss3 = relationship(Cvss3, uselist=False)
-  references = relationship(Reference, backref='nvd_entry', single_parent=True)
+  description = relationship(Description, uselist=False, lazy='joined')
+  cvss3 = relationship(Cvss3, uselist=False, lazy='joined')
+  references = relationship(Reference, backref='nvd_entry', single_parent=True, lazy='joined')
   vulns = relationship(Vulnerability)
 
   def get_products(self):
