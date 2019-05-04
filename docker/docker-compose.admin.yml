@@ -12,3 +12,5 @@ services:
       - ./cve-data/logs:/var/log/vuls
     depends_on:
       - database
+    # Uncomment if you prefer using a host database instead.
+    #network_mode: "host"

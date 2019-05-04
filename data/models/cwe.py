@@ -21,7 +21,6 @@ from sqlalchemy import Column, Text, String, Index
 from sqlalchemy.orm import relationship
 
 
-
 class CweData(CweBase):
   __tablename__ = 'cwe_data'
 

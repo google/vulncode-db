@@ -16,8 +16,8 @@
 import os
 from lib.utils import manually_read_app_config
 if not 'MYSQL_CONNECTION_NAME' in os.environ:
-    print('[~] Executed outside AppEngine context. Manually loading config.')
-    manually_read_app_config()
+  print('[~] Executed outside AppEngine context. Manually loading config.')
+  manually_read_app_config()
 
 import sys
 sys.path.append('third_party/')
@@ -125,9 +125,11 @@ def get_nvd_github_patch_candidates():
 
   sub_query = db.session.query(func.min(Reference.id)).filter(
       Reference.link.op('regexp')(patch_regex)).group_by(Reference.nvd_json_id)
-  github_commit_candidates = db.session.query(Nvd, Reference.link, Vulnerability).select_from(
-          join(Nvd, Reference).outerjoin(Vulnerability)).options(lazyload(Nvd.references)
-                                                                 ).filter(Reference.id.in_(sub_query)).with_labels()
+  github_commit_candidates = db.session.query(
+      Nvd, Reference.link, Vulnerability).select_from(
+          join(Nvd, Reference).outerjoin(Vulnerability)).options(
+              lazyload(Nvd.references)).filter(
+                  Reference.id.in_(sub_query)).with_labels()
 
   return github_commit_candidates
 
@@ -236,7 +238,8 @@ def start_crawling():
       '1) Fetching entries from NVD with a direct github.com/*/commit/* commit link.',
       crlf=True)
   github_commit_candidates = get_nvd_github_patch_candidates()
-  dump_query(github_commit_candidates, ['cve_nvd_jsons_id', 'cve_references_link'])
+  dump_query(github_commit_candidates,
+             ['cve_nvd_jsons_id', 'cve_references_link'])
 
   write_highlighted('2) Creating/updating existing Vcdb entries.', crlf=True)
   stats = store_or_update_vcdb_entries(github_commit_candidates)

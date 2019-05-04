@@ -73,3 +73,7 @@ env_variables:
   # Admin emails separated by ','. This is required to make permanent changes to the database.
   APPLICATION_ADMINS: 'user@gmail.com'
 
+  # Shows a warning as changes can only be stored permanently by admins.
+  #DEMO_MODE: False
+  # Show a "maintenance page".
+  #MAINTENANCE_MODE: False

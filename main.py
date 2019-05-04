@@ -18,7 +18,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import sys
 
-from flask import Flask, send_from_directory, render_template
+from flask import Flask, send_from_directory, render_template, request, url_for, redirect
 from flask_wtf.csrf import CSRFProtect
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -30,6 +30,7 @@ from lib.utils import manually_read_app_config
 if not 'MYSQL_CONNECTION_NAME' in os.environ:
   print('[~] Executed outside AppEngine context. Manually loading config.')
   manually_read_app_config()
+from app.auth import is_admin
 from app.auth import bp as auth_bp
 from app.api import bp as api_bp
 from app.vuln import bp as vuln_bp
@@ -66,6 +67,20 @@ if not cfg.IS_PROD:
   DebugToolbarExtension(app)
 
 
+@app.before_request
+def maintenance_check():
+  if not cfg.MAINTENANCE_MODE:
+    return
+  allowed_prefixes = ['/about', '/static', '/auth']
+  for prefix in allowed_prefixes:
+    if request.path.startswith(prefix):
+      return
+  if is_admin():
+    return
+  if request.path != url_for('maintenance'):
+    return redirect(url_for('maintenance'))
+
+
 # Static files
 # TODO: Replace with nginx/apache for higher efficiency.
 @app.route('/static/<path:path>')
@@ -79,13 +94,18 @@ def serve_static(path):
 @app.route('/')
 def serve_index():
   vcdb = VulncodeDB()
-  return render_template('index.html', cfg=cfg, vcdb=vcdb)
+  return render_template('index.html', vcdb=vcdb)
+
+
+@app.route('/maintenance')
+def maintenance():
+  return render_template('maintenance.html')
 
 
 @app.route('/list_entries')
 def list_entries():
   vcdb = VulncodeDB()
-  return render_template('list_vuln_entries.html', cfg=cfg, vcdb=vcdb)
+  return render_template('list_vuln_entries.html', vcdb=vcdb)
 
 
 def check_db_state():
@@ -143,6 +163,7 @@ def main():
   use_protocol = 'https' if ssl_context else 'http'
   print('[+] Listening on: {}://{}:{}'.format(use_protocol, use_host, use_port))
   app.run(host=use_host, port=use_port, ssl_context=ssl_context, debug=True)
+
 
 if __name__ == '__main__':
   main()

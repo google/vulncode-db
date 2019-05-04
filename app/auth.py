@@ -90,9 +90,14 @@ def load_user():
     g.user = None
     return
 
+  # Ignore all non-admin users during maintenance mode.
+  if current_app.config['MAINTENANCE_MODE']:
+    return
+
   if is_authenticated():
     data = session['user_info']
     email = data['email']
+
     user = User.query.filter_by(email=email).one_or_none()
     if not user:
       user = User(

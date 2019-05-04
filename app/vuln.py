@@ -31,6 +31,7 @@ from data.forms import VulnerabilityDeleteForm, VulnerabilityDetailsForm
 from data.database import DEFAULT_DATABASE
 from lib.vcs_management import get_vcs_handler
 from lib.utils import create_json_response
+import ssl
 
 bp = Blueprint('vuln', __name__, url_prefix='/')
 db = DEFAULT_DATABASE
@@ -43,7 +44,7 @@ def view_vuln(vuln_id, use_template):
   except InvalidIdentifierException as err:
     return flashError(str(err), 'serve_index')
   return render_template(
-      use_template, cfg=cfg, vulnerability_details=vulnerability_details)
+      use_template, vulnerability_details=vulnerability_details)
 
 
 @bp.route('/vuln', methods=['POST'])
@@ -72,7 +73,7 @@ def vuln_view(vuln_id=None):
   if vuln_view.annotated:
     use_template = 'vuln_view_overview.html'
   return render_template(
-      use_template, cfg=cfg, vulnerability_details=vulnerability_details)
+      use_template, vulnerability_details=vulnerability_details)
 
 
 @bp.route('/<vuln_id>/details')
@@ -100,15 +101,17 @@ def vuln_file_tree(vuln_id):
       response_msg = master_commit.tree_cache
     except urllib2.HTTPError as err:
       status_code = err.code
-      response_msg = ''.join(['VCS proxy is unreachable (it might be down).',
-                              '\r\nHTTPError\r\n',
-                              err.read()])
+      response_msg = ''.join([
+          'VCS proxy is unreachable (it might be down).', '\r\nHTTPError\r\n',
+          err.read()
+      ])
       content_type = 'text/plain'
     except urllib2.URLError as err:
       status_code = 400
-      response_msg = ''.join(['VCS proxy is unreachable (it might be down).',
-                              '\r\nURLError\r\n',
-                              str(err.reason)])
+      response_msg = ''.join([
+          'VCS proxy is unreachable (it might be down).', '\r\nURLError\r\n',
+          str(err.reason)
+      ])
       content_type = 'text/plain'
     except Exception:
       status_code = 400
@@ -148,11 +151,15 @@ def file_provider(vuln_id):
       repo_url=vulnerability_details.repo_url,
       item_path=item_path,
       item_hash=item_hash)[1:]
-
   try:
-    result = urllib2.urlopen(proxy_target)
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.load_verify_locations(cafile=cfg.APP_CERT_FILE)
+    ctx.verify_mode = ssl.CERT_REQUIRED
+    result = urllib2.urlopen(proxy_target, context=ctx)
   except urllib2.HTTPError as err:
-    return Response(response=err.read(), status=err.code, content_type='text/plain')
+    return Response(
+        response=err.read(), status=err.code, content_type='text/plain')
   return send_file(result, mimetype='application/octet-stream')
 
 
@@ -185,7 +192,6 @@ def embed(vuln_id):
     }
     return render_template(
         'embedded.html',
-        cfg=cfg,
         vulnerability_details=vulnerability_details,
         embed_settings=settings)
   except (ValueError, InvalidIdentifierException):
@@ -239,6 +245,5 @@ def _create_vuln_internal(vuln_id=None):
 
   return render_template(
       'create_entry.html',
-      cfg=cfg,
       vulnerability_details=vulnerability_details,
       form=form)

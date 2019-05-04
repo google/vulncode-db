@@ -22,6 +22,7 @@ from sqlalchemy.engine import reflection
 from data.models import *
 from data.models.base import db, ma
 
+
 class Database:
   db = db
   ma = ma

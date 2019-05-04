@@ -39,6 +39,7 @@ def manually_read_app_config():
       print(err)
   return config
 
+
 vcs_config = manually_read_app_config()
 if not vcs_config:
   vcs_config = {}
@@ -94,6 +95,10 @@ def main_api():
   # Return a specific file's content if requested instead.
   if item_hash:
     content = vcs_handler.getFileContent(item_hash, item_path)
+    if not content:
+      err = 'Could not retrieve object with hash {}.'.format(item_hash)
+      logging.error(err)
+      return create_json_response(str(err), 400)
     logging.info('Retrieved %s: %d bytes', item_hash, len(content))
     return content
   return vcs_handler.fetchCommitData(commit_hash)
@@ -105,6 +110,7 @@ def main_api():
 
 
 app.register_blueprint(bp)
+
 
 def start():
   root_dir = os.path.dirname(os.path.realpath(__file__))
@@ -126,9 +132,7 @@ def start():
   cert_file = os.path.join(cert_dir, 'cert.pem')
   key_file = os.path.join(cert_dir, 'key.pem')
 
-  ssl_context = None
-  # Uncomment the following line if you want to use SSL instead.
-  #ssl_context = (cert_file, key_file)
+  ssl_context = (cert_file, key_file)
   use_host = '0.0.0.0'
   use_port = 8088
   use_protocol = 'https' if ssl_context else 'http'

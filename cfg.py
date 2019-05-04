@@ -23,6 +23,9 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 # Attention: This will be disabled by default.
 DEBUG = False
 
+# Show a maintenance page.
+MAINTENANCE_MODE = os.getenv('MAINTENANCE_MODE', 'false').lower() == 'true'
+
 # Enables connecting to the remote database using the cloud sql proxy.
 USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = os.getenv(
     'USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY', 'false').lower() == 'true'
@@ -93,11 +96,6 @@ SQLALCHEMY_ECHO = False
 DATABASE_CONNECT_OPTIONS = {}
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-SQLALCHEMY_BINDS = {
-    'cwe': gen_connection_string().replace('_DB_NAME_', 'cwe'),
-    'cve': gen_connection_string().replace('_DB_NAME_', 'cve')
-}
-
 # Application threads. A common general assumption is
 # using 2 per available processor cores - to handle
 # incoming requests using one and performing background
@@ -121,13 +119,16 @@ GOOGLE_OAUTH = {
 }
 
 # Emails (checked with OAuth) of admins who are allowed to make admin changes.
-APPLICATION_ADMINS = os.getenv('APPLICATION_ADMINS', '')
+APPLICATION_ADMINS = os.getenv('APPLICATION_ADMINS', '').replace(' ', '')
 APPLICATION_ADMINS = APPLICATION_ADMINS.split(',')
 
 DEMO_MODE = os.getenv('DEMO_MODE', 'false').lower() == 'true'
 
 # Disable link intercepts for the Flask toolbar.
 DEBUG_TB_INTERCEPT_REDIRECTS = False
+
+# We use certificate pinning to ensure correct communication between components.
+APP_CERT_FILE = 'cert/cert.pem'
 
 # local overrides
 try:

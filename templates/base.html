@@ -13,6 +13,11 @@
       <div class="col-sm-4 offset-md-4">
       <div id="alert_placeholder"></div>
       <div id="dialog_placeholder"></div>
+        {% if config.MAINTENANCE_MODE %}
+          <div class="alert alert-warning alert-dismissible" role="alert">
+            <strong>Application is currently under maintenance.</strong>
+          </div>
+        {% endif %}
         {% if messages %}
           <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
           {% for category, message in messages %}

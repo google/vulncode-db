@@ -71,7 +71,7 @@
         {{ vuln_view.date_created }}
       </td>
       <td>{{ vuln_view.id or "N/A" }}</td>
-      <td>{{ vuln_view.comment | truncate(500) or "N/A" }}</td>
+      <td>{{ vuln_view.comment | truncate(500) if vuln_view.comment else "N/A" }}</td>
       <td>{{ vuln_view.products or "N/A" }}</td>
       <td>
         {% if vuln_view.score %}

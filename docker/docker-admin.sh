@@ -61,14 +61,28 @@ function load_latest() {
 
 function load_full_cve() {
   info "Loading and importing all CVE entries."
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run go-cve-dictionary \
-  bash -c 'for i in `seq 2002 $(date +"%Y")`; do go-cve-dictionary fetchnvd -years $i; done'
+  for i in `seq 2002 $(date +"%Y")`
+  do
+    sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run go-cve-dictionary \
+    go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -years $i
+  done
 }
 
 function init_data() {
   info "Loading and importing initial data."
   load_cwe_data
-  load_current_year_cve_data
+  load_latest
+}
+
+function crawl_patches() {
+  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run frontend \
+  python crawl_patches.py
+}
+
+function start_shell() {
+  USE_SERVICE=$1
+  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run $USE_SERVICE \
+  sh -c '[ -f /bin/bash ] && (bash || true) || sh'
 }
 
 case "$1" in
@@ -88,19 +102,16 @@ case "$1" in
     load_latest
     ;;
   crawl_patches)
-    sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run frontend \
-    python crawl_patches.py
+    crawl_patches
     ;;
   shell)
     [ "$#" -eq 2 ] || die "Please specify a service."
-    USE_SERVICE=$2
-    sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run $USE_SERVICE \
-    sh -c '[ -f /bin/bash ] && (bash || true) || sh'
+    start_shell $2
     ;;
   *)
   echo "Usage: $0 [COMMAND]"
   echo "Commands:"
-  echo -e "\t init: Loads some initial data (cwe and current year CVE data)"
+  echo -e "\t init: Loads some initial data: CWE and CVE data from last 8 days"
   echo -e "\t cwe_data: Load CWE data"
   echo -e "\t current_year_cve_data: Load CVE data for the current year only"
   echo -e "\t full_cve: Load all available CVE entries"

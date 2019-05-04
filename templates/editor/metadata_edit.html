@@ -39,7 +39,7 @@
   </ul>
   <hr/>
   <button id="reset_changes_btn" type="button" class="btn btn-primary">Reset changes</button>
-  {% if cfg.DEMO_MODE and not g.user %}
+  {% if config.DEMO_MODE and not g.user %}
     <button type="button" class="btn btn-link"><b>(saving disabled)</b></button>
   {% else %}
     <button id="save_changes_btn" type="button" class="btn btn-primary">Save changes</button>

@@ -70,9 +70,17 @@ def run_migrations_online():
                                 poolclass=pool.NullPool)
 
     connection = engine.connect()
+
+    def include_object(object, name, type_, reflected, compare_to):
+      skipped_schemas = ['sys', 'mysql', 'performance_schema']
+      if type_ == 'table' and object.schema in skipped_schemas:
+        return False
+      return True
     context.configure(connection=connection,
                       target_metadata=target_metadata,
                       process_revision_directives=process_revision_directives,
+                      include_schemas=True,
+                      include_object=include_object,
                       **current_app.extensions['migrate'].configure_args)
 
     try:
