@@ -169,8 +169,8 @@ class GithubHandler(VcsHandler):
     commit_stats = self._getPatchStats(commit.stats)
     files_metadata = self._getFilesMetadata(commit.files)
 
-    commit_date = int((commit.commit.committer.date - datetime.datetime(
-        1970, 1, 1)).total_seconds())
+    commit_date = int((commit.commit.committer.date -
+                       datetime.datetime(1970, 1, 1)).total_seconds())
     commit_metadata = CommitMetadata(parent_commit_hash, commit_date,
                                      commit.commit.message, commit_stats,
                                      files_metadata)

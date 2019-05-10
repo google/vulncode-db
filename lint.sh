@@ -35,7 +35,7 @@ function fatal() {
 if npx eslint &>/dev/null
 then
   info 'Linting *.js files with eslint'
-  npx eslint **/*.js
+  npx eslint **/*.js --ignore-path .gitignore
 else
   fatal 'Please install eslint. Install node.js and run: npm install'
 fi
@@ -44,8 +44,8 @@ fi
 if which pylint &>/dev/null
 then
   info 'Linting python files with pylint'
-  find . -maxdepth 1 -name "*.py" -printf '%p\n' -exec pylint --rcfile=./pylintrc --reports=no {} \;
-  find app data lib -name "*.py" -printf '%p\n' -exec pylint --rcfile=./pylintrc --reports=no {} \;
+  find . -maxdepth 1 -name "*.py" -print -exec pylint --rcfile=./pylintrc --reports=no {} \;
+  find app data lib -name "*.py" -print -exec pylint --rcfile=./pylintrc --reports=no {} \;
 else
   fatal 'Please install pylint'
 fi

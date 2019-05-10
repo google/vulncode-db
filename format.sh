@@ -34,7 +34,7 @@ function fatal() {
 if npx eslint &>/dev/null
 then
   info 'Formatting *.js files.'
-  npx eslint "**/*.js" --fix --quiet --ignore-path .gitignore --debug 2>&1 > /dev/null | grep --color=never "Processing" | sed 's/^.*Processing\(.*\)$/Reformatting\1/'
+  npx eslint "**/*.js" --fix --quiet --ignore-path .gitignore --debug 2>&1 > /dev/null | grep "Processing" | sed 's/^.*Processing\(.*\)$/Reformatting\1/'
 else
   fatal 'Please install eslint. Install node.js and run: npm install'
 fi
@@ -42,7 +42,7 @@ fi
 if which yapf &>/dev/null
 then
   info 'Formatting python files with yapf'
-  find . -maxdepth 1 -name "*.py" -printf 'Reformatting %p\n' -exec yapf -i --style=chromium {} \;
+  find . -maxdepth 1 -name "*.py" -print -exec yapf -i --style=chromium {} \; | awk '{print "Reformatting "$1}'
   yapf -p -vv -i --recursive app lib data --style=chromium || fatal 'Error during formatting python files'
 else
   fatal 'Please install yapft'

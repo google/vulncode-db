@@ -79,6 +79,21 @@ function crawl_patches() {
   python crawl_patches.py
 }
 
+function build_service() {
+  USE_SERVICE=$1
+  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml build $USE_SERVICE
+}
+
+function format_code() {
+  USE_SERVICE=$1
+  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run utils './format.sh'
+}
+
+function lint_code() {
+  USE_SERVICE=$1
+  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run utils './lint.sh'
+}
+
 function start_shell() {
   USE_SERVICE=$1
   sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run $USE_SERVICE \
@@ -104,6 +119,16 @@ case "$1" in
   crawl_patches)
     crawl_patches
     ;;
+  format)
+    format_code
+    ;;
+  lint)
+    lint_code
+    ;;
+  build)
+    [ "$#" -eq 2 ] || die "Please specify a service."
+    build_service $2
+    ;;
   shell)
     [ "$#" -eq 2 ] || die "Please specify a service."
     start_shell $2
@@ -111,17 +136,21 @@ case "$1" in
   *)
   echo "Usage: $0 [COMMAND]"
   echo "Commands:"
-  echo -e "\t init: Loads some initial data: CWE and CVE data from last 8 days"
-  echo -e "\t cwe_data: Load CWE data"
-  echo -e "\t current_year_cve_data: Load CVE data for the current year only"
-  echo -e "\t full_cve: Load all available CVE entries"
-  echo -e "\t latest: Load latest CVE entries (useful for automation)"
-  echo -e "\t crawl_patches: Run crawl_patches.py inside the frontend container"
-  echo -e "\t shell [service]: Launch a shell inside one of the following services:"
+  echo -e "\t init: Loads some initial data: CWE and CVE data from last 8 days."
+  echo -e "\t cwe_data: Load CWE id<->description mapping data."
+  echo -e "\t current_year_cve_data: Load CVE data for the current year only."
+  echo -e "\t full_cve: Load all available CVE entries."
+  echo -e "\t latest: Load latest CVE entries (useful for automation)."
+  echo -e "\t crawl_patches: Run crawl_patches.py inside the frontend container."
+  echo -e "\t format/lint: Format/Lint the Python and JS code."
+  echo -e "\t build [service]: (Re)builds a given service."
+  echo -e "\t shell [service]: Launch a shell inside a given service."
+  echo -e "\t --- Available services ---"
   echo -e "\t\t vcs-proxy"
   echo -e "\t\t database"
   echo -e "\t\t go-cve-dictionary"
   echo -e "\t\t frontend"
+  echo -e "\t\t utils"
   exit 1
 esac
 success "Done"

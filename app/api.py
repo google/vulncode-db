@@ -94,8 +94,9 @@ def update_file_comments(file_obj, new_comments):
     def __str__(self):
       return 'comment @ {}'.format(self.value)
 
-  updated_comments = calculate_revision_updates(
-      HashableComment, file_obj.comments, new_comments, ['text', 'sort_pos'])
+  updated_comments = calculate_revision_updates(HashableComment,
+                                                file_obj.comments, new_comments,
+                                                ['text', 'sort_pos'])
 
   # add updated comments
   file_obj.comments += updated_comments

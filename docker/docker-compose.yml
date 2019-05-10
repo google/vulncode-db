@@ -41,7 +41,7 @@ services:
       #- /etc/group:/etc/group:ro
     environment:
       - MYSQL_HOST=database
-      - VCS_PROXY_LOCAL_URL=http://vcs-proxy:8088/
+      - VCS_PROXY_LOCAL_URL=https://vcs-proxy:8088/
     #user: "${UID}:${GID}"
     depends_on:
       - vcs-proxy

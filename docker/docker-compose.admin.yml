@@ -14,3 +14,11 @@ services:
       - database
     # Uncomment if you prefer using a host database instead.
     #network_mode: "host"
+
+  utils:
+    build:
+      context: ..
+      dockerfile: ./docker/utils/Dockerfile
+    image: utils
+    volumes:
+    - ../:/app
