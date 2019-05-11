@@ -23,9 +23,9 @@ from sqlalchemy.ext.declarative import declared_attr
 #       MariaDB server settings.
 class SQLAlchemy(SQLAlchemyBase):
 
-  def apply_pool_defaults(self, app, options):
-    super(SQLAlchemy, self).apply_pool_defaults(app, options)
-    options["pool_pre_ping"] = True
+    def apply_pool_defaults(self, app, options):
+        super(SQLAlchemy, self).apply_pool_defaults(app, options)
+        options["pool_pre_ping"] = True
 
 
 db = SQLAlchemy()
@@ -33,40 +33,42 @@ ma = Marshmallow()
 
 
 class MainBase(db.Model):
-  # N.B. We leave the schema out on purpose as alembic gets confused otherwise.
-  # The default schema is already main (as specified in the connection string).
-  # Also see:
-  # https://github.com/sqlalchemy/alembic/issues/519#issuecomment-442533633
-  #__table_args__ = {'schema': 'main'}
-  __abstract__ = True
+    # N.B. We leave the schema out on purpose as alembic gets confused otherwise.
+    # The default schema is already main (as specified in the connection string).
+    # Also see:
+    # https://github.com/sqlalchemy/alembic/issues/519#issuecomment-442533633
+    # __table_args__ = {'schema': 'main'}
+    __abstract__ = True
 
-  id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-  date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
-  date_modified = db.Column(
-      db.DateTime,
-      default=db.func.current_timestamp(),
-      onupdate=db.func.current_timestamp())
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_modified = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp(),
+    )
 
 
 class NvdBase(db.Model):
-  __abstract__ = True
+    __abstract__ = True
 
-  @declared_attr
-  def __table_args__(cls):
-    indices = ()
-    idx_format = 'idx_{tbl_name}_{col_name}'
-    for key in cls.__dict__:
-      attribute = cls.__dict__[key]
-      if not isinstance(attribute, db.Column) or not attribute.index:
-        continue
-      # Disable Index
-      attribute.index = None
-      # Create a custom index here.
-      indices += (Index(
-          idx_format.format(tbl_name=cls.__tablename__, col_name=key), key),)
-    return indices + ({'schema': 'cve'},)
+    @declared_attr
+    def __table_args__(cls):
+        indices = ()
+        idx_format = "idx_{tbl_name}_{col_name}"
+        for key in cls.__dict__:
+            attribute = cls.__dict__[key]
+            if not isinstance(attribute, db.Column) or not attribute.index:
+                continue
+            # Disable Index
+            attribute.index = None
+            # Create a custom index here.
+            indices += (Index(
+                idx_format.format(tbl_name=cls.__tablename__, col_name=key),
+                key),)
+        return indices + ({"schema": "cve"},)
 
 
 class CweBase(db.Model):
-  __table_args__ = {'schema': 'cwe'}
-  __abstract__ = True
+    __table_args__ = {"schema": "cwe"}
+    __abstract__ = True

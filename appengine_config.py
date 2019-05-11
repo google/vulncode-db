@@ -15,4 +15,4 @@
 from google.appengine.ext import vendor
 
 # Add any libraries installed in the "lib" folder.
-vendor.add('third_party')
+vendor.add("third_party")

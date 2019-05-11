@@ -120,6 +120,9 @@ disable=
     hex-method,
     nonzero-method,
     map-builtin-not-iterating,
+    superfluous-parens,
+    import-error,
+    unused-wildcard-import
 
 [REPORTS]
 
@@ -266,7 +269,7 @@ max-module-lines=1000
 
 # String used as indentation unit. This is usually "    " (4 spaces) or "\t" (1
 # tab).
-indent-string='  '
+indent-string='    '
 
 # Number of spaces of indent required inside a hanging  or continued line.
 indent-after-paren=4

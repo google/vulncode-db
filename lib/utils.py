@@ -18,35 +18,35 @@ from flask import jsonify
 
 
 def get_file_contents(path):
-  with open(path) as file:
-    output = file.read()
-  return output
+    with open(path) as file:
+        output = file.read()
+    return output
 
 
 def write_contents(path, content):
-  with open(path, 'w') as f:
-    f.write(content)
+    with open(path, "w") as f:
+        f.write(content)
 
 
 def create_json_response(msg, status_code=200, **kwargs):
-  message = {'msg': msg}
-  message.update(kwargs)
-  resp = jsonify(message)
-  resp.status_code = status_code
-  return resp
+    message = {"msg": msg}
+    message.update(kwargs)
+    resp = jsonify(message)
+    resp.status_code = status_code
+    return resp
 
 
 def manually_read_app_config():
-  """Load app.yaml environment variables manually."""
-  try:
-    import yaml
-  except ImportError:
-    return None
-  with open('app.yaml') as file:
+    """Load app.yaml environment variables manually."""
     try:
-      yaml_context = yaml.load(file, Loader=yaml.SafeLoader)
-      env_variables = yaml_context['env_variables']
-      for key in env_variables:
-        os.environ[key] = str(env_variables[key])
-    except yaml.YAMLError as err:
-      print(err)
+        import yaml
+    except ImportError:
+        return None
+    with open("app.yaml") as file:
+        try:
+            yaml_context = yaml.load(file, Loader=yaml.SafeLoader)
+            env_variables = yaml_context["env_variables"]
+            for key in env_variables:
+                os.environ[key] = str(env_variables[key])
+        except yaml.YAMLError as err:
+            print(err)

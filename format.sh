@@ -42,10 +42,20 @@ fi
 if which yapf &>/dev/null
 then
   info 'Formatting python files with yapf'
-  find . -maxdepth 1 -name "*.py" -print -exec yapf -i --style=chromium {} \; | awk '{print "Reformatting "$1}'
-  yapf -p -vv -i --recursive app lib data --style=chromium || fatal 'Error during formatting python files'
+  YAPF_STYLE='{based_on_style: chromium, indent_width: 4}'
+  find . -maxdepth 1 -name "*.py" -print -exec yapf -i --style="${YAPF_STYLE}" {} \; | awk '{print "Reformatting "$1}'
+  yapf -p -vv -i --recursive app lib data --style="${YAPF_STYLE}" || fatal 'Error during formatting python files'
 else
-  fatal 'Please install yapft'
+  fatal 'Please install yapf: pip install yapf'
 fi
+
+#if which black &>/dev/null
+#then
+#  info 'Formatting python files with black'
+#  find . -maxdepth 1 -name "*.py" -exec black {} \;
+#  black app lib data || fatal 'Error during formatting python files'
+#else
+#  fatal 'Please install black: pip3 install black'
+#fi
 
 success "Done. Happy coding :)"

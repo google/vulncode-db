@@ -19,14 +19,14 @@ from data.models.base import db, ma
 
 
 def populate_models(modname):
-  mod = sys.modules.get(modname)
-  if not mod:
-    return
+    mod = sys.modules.get(modname)
+    names = []
+    if not mod:
+        return names
 
-  names = []
-  for name, clazz in inspect.getmembers(mod, inspect.isclass):
-    # getattr can't be used here as it also looks into superclasses
-    is_abstract = clazz.__dict__.get('__abstract__', False)
-    if issubclass(clazz, (db.Model, ma.ModelSchema)) and not is_abstract:
-      names.append(name)
-  return names
+    for name, clazz in inspect.getmembers(mod, inspect.isclass):
+        # getattr can't be used here as it also looks into superclasses
+        is_abstract = clazz.__dict__.get("__abstract__", False)
+        if issubclass(clazz, (db.Model, ma.ModelSchema)) and not is_abstract:
+            names.append(name)
+    return names

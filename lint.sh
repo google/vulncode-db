@@ -31,7 +31,6 @@ function fatal() {
   exit 1
 }
 
-
 if npx eslint &>/dev/null
 then
   info 'Linting *.js files with eslint'
@@ -39,7 +38,6 @@ then
 else
   fatal 'Please install eslint. Install node.js and run: npm install'
 fi
-
 
 if which pylint &>/dev/null
 then

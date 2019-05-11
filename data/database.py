@@ -24,56 +24,56 @@ from data.models.base import db, ma
 
 
 class Database:
-  db = db
-  ma = ma
-  migrate = Migrate(db=db)
-  manager = Manager()
+    db = db
+    ma = ma
+    migrate = Migrate(db=db)
+    manager = Manager()
 
-  def __init__(self, app=None):
-    """Initializes the questionnaire object."""
-    self.app = app
+    def __init__(self, app=None):
+        """Initializes the questionnaire object."""
+        self.app = app
 
-  def init_app(self, app):
-    self.app = app
-    with self.app.app_context():
-      self.db.init_app(self.app)
-      self.ma.init_app(self.app)
-      self.migrate.init_app(self.app)
-      self.manager.app = self.app
+    def init_app(self, app):
+        self.app = app
+        with self.app.app_context():
+            self.db.init_app(self.app)
+            self.ma.init_app(self.app)
+            self.migrate.init_app(self.app)
+            self.manager.app = self.app
 
-      # Create the database from all model definitions.
-      # Note: This is a no-op if the tables already exist.
-      # self.db.create_all()
+            # Create the database from all model definitions.
+            # Note: This is a no-op if the tables already exist.
+            # self.db.create_all()
 
-  def reset_all(self):
-    # Attention: This will drop the complete database with all its entries.
-    self.db.drop_all()
+    def reset_all(self):
+        # Attention: This will drop the complete database with all its entries.
+        self.db.drop_all()
 
-    # Hack to remove all indices from the database...
-    insp = reflection.Inspector.from_engine(self.db.engine)
-    for name in insp.get_table_names():
-      for index in insp.get_indexes(name):
-        self.db.engine.execute('DROP INDEX IF EXISTS {:s}'.format(
-            index['name']))
-    self.app.logger.warning('!!! Attention !!! FLUSHED the main database.')
+        # Hack to remove all indices from the database...
+        insp = reflection.Inspector.from_engine(self.db.engine)
+        for name in insp.get_table_names():
+            for index in insp.get_indexes(name):
+                self.db.engine.execute("DROP INDEX IF EXISTS {:s}".format(
+                    index["name"]))
+        self.app.logger.warning("!!! Attention !!! FLUSHED the main database.")
 
-    # Create the database from all model definitions.
-    self.db.create_all()
+        # Create the database from all model definitions.
+        self.db.create_all()
 
-    self.db.session.commit()
+        self.db.session.commit()
 
-  @property
-  def session(self):
-    return self.db.session
+    @property
+    def session(self):
+        return self.db.session
 
-  def query(self, *args, **kwargs):
-    return self.db.session.query(*args, **kwargs)
+    def query(self, *args, **kwargs):
+        return self.db.session.query(*args, **kwargs)
 
 
-Database.manager.add_command('db', MigrateCommand)
+Database.manager.add_command("db", MigrateCommand)
 
 DEFAULT_DATABASE = Database()
 
 
 def init_app(app):
-  DEFAULT_DATABASE.init_app(app)
+    DEFAULT_DATABASE.init_app(app)
