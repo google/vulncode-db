@@ -7,3 +7,4 @@ Flask-Migrate==2.2.1
 # Mysql dependencies.
 mysqlclient
 mysql-python
+mock

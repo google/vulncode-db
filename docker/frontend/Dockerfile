@@ -17,4 +17,3 @@ WORKDIR /app
 EXPOSE 8080/tcp
 
 #USER nobody:nogroup
-CMD ["bash", "/app/run.sh"]

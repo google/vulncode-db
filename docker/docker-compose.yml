@@ -35,6 +35,12 @@ services:
     build:
       context: ..
       dockerfile: ./docker/frontend/Dockerfile
+    # Wait for the database to be available before starting the application.
+    command: >
+      bash -c "while ! (exec 6<>/dev/tcp/database/3306) 2>/dev/null; do
+        echo 'Waiting for database:3306...'; sleep 5;
+      done;
+      bash /app/run.sh"
     volumes:
       - ../:/app
       #- /etc/passwd:/etc/passwd:ro

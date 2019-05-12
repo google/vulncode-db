@@ -17,6 +17,7 @@ import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # Statement for enabling the development environment.
 # Shows an interactive debugger for unhandled exceptions.
@@ -66,9 +67,9 @@ elif IS_QA:
     GCE_VCS_PROXY_URL = os.environ["VCS_PROXY_QA_URL"]
 elif IS_LOCAL:
     DEBUG = True
-    MYSQL_USER = os.environ["MYSQL_LOCAL_USER"]
-    MYSQL_PASS = os.environ["MYSQL_LOCAL_PASS"]
-    GCE_VCS_PROXY_URL = os.environ["VCS_PROXY_LOCAL_URL"]
+    MYSQL_USER = os.getenv("MYSQL_LOCAL_USER", "")
+    MYSQL_PASS = os.getenv("MYSQL_LOCAL_PASS", "")
+    GCE_VCS_PROXY_URL = os.getenv("VCS_PROXY_LOCAL_URL", "")
 else:
     raise AssertionError("Invalid deployment mode detected.")
 
@@ -111,17 +112,24 @@ THREADS_PER_PAGE = 2
 CSRF_ENABLED = True
 
 # Use a secure, unique and absolutely secret key for signing the data.
-CSRF_SESSION_KEY = os.environ["CSRF_SESSION_KEY"]
+CSRF_SESSION_KEY = os.getenv("CSRF_SESSION_KEY", "")
 
 # Secret key for signing cookies
-SECRET_KEY = os.environ["COOKIE_SECRET_KEY"]
+SECRET_KEY = os.getenv("COOKIE_SECRET_KEY", "")
 
 PATCH_REGEX = r".*(github\.com|\.git|\.patch|\/hg\.|\/\+\/)"
 
 GOOGLE_OAUTH = {
-    "consumer_key": os.environ["OAUTH_CONSUMER_KEY"],
-    "consumer_secret": os.environ["OAUTH_CONSUMER_SECRET"],
+    "consumer_key": os.getenv("OAUTH_CONSUMER_KEY", ""),
+    "consumer_secret": os.getenv("OAUTH_CONSUMER_SECRET", "")
 }
+
+# Make sure relevant properties are always set for QA and PROD.
+if IS_PROD or IS_QA:
+    assert len(CSRF_SESSION_KEY) > 0
+    assert len(SECRET_KEY) > 0
+    assert len(GOOGLE_OAUTH["consumer_key"]) > 0
+    assert len(GOOGLE_OAUTH["consumer_secret"]) > 0
 
 # Emails (checked with OAuth) of admins who are allowed to make admin changes.
 APPLICATION_ADMINS = os.getenv("APPLICATION_ADMINS", "").replace(" ", "")

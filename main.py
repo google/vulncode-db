@@ -19,74 +19,24 @@ from logging.handlers import RotatingFileHandler
 import sys
 
 from flask import (
-    Flask,
     send_from_directory,
     render_template,
-    request,
-    url_for,
-    redirect,
 )
-from flask_wtf.csrf import CSRFProtect
-from flask_debugtoolbar import DebugToolbarExtension
 
 import alembic.script
 import alembic.runtime.environment
-from flask_bootstrap import Bootstrap
-
 from lib.utils import manually_read_app_config
 
 if not "MYSQL_CONNECTION_NAME" in os.environ:
     print("[~] Executed outside AppEngine context. Manually loading config.")
     manually_read_app_config()
-from app.auth import is_admin
-from app.auth import bp as auth_bp
-from app.api import bp as api_bp
-from app.vuln import bp as vuln_bp
-from app.vcs_proxy import bp as vcs_proxy_bp
+
 from app.vulnerability import VulncodeDB
 import cfg
-from data.database import DEFAULT_DATABASE, init_app as init_db
-
-app = Flask(__name__, static_url_path="", template_folder="templates")
-app.register_blueprint(auth_bp)
-app.register_blueprint(api_bp)
-app.register_blueprint(vuln_bp)
-app.register_blueprint(vcs_proxy_bp)
-
-# Load the Flask configuration parameters from a global config file.
-app.config.from_object("cfg")
-
-# We use flask_wtf and WTForm with bootstrap for quick form rendering.
-# Note: no JS/CSS or other resources are used from this package though.
-Bootstrap(app)
-
-# setup CSRF
-csrf = CSRFProtect()
-csrf.init_app(app)
-
-# Load SQLAlchemy
-init_db(app)
+from data.database import DEFAULT_DATABASE
+from lib.app_factory import create_app
+app = create_app()
 db = DEFAULT_DATABASE.db
-# ------------------------------------------------
-if not cfg.IS_PROD:
-    # Activate a port of the django-debug-toolbar for Flask applications.
-    # Shows executed queries + their execution time, allows profiling and more.
-    # See: https://flask-debugtoolbar.readthedocs.io/en/latest/
-    DebugToolbarExtension(app)
-
-
-@app.before_request
-def maintenance_check():
-    if not cfg.MAINTENANCE_MODE:
-        return
-    allowed_prefixes = ["/about", "/static", "/auth"]
-    for prefix in allowed_prefixes:
-        if request.path.startswith(prefix):
-            return
-    if is_admin():
-        return
-    if request.path != url_for("maintenance"):
-        return redirect(url_for("maintenance"))
 
 
 # Static files

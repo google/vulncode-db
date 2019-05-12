@@ -94,6 +94,16 @@ function lint_code() {
   sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run utils './lint.sh'
 }
 
+function run_tests() {
+  info "Starting tests."
+  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run tests
+}
+
+function stop_test_database() {
+  info "Stopping the tests MySQL server and removing remaining test data."
+  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml stop tests-db
+}
+
 function start_shell() {
   USE_SERVICE=$1
   sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run $USE_SERVICE \
@@ -103,6 +113,12 @@ function start_shell() {
 case "$1" in
   init)
     init_data
+    ;;
+  test)
+    run_tests
+    ;;
+  stop_testdb)
+    stop_test_database
     ;;
   cwe_data)
     load_cwe_data
@@ -136,21 +152,24 @@ case "$1" in
   *)
   echo "Usage: $0 [COMMAND]"
   echo "Commands:"
-  echo -e "\t init: Loads some initial data: CWE and CVE data from last 8 days."
-  echo -e "\t cwe_data: Load CWE id<->description mapping data."
-  echo -e "\t current_year_cve_data: Load CVE data for the current year only."
-  echo -e "\t full_cve: Load all available CVE entries."
-  echo -e "\t latest: Load latest CVE entries (useful for automation)."
-  echo -e "\t crawl_patches: Run crawl_patches.py inside the frontend container."
-  echo -e "\t format/lint: Format/Lint the Python and JS code."
-  echo -e "\t build [service]: (Re)builds a given service."
-  echo -e "\t shell [service]: Launch a shell inside a given service."
+  echo -e "\t init - Loads some initial data: CWE and CVE data from last 8 days."
+  echo -e "\t test - Execute the application tests."
+  echo -e "\t stop_testdb - Stop the test database and remove any remaining test data."
+  echo -e "\t cwe_data - Load CWE id<->description mapping data."
+  echo -e "\t current_year_cve_data - Load CVE data for the current year only."
+  echo -e "\t full_cve - Load all available CVE entries."
+  echo -e "\t latest - Load latest CVE entries (useful for automation)."
+  echo -e "\t crawl_patches - Run crawl_patches.py inside the frontend container."
+  echo -e "\t format/lint - Format/Lint the Python and JS code."
+  echo -e "\t build [service] - (Re)builds a given service."
+  echo -e "\t shell [service] - Launch a shell inside a given service."
   echo -e "\t --- Available services ---"
   echo -e "\t\t vcs-proxy"
   echo -e "\t\t database"
   echo -e "\t\t go-cve-dictionary"
   echo -e "\t\t frontend"
   echo -e "\t\t utils"
+  echo -e "\t\t tests"
   exit 1
 esac
 success "Done"
