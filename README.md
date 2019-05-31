@@ -43,8 +43,8 @@ The setup is simplified with Docker and docker-compose in particular. Having the
  the project using the following instructions:
  
 ```
-# Clone the repository.
-git clone https://github.com/google/vulncode-db.git
+# Clone the repository and its (third-party) submodules.
+git clone --recursive https://github.com/google/vulncode-db.git
 cd vulncode-db
 # Setup configuration files, the Docker images and containers.
 ./setup.sh
