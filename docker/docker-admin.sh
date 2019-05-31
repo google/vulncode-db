@@ -110,7 +110,18 @@ function start_shell() {
   sh -c '[ -f /bin/bash ] && (bash || true) || sh'
 }
 
+function run_application() {
+  info "Starting the main application."
+  info "Available resources when deployed:"
+  success "Main application: http://127.0.0.1:8080"
+  success "VCS proxy: https://127.0.0.1:8088"
+  sudo docker-compose up
+}
+
 case "$1" in
+  run)
+    run_application
+    ;;
   init)
     init_data
     ;;
@@ -152,6 +163,7 @@ case "$1" in
   *)
   echo "Usage: $0 [COMMAND]"
   echo "Commands:"
+  echo -e "\t run - Start the main application and its dependencies."
   echo -e "\t init - Loads some initial data: CWE and CVE data from last 8 days."
   echo -e "\t test - Execute the application tests."
   echo -e "\t stop_testdb - Stop the test database and remove any remaining test data."

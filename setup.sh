@@ -76,8 +76,5 @@ else
   fatal 'Please install docker-compose.'
 fi
 
-info "You should be able to start everything with: cd docker; sudo docker-compose up"
-error "Please also see docker/docker-admin.sh for information on how to fill the database and more."
-info "Available resources when deployed:"
-success "Main application: http://127.0.0.1:8080"
-success "VCS proxy: https://127.0.0.1:8088"
+info "You should be able to start everything with: ./docker/docker-admin.sh run"
+error "Please also run ./docker/docker-admin.sh to see general information on how to fill the database and more."

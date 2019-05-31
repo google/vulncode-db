@@ -45,7 +45,7 @@ env_variables:
   MYSQL_LOCAL_USER: 'root'
   MYSQL_LOCAL_PASS: 'pass'
   # Only specify the following if you are using a non-docker vcs-proxy.
-  #VCS_PROXY_LOCAL_URL: 'http://127.0.0.1:8088/'
+  # VCS_PROXY_LOCAL_URL: 'http://127.0.0.1:8088/'
   # Enables connecting to the remote database using the cloud sql proxy.
   # Proxy CloudSQL with
   # ./cloud_sql_proxy -instances [MYSQL_CONNECTION_NAME]=tcp:3307
@@ -74,6 +74,6 @@ env_variables:
   APPLICATION_ADMINS: 'user@gmail.com'
 
   # Shows a warning as changes can only be stored permanently by admins.
-  #DEMO_MODE: False
+  # DEMO_MODE: False
   # Show a "maintenance page".
-  #MAINTENANCE_MODE: False
+  # MAINTENANCE_MODE: False

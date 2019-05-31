@@ -31,7 +31,7 @@ from data.database import init_app as init_db
 
 def create_app(test_config=None):
     """Application factory."""
-    app = Flask(__name__, static_url_path="", template_folder=cfg.TEMPLATES_DIR)
+    app = Flask('main', static_url_path="", template_folder=cfg.TEMPLATES_DIR)
 
     # Load the Flask configuration parameters from a global config file.
     app.config.from_object(cfg)

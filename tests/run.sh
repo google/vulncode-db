@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-BASEDIR=$(dirname "$0")
+BASEDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 if [[ ! "${BASEDIR}" == "/app/tests" ]]; then
   echo "[!] The tests currently require a MySQL backend."

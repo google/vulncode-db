@@ -165,7 +165,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
 
     @property
     def description(self):
-        if self.descriptions is None:
+        if not self.descriptions:
             return None
         return self.descriptions[0].value
 

@@ -22,6 +22,7 @@ The application might be unreliable, contains many bugs and is not feature compl
 ├── data
 │   ├── forms
 │   └── models
+├── docker (Docker files)
 ├── lib
 │   └── vcs_handler
 ├── static
@@ -38,88 +39,31 @@ The application might be unreliable, contains many bugs and is not feature compl
 ```
 
 ## Setup
-These are some vague instructions to setup this project on your own. A simplified docker container
-setup will follow.
-
+The setup is simplified with Docker and docker-compose in particular. Having these prerequisites installed you can setup
+ the project using the following instructions:
+ 
 ```
-git clone https://github.com/google/vulncode-db
-
-# Install Google's Cloud SDK. Follow steps on:
-# See steps at: https://cloud.google.com/appengine/docs/standard/python/download and https://cloud.google.com/sdk/docs/#linux
-# wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-239.0.0-linux-x86_64.tar.gz
-# tar xfvz google-cloud-sdk-239.0.0-linux-x86_64.tar.gz
-# ./google-cloud-sdk/install.sh
-# Also make sure to run:
-gcloud components install app-engine-python
-gcloud components install app-engine-python-extras
-
-# Note: If you don't use sudo here make sure to add ~/.local/bin to your $PATH variable.
-sudo pip install virtualenv
-virtualenv venv
-source venv/bin/activate
-
-# Install mysqldb Python connector libraries.
-sudo apt install default-libmysqlclient-dev
-
-# Install third party dependencies.
-mkdir third_party
-pip install -t third_party -r requirements.txt
-
-# Install developer dependencies.
-pip install -r dev_requirements.txt
-
-# Setup a mysql database.
-sudo apt install default-mysql-server
-sudo mysql_secure_installation
-
-# Mariadb uses a plugin for socket authentication by default.
-# We can disable it in the following way.
-echo "use mysql; update user set plugin='' where User='root'; flush privileges;" | sudo mysql -u root
-# We should now be able to use mysql without sudo. You can test it with.
-# mysql -u root -p
-
-# Create required databases.
-echo "CREATE DATABASE main; CREATE DATABASE cve; CREATE DATABASE cwe;" | sudo mysql -u root -p
-
-# Setup and configure the application in app.yaml.
-mv example_app.yaml app.yaml
-# Edit app.yaml and 
-# 1) Add the new mysql root password.
-# 2) Fill out the remaining information.
-
-# Init alembic migrations.
-./manage.sh db init
-
-# Test the application.
-./run.sh
+# Clone the repository.
+git clone https://github.com/google/vulncode-db.git
+cd vulncode-db
+# Setup configuration files, the Docker images and containers.
+./setup.sh
+# Initialize the application and run an empty version of it.
+./docker/docker-admin.sh run
 ```
 
-### Fetching CWE identifiers.
+Additionally, if you intend to add some data consider running:
 ```
-wget https://cwe.mitre.org/data/xml/views/2000.xml.zip
-unzip 2000.xml.zip
-grep -oP '(?<= ID=").*?" Name=".*?(?=")' 2000.xml | sed 's/" Name="/| /' | awk '{print "CWE-" $0}' > cwe.csv
-# Import into database with.
-echo "load data local infile 'cwe.csv' into table cwe.cwe_data fields terminated by '|' lines terminated by '\n' (cwe_id, cwe_name)" | sudo mysql -uroot -p 
+# Fetch and insert CWE identifiers and some recent NVD entries.
+./docker/docker-admin.sh init
+# Search for entries with patch links and add additional application entries for them.
+./docker/docker-admin.sh crawl_patches
+# Run the application.
+./docker/docker-admin.sh run
 ```
+The main application should then be available at `http://localhost:8080`.
 
-
-### Importing NVD/CVE data.
-Currently, this is a manual process using Docker and [go-cve-dictionary](https://github.com/kotakanbe/go-cve-dictionary).
-```
-git clone https://github.com/kotakanbe/go-cve-dictionary
-cd go-cve-dictionary
-# Reset to specific version in July 2018.
-git reset --hard c2bcc418e037d6bc2d6b47c2d782900126b4f884
-# Attention: Replace static.nvd.nist.gov with nvd.nist.gov as the application doesn't auto follow updated download urls.
-sed -i 's/static.nvd.nist.gov/nvd.nist.gov/' nvd/nvd.go
-# Build image
-docker build -t go-cve-dictionary -f Dockerfile .
-# Run image 
-sudo docker run --network host -it --entrypoint /bin/sh go-cve-dictionary
-# Import data into host mysql via:
-go-cve-dictionary fetchnvd -dbtype mysql -dbpath "[username]:[password]@tcp(127.0.0.1:3306)/cve" -years 2019
-```
+Please also see the documentation provided in `docker/README.md` for more details.
 
 
 ## Third-party Data

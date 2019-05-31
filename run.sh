@@ -26,6 +26,11 @@ if [[ ! -d "migrations/versions" || ! $(ls -A migrations/versions) ]]; then
   ./manage.sh db upgrade
 fi
 
+if [[ $(./manage.sh db current 2>/dev/null | wc -l) -lt 2 ]]; then
+  info "Initializing application database to newest version."
+  ./manage.sh db upgrade
+fi
+
 PYTHONPATH="third_party" python -c "import main; main.check_db_state()" || exit 1
 
 if which dev_appserver.py &>/dev/null

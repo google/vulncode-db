@@ -17,11 +17,9 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 import sys
+from time import strftime
 
-from flask import (
-    send_from_directory,
-    render_template,
-)
+from flask import (send_from_directory, render_template, request)
 
 import alembic.script
 import alembic.runtime.environment
@@ -39,14 +37,9 @@ app = create_app()
 db = DEFAULT_DATABASE.db
 
 
-# Static files
-# TODO: Replace with nginx/apache for higher efficiency.
 @app.route("/static/<path:path>")
 def serve_static(path):
     return send_from_directory("static", path)
-
-
-# ------------------------------------------------
 
 
 @app.route("/")
@@ -101,10 +94,9 @@ def main():
     error_file = os.path.join(root_dir, "error.log")
 
     handler = RotatingFileHandler(error_file, maxBytes=100000, backupCount=1)
-    # logging.basicConfig()
-    # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
     handler.setLevel(logging.WARNING)
+
+    # app.logger = logging.getLogger('tdm')
     app.logger.addHandler(handler)
     app.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
     if cfg.DEBUG:
