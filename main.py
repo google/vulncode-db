@@ -17,9 +17,8 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 import sys
-from time import strftime
 
-from flask import (send_from_directory, render_template, request)
+from flask import (send_from_directory, render_template)
 
 import alembic.script
 import alembic.runtime.environment
@@ -29,7 +28,7 @@ if not "MYSQL_CONNECTION_NAME" in os.environ:
     print("[~] Executed outside AppEngine context. Manually loading config.")
     manually_read_app_config()
 
-from app.vulnerability import VulncodeDB
+from app.vulnerability.views.vulncode_db import VulncodeDB
 import cfg
 from data.database import DEFAULT_DATABASE
 from lib.app_factory import create_app

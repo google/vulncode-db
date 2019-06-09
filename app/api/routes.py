@@ -14,9 +14,10 @@
 
 from flask import Blueprint, request, current_app, g, jsonify
 
-from app.auth import login_required, admin_required
+from app.auth.routes import login_required, admin_required
 from app.exceptions import InvalidIdentifierException
-from app.vulnerability import VulnerabilityDetails
+from app.vulnerability.views.details import VulnerabilityDetails
+
 from data.database import DEFAULT_DATABASE
 from data.models import (
     RepositoryFilesSchema,

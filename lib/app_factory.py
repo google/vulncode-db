@@ -20,11 +20,11 @@ from flask import (
     url_for,
     redirect,
 )
-from app.auth import is_admin, bp as auth_bp
-from app.api import bp as api_bp
-from app.vuln import bp as vuln_bp
+from app.auth.routes import is_admin, bp as auth_bp
+from app.api.routes import bp as api_bp
+from app.vulnerability.routes import bp as vuln_bp
 from flask_wtf.csrf import CSRFProtect
-from app.vcs_proxy import bp as vcs_proxy_bp
+from app.vcs_proxy.routes import bp as vcs_proxy_bp
 from flask_bootstrap import Bootstrap
 from data.database import init_app as init_db
 

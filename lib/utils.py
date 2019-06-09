@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import time
 
 from flask import jsonify
 
@@ -50,3 +51,20 @@ def manually_read_app_config():
                 os.environ[key] = str(env_variables[key])
         except yaml.YAMLError as err:
             print(err)
+
+
+def measure_execution_time(label):
+
+    def decorator(func):
+
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            res = func(*args, **kwargs)
+            end = time.time()
+
+            print("[{}] {}s elapsed".format(label, end - start))
+            return res
+
+        return wrapper
+
+    return decorator

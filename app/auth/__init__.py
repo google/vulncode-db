@@ -11,18 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from data.models.base import CweBase
-from data.utils import populate_models
-from sqlalchemy import Column, Text, String
-
-
-class CweData(CweBase):
-    __tablename__ = "cwe_data"
-
-    cwe_id = Column(String(255), primary_key=True, index=True)
-    cwe_name = Column(Text)
-
-
-# must be set after all definitions
-__all__ = populate_models(__name__)

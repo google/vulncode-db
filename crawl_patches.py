@@ -42,6 +42,7 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import SqlLexer
 
 from lib.vcs_management import get_vcs_handler
+from lib.utils import measure_execution_time
 from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
@@ -66,25 +67,6 @@ def write_highlighted(text, color=Fore.WHITE, crlf=False):
         print(highlighted)
     else:
         sys.stdout.write(highlighted)
-
-
-def _measure_execution_time(label):
-
-    def decorator(measure_func):
-
-        def wrapper(*args, **kwargs):
-            start = time.time()
-            res = measure_func(*args, **kwargs)
-            end = time.time()
-
-            sys.stdout.write("[{}] ".format(label))
-            write_highlighted("~{:.4f}s".format(end - start), color=Fore.YELLOW)
-            print(" elapsed ")
-            return res
-
-        return wrapper
-
-    return decorator
 
 
 def dump_query(query, display_columns=None):
@@ -163,7 +145,7 @@ def nvd_to_vcdb(nvd, commit_link):
     return vulnerability
 
 
-@_measure_execution_time("store_or_update_vcdb_entries")
+@measure_execution_time("store_or_update_vcdb_entries")
 def store_or_update_vcdb_entries(github_commit_candidates):
     """Fetches or creates VCDB
 
@@ -241,7 +223,7 @@ def print_stats(stats):
     print(")")
 
 
-@_measure_execution_time("Total")
+@measure_execution_time("Total")
 def start_crawling():
     """- See how to best convert those entries into VCDB entries."""
     write_highlighted(

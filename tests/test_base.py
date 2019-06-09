@@ -23,19 +23,20 @@ from data.database import db
 with open(os.path.join(cfg.BASE_DIR, "docker/db_schema.sql"), "rb") as f:
     _create_schemas_sql = f.read().decode("utf8")
 
+DOCKER_DB_URI = 'mysql+mysqldb://root:test_db_pass@tests-db:3306/main'
+TEST_CONFIG = {
+    'TESTING': True,
+    'WTF_CSRF_ENABLED': False,
+    'DEBUG': True,
+    'SQLALCHEMY_DATABASE_URI': None
+}
+
 
 class FlaskTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        test_config = {}
-        test_config['TESTING'] = True
-        test_config['WTF_CSRF_ENABLED'] = False
-        test_config['DEBUG'] = True
-
-        docker_db_uri = 'mysql+mysqldb://root:test_db_pass@tests-db:3306/main'
-        test_config['SQLALCHEMY_DATABASE_URI'] = docker_db_uri
-        app = create_app(test_config)
+        app = create_app(TEST_CONFIG)
         cls.app = app
         cls.test_client = app.test_client()
 
@@ -43,13 +44,21 @@ class FlaskTest(unittest.TestCase):
         ctx = app.app_context()
         ctx.push()
 
-        # Create all required schemas.
-        db.engine.execute(_create_schemas_sql)
-        # Create all data from the alembic migrations.
-        alembic_upgrade()
-
     def setUp(self):
         pass
 
     def tearDown(self):
         pass
+
+
+class FlaskIntegrationTest(FlaskTest):
+
+    @classmethod
+    def setUpClass(cls):
+        TEST_CONFIG['SQLALCHEMY_DATABASE_URI'] = DOCKER_DB_URI
+        super(FlaskIntegrationTest, cls).setUpClass()
+
+        # Create all required schemas.
+        db.engine.execute(_create_schemas_sql)
+        # Create all data from the alembic migrations.
+        alembic_upgrade()
