@@ -53,9 +53,6 @@
       <th>Products</th>
       <th>Score</th>
       <th>Patch</th>
-      {# TODO: Implement OSS flag.
-      <th>OSS</th>
-      #}
       {% set annotation_url_params = base_url_params %}
       {% set _dummy = annotation_url_params.update({'sort_by':'annotation'}) %}
       {# TODO: Add support to filter by columns here.
@@ -83,13 +80,12 @@
       <td>
         {% if vuln_view.master_commit is not none %}
           <i class="fa fa-check" style="color: #00FF00"></i>
+        {% elif vuln_view.vcdb_exists %}
+          <i class="fa fa-question" style="color: #777777"></i>
         {% else %}
           <i class="fa fa-times" style="color: #FF0000"></i>
         {% endif %}
       </td>
-      {# TODO: Implement OSS flag.
-      <td><i class="fa fa-question" style="color: #777777"></i></td>
-      #}
       <td>
         {% if vuln_view.annotated %}
           <i class="fa fa-check" style="color: #00FF00"></i>

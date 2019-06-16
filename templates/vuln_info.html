@@ -134,7 +134,11 @@
               {% endif %}
             </td>
             <td style="word-break:break-all;">
-              {% if master_commit %}
+              {% if not master_commit and vuln_view.vcdb_exists %}
+                <i class="fa fa-question" style="color: #777777"></i> - No patch was found for this entry.
+              {% elif not master_commit %}
+                <i class="fa fa-times" style="color: #FF0000"></i> - None (likely due to unavailable code)
+              {% else %}
                 {% set master_commit_link = master_commit.commit_link %}
                 <b><a href="{{ master_commit_link }}" class="text-info" target="_blank">{{ master_commit_link }}</a></b><br />
                 {% if vuln_view.master_commit_message %}
@@ -158,7 +162,8 @@
                   <br />
                   Stats: <b>+{{ vuln_view.master_commit_stats.additions }} lines / -{{ vuln_view.master_commit_stats.deletions }} lines (total: {{ vuln_view.master_commit_stats.total }} lines)</b><br />
                 {% endif %}
-              {# TODO: add more commit information: message, #modified files and date?
+
+                {# TODO: add more commit information: message, #modified files and date?
                   <i class="fa fa-check" style="color: #00FF00"></i>
                   <table class="mb-0">
                     <tr>
@@ -171,8 +176,6 @@
                     </tr>
                   </table>
                 #}
-              {% else %}
-                <i class="fa fa-times" style="color: #FF0000"></i> None
               {% endif %}
             </td>
           </tr>

@@ -29,9 +29,9 @@ import time
 import pandas as pd
 
 pd.set_option("display.max_colwidth", -1)
-from sqlalchemy import or_, select, outerjoin, join, func
+from sqlalchemy import and_, or_, select, outerjoin, join, func, desc
 from flask import Flask
-from sqlalchemy import outerjoin, join
+from sqlalchemy import outerjoin
 from sqlalchemy.orm import lazyload
 
 import sqlparse
@@ -43,7 +43,8 @@ from pygments.lexers import SqlLexer
 
 from lib.vcs_management import get_vcs_handler
 from lib.utils import measure_execution_time
-from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits
+from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits, Cpe, OpenSourceProducts
+from data.models.nvd import default_nvd_view_options
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
 pd.set_option("display.max_colwidth", -1)
@@ -61,7 +62,7 @@ ctx.push()
 CVE_DB_ENGINE = db.get_engine(app)
 
 
-def write_highlighted(text, color=Fore.WHITE, crlf=False):
+def write_highlighted(text, color=Fore.WHITE, crlf=True):
     highlighted = (Style.BRIGHT + color + "%s" + Style.RESET_ALL) % text
     if crlf:
         print(highlighted)
@@ -69,11 +70,11 @@ def write_highlighted(text, color=Fore.WHITE, crlf=False):
         sys.stdout.write(highlighted)
 
 
-def dump_query(query, display_columns=None):
+def dump_query(query, filter_columns=None):
     """
     Small helper function to dump a SqlAlchemy SQL query + parameters.
     :param query:
-    :param display_columns:
+    :param filter_columns:
     :return:
     """
     # Number of rows to display.
@@ -94,8 +95,8 @@ def dump_query(query, display_columns=None):
     print("-" * 15 + "\n%s" % highlighted_sql_query + "-" * 15)
 
     df = pd.read_sql(query.statement, CVE_DB_ENGINE)
-    if display_columns:
-        df = df[display_columns]
+    if filter_columns:
+        df = df[filter_columns]
 
     print("Results: {}; showing first {}:".format(df.shape[0], num_rows))
     print(df.head(num_rows))
@@ -114,32 +115,33 @@ def get_nvd_github_patch_candidates():
             Reference.link.op("regexp")(patch_regex)).group_by(
                 Reference.nvd_json_id))
     github_commit_candidates = (
-        db.session.query(Nvd, Reference.link, Vulnerability).select_from(
+        db.session.query(Nvd.cve_id, Reference.link, Vulnerability).select_from(
             join(Nvd, Reference).outerjoin(
-                Vulnerability, Nvd.cve_id == Vulnerability.cve_id)).options(
-                    lazyload(Nvd.references)).filter(
-                        Reference.id.in_(sub_query)).with_labels())
+                Vulnerability, Nvd.cve_id == Vulnerability.cve_id)).filter(
+                    Reference.id.in_(sub_query)).with_labels())
 
     return github_commit_candidates
 
 
-def nvd_to_vcdb(nvd, commit_link):
-    vcs_handler = get_vcs_handler(app, commit_link)
-    if not vcs_handler:
-        print("Can't parse Vcs link: {}".format(commit_link))
-        return None
+def create_vcdb_entry(cve_id, commit_link=None):
+    vuln_commits = []
+    if commit_link:
+        vcs_handler = get_vcs_handler(app, commit_link)
+        if not vcs_handler:
+            print("Can't parse Vcs link: {}".format(commit_link))
+            return None
+        vuln_commit = VulnerabilityGitCommits(
+            commit_link=commit_link,
+            commit_hash=vcs_handler.commit_hash,
+            repo_name=vcs_handler.repo_name,
+            repo_owner=vcs_handler.repo_owner,
+            repo_url=vcs_handler.repo_url,
+        )
+        vuln_commits.append(vuln_commit)
 
     vulnerability = Vulnerability(
-        cve_id=nvd.cve_id,
-        commits=[
-            VulnerabilityGitCommits(
-                commit_link=commit_link,
-                commit_hash=vcs_handler.commit_hash,
-                repo_name=vcs_handler.repo_name,
-                repo_owner=vcs_handler.repo_owner,
-                repo_url=vcs_handler.repo_url,
-            )
-        ],
+        cve_id=cve_id,
+        commits=vuln_commits,
         comment="",
     )
     return vulnerability
@@ -155,13 +157,15 @@ def store_or_update_vcdb_entries(github_commit_candidates):
     stats = {"created": 0, "updated": 0, "idle": 0, "skipped": 0}
 
     for nvd_candidate in github_commit_candidates:
-        nvd = nvd_candidate.Nvd
-        commit_link = nvd_candidate.link
+        nvd_cve_id = nvd_candidate.cve_id
         existing_vcdb_vulnerability = nvd_candidate.Vulnerability
+        commit_link = None
+        if hasattr(nvd_candidate, 'link'):
+            commit_link = nvd_candidate.link
 
-        vulnerability_suggestion = nvd_to_vcdb(nvd, commit_link)
+        vulnerability_suggestion = create_vcdb_entry(nvd_cve_id, commit_link)
         if not vulnerability_suggestion:
-            print("[-] Invalid data detected for cve_id: {}".format(nvd.cve_id))
+            print("[-] Invalid data detected for cve_id: {}".format(nvd_cve_id))
             stats["skipped"] += 1
             continue
 
@@ -175,17 +179,18 @@ def store_or_update_vcdb_entries(github_commit_candidates):
                 ))
                 raise Exception("Incorrect vulnerability cve_id!")
 
-            if (existing_vcdb_vulnerability.master_commit.repo_owner !=
-                    vulnerability_suggestion.master_commit.repo_owner):
-                has_changed = True
+            if existing_vcdb_vulnerability.master_commit:
+                if (existing_vcdb_vulnerability.master_commit.repo_owner !=
+                        vulnerability_suggestion.master_commit.repo_owner):
+                    has_changed = True
 
-            if (existing_vcdb_vulnerability.master_commit.commit_link !=
-                    vulnerability_suggestion.master_commit.commit_link):
-                print("{} != {}".format(
-                    existing_vcdb_vulnerability.master_commit.commit_link,
-                    vulnerability_suggestion.master_commit.commit_link,
-                ))
-                has_changed = True
+                if (existing_vcdb_vulnerability.master_commit.commit_link !=
+                        vulnerability_suggestion.master_commit.commit_link):
+                    print("{} != {}".format(
+                        existing_vcdb_vulnerability.master_commit.commit_link,
+                        vulnerability_suggestion.master_commit.commit_link,
+                    ))
+                    has_changed = True
 
             if has_changed:
                 stats["updated"] += 1
@@ -196,16 +201,15 @@ def store_or_update_vcdb_entries(github_commit_candidates):
                 existing_vcdb_vulnerability.master_commit.repo_owner = (
                     vulnerability_suggestion.master_commit.repo_owner)
                 db.session.add(existing_vcdb_vulnerability)
-                db.session.commit()
             else:
                 stats["idle"] += 1
         else:
             # Add the new suggested Vcdb entry to the database.
             db.session.add(vulnerability_suggestion)
-            db.session.commit()
             stats["created"] += 1
         sys.stdout.write(".")
         sys.stdout.flush()
+    db.session.commit()
 
     print("")
     return stats
@@ -213,28 +217,80 @@ def store_or_update_vcdb_entries(github_commit_candidates):
 
 def print_stats(stats):
     sys.stdout.write("STATS: created(")
-    write_highlighted(stats["created"], Fore.GREEN)
+    write_highlighted(stats["created"], Fore.GREEN, False)
     sys.stdout.write(") updated(")
-    write_highlighted(stats["updated"], Fore.GREEN)
+    write_highlighted(stats["updated"], Fore.GREEN, False)
     sys.stdout.write(") idle(")
-    write_highlighted(stats["idle"], Fore.CYAN)
+    write_highlighted(stats["idle"], Fore.CYAN, False)
     sys.stdout.write(") skipped(")
-    write_highlighted(stats["skipped"], Fore.RED)
+    write_highlighted(stats["skipped"], Fore.RED, False)
     print(")")
+
+
+def update_oss_table():
+    # Fetch all distinct vendor, product tuples from the main table.
+    unique_products = db.session.query(Cpe.vendor, Cpe.product)
+    unique_products = unique_products.select_from(
+        join(Nvd, Cpe).outerjoin(Vulnerability,
+                                 Vulnerability.cve_id == Nvd.cve_id))
+    unique_products = unique_products.filter(Vulnerability.cve_id.isnot(None))
+    unique_products = unique_products.distinct(Cpe.vendor, Cpe.product)
+    # Fetch only entries which are not already contained in OpenSourceProducts.
+    unique_products = unique_products.outerjoin(
+        OpenSourceProducts,
+        and_(Cpe.vendor == OpenSourceProducts.vendor,
+             Cpe.product == OpenSourceProducts.product))
+    unique_products = unique_products.filter(
+        OpenSourceProducts.vendor.is_(None))
+    dump_query(unique_products)
+
+    # We don't do any updates for now.
+    created = 0
+    for entry in unique_products:
+        new_entry = OpenSourceProducts(
+            vendor=entry.vendor, product=entry.product)
+        db.session.add(new_entry)
+        sys.stdout.write(".")
+        sys.stdout.flush()
+        created += 1
+    db.session.commit()
+    print("")
+    sys.stdout.write("created(")
+    write_highlighted(created, Fore.GREEN, False)
+    sys.stdout.write(")")
+
+
+def create_oss_entries():
+    nvd_entries = db.session.query(Nvd.cve_id, Vulnerability)
+    nvd_entries = nvd_entries.select_from(
+        join(Nvd,
+             Cpe).outerjoin(Vulnerability,
+                            Nvd.cve_id == Vulnerability.cve_id)).with_labels()
+    nvd_entries = nvd_entries.filter(Vulnerability.cve_id.is_(None))
+    #nvd_entries = nvd_entries.options(default_nvd_view_options)
+    nvd_entries = nvd_entries.join(
+        OpenSourceProducts,
+        and_(Cpe.vendor == OpenSourceProducts.vendor,
+             Cpe.product == OpenSourceProducts.product))
+    nvd_entries = nvd_entries.distinct(Nvd.cve_id)
+    return nvd_entries
 
 
 @measure_execution_time("Total")
 def start_crawling():
     """- See how to best convert those entries into VCDB entries."""
+
     write_highlighted(
-        "1) Fetching entries from NVD with a direct github.com/*/commit/* commit link.",
-        crlf=True,
+        "1) Fetching entries from NVD with a direct github.com/*/commit/* commit link."
     )
     github_commit_candidates = get_nvd_github_patch_candidates()
-    dump_query(github_commit_candidates,
-               ["cve_nvd_jsons_id", "cve_references_link"])
+    #update_oss_table()
+    #exit()
+    #write_highlighted("Fetching all entries that affect open source software.")
+    #github_commit_candidates = create_oss_entries()
+    dump_query(github_commit_candidates)
 
-    write_highlighted("2) Creating/updating existing Vcdb entries.", crlf=True)
+    write_highlighted("2) Creating/updating existing Vcdb entries.")
     stats = store_or_update_vcdb_entries(github_commit_candidates)
     print_stats(stats)
 
