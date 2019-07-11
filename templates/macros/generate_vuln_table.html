@@ -1,4 +1,4 @@
-{% macro render_pagination(pagination, endpoint, table_id, keyword) %}
+{% macro display_pagination(pagination, endpoint, table_id, keyword) %}
 {% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl"} %}
 
 {% set page_num = table_id + '_p' %}
@@ -40,7 +40,7 @@
 </nav>
 {% endmacro %}
 
-{% macro display_entries_table(pagination_obj, endpoint, table_id, keyword) %}
+{% macro display_table(pagination_obj, endpoint, table_id, keyword) %}
 {% set pagination_param_key = table_id + '_p' %}
 {% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl", pagination_param_key:pagination_obj.page} %}
 <div class="table-responsive">

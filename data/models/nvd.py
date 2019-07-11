@@ -20,7 +20,7 @@ from data.models.vulnerability import Vulnerability
 from data.models.cwe import CweData
 from data.models.base import NvdBase
 from data.utils import populate_models
-from sqlalchemy import Column, String, ForeignKey, Index
+from sqlalchemy import Column, String, ForeignKey, Index, TIMESTAMP
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship, joinedload
 
@@ -121,6 +121,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
     descriptions = relationship(Description)
     cvss3 = relationship(Cvss3, uselist=False)
     references = relationship(Reference, backref="nvd_entry")
+    published_date = Column(TIMESTAMP, index=True)
 
     def get_products(self):
         return sorted(set([cpe.product for cpe in self.cpes]))
