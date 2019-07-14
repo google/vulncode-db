@@ -85,9 +85,12 @@ def gen_connection_string():
         use_name = MYSQL_USER
         use_pass = MYSQL_PASS
         use_host = "127.0.0.1"
+        use_port = 3306
         if "MYSQL_HOST" in os.environ:
             use_host = os.environ["MYSQL_HOST"]
-        use_port = int(os.getenv("MYSQL_LOCAL_PORT", 3306))
+        elif "MYSQL_LOCAL_PORT" in os.environ:
+            use_port = int(os.environ["MYSQL_LOCAL_PORT"])
+
         if USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY:
             use_name = os.environ["CLOUDSQL_NAME"]
             use_pass = os.environ["CLOUDSQL_PASS"]
