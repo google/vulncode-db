@@ -4,7 +4,7 @@ BASEDIR="$( cd "$( dirname "$0" )" && pwd )"
 # Make sure we are in the project root directory before executing the test runner.
 cd ${BASEDIR}/../
 
-PYTHONPATH="third_party" python -m unittest discover -v
+PYTHONPATH="third_party" python3 -m unittest discover -v
 # Alternatively, we could also use nose2 as our test runner.
 # nose2 -v
 

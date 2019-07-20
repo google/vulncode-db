@@ -38,11 +38,7 @@ try:
 except ImportError:
     pass
 
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
-
+from urllib.parse import urlparse
 import dulwich.errors
 import dulwich.repo
 import dulwich.client
@@ -71,7 +67,7 @@ def _file_list_dulwich(repo, tgt_env, recursive=False):
 
     def _traverse(tree, repo_obj, blobs, prefix):
         """Traverse through a dulwich Tree object recursively, accumulating all the blob paths within it in the "blobs" list"""
-        for item in tree.items():
+        for item in list(tree.items()):
             try:
                 obj = repo_obj.get_object(item.sha)
             except KeyError:

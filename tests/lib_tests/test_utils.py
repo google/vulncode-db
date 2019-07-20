@@ -27,7 +27,7 @@ class TestUtils(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch("__builtin__.open", create=True)
+    @mock.patch("builtins.open", create=True)
     def test_get_file_contents(self, mock_open):
         dummy_data = "data"
         dummy_path = "/var/path/file.txt"

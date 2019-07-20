@@ -32,10 +32,10 @@ db = DEFAULT_DATABASE.db
 
 
 def calculate_revision_updates(wrapper, old, new, attrs):
-    old_dict = dict(zip(map(wrapper, old), old))
-    old_keys = frozenset(old_dict.keys())
-    new_dict = dict(zip(map(wrapper, new), new))
-    new_keys = frozenset(new_dict.keys())
+    old_dict = dict(list(zip(list(map(wrapper, old)), old)))
+    old_keys = frozenset(list(old_dict.keys()))
+    new_dict = dict(list(zip(list(map(wrapper, new)), new)))
+    new_keys = frozenset(list(new_dict.keys()))
 
     intersection = old_keys & new_keys
     current_app.logger.debug(
@@ -119,8 +119,8 @@ def update_file_markers(file_obj, new_markers):
 
         def __init__(self, marker):
             super(HashableMarker, self).__init__(
-                marker, lambda m: (m.row_from, m.row_to, m.column_from, m.
-                                   column_to))
+                marker, lambda m:
+                (m.row_from, m.row_to, m.column_from, m.column_to))
 
         def __str__(self):
             return "marker @ {0.row_from}:{0.column_from} - {0.row_to}:{0.column_to}".format(

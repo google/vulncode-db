@@ -15,7 +15,7 @@
 import re
 
 import cfg
-import nvd_template
+from . import nvd_template
 from data.models.vulnerability import Vulnerability
 from data.models.cwe import CweData
 from data.models.base import NvdBase
@@ -134,7 +134,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
 
     def get_patches(self):
         patch_regex = re.compile(cfg.PATCH_REGEX)
-        return filter(patch_regex.match, self.get_links())
+        return list(filter(patch_regex.match, self.get_links()))
 
     def has_patch(self):
         return len(self.get_patches()) > 0

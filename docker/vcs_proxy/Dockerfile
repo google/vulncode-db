@@ -3,7 +3,7 @@ FROM python:3.7
 WORKDIR /app_setup
 COPY vcs_requirements.txt /app_setup/
 
-RUN pip install -r vcs_requirements.txt
+RUN pip3 install -r vcs_requirements.txt
 
 # Used as a bind-mount by docker-compose.
 WORKDIR /app

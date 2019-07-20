@@ -46,7 +46,7 @@ then
   find . -maxdepth 1 -name "*.py" -print -exec yapf -i --style="${YAPF_STYLE}" {} \; | awk '{print "Reformatting "$1}'
   yapf -p -vv -i --recursive app lib data tests --style="${YAPF_STYLE}" || fatal 'Error during formatting python files'
 else
-  fatal 'Please install yapf: pip install yapf'
+  fatal 'Please install yapf: pip3 install yapf'
 fi
 
 #if which black &>/dev/null

@@ -76,7 +76,7 @@ function init_data() {
 
 function crawl_patches() {
   sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run frontend \
-  python crawl_patches.py
+  python3 crawl_patches.py
 }
 
 function build_service() {

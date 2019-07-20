@@ -8,7 +8,9 @@ RUN npm install
 ENV PATH="/app_setup/node_modules/.bin/:${PATH}"
 
 # Install yapf, plyint and other dependencies.
-RUN apk add --no-cache python py-pip bash
-RUN pip install yapf futures pylint
+RUN apk add --no-cache python3 bash build-base python3-dev
+#RUN python3 -m ensurepip
+#RUN pip3 install --upgrade pip
+RUN pip3 install yapf futures pylint
 
 WORKDIR /app

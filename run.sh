@@ -31,7 +31,7 @@ if [[ $(./manage.sh db current 2>/dev/null | wc -l) -lt 2 ]]; then
   ./manage.sh db upgrade
 fi
 
-PYTHONPATH="third_party" python -c "import main; main.check_db_state()" || exit 1
+PYTHONPATH="third_party" python3 -c "import main; main.check_db_state()" || exit 1
 
 if which dev_appserver.py &>/dev/null
 then
@@ -41,5 +41,5 @@ then
   # dev_appserver.py --port=8090 --admin_port=8089 app.yaml
 else
   # Start without GAE support.
-  python -m main
+  python3 -m main
 fi

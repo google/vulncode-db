@@ -17,11 +17,7 @@ import logging
 import os
 import re
 
-try:
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import urlparse
-
+from urllib.parse import urlparse
 from github import Github, InputGitTreeElement
 from unidiff import PatchSet
 from flask import jsonify
@@ -88,7 +84,7 @@ class GithubHandler(VcsHandler):
             }
 
             patch_str = io.StringIO()
-            patch_str.write(u"--- a\n+++ b\n")
+            patch_str.write("--- a\n+++ b\n")
             if patched_file.patch is not None:
                 patch_str.write(patched_file.patch)
             patch_str.seek(0)
