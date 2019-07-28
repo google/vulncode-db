@@ -1,0 +1,56 @@
+{% macro print_link(value) -%}
+  {% if value is string and value.startswith('http') %}
+    <a href="{{ value }}" class="text-info" target="_blank">{{ value }}</a>
+  {% elif value is iterable and value is not string and value|length > 0 %}
+    {{ print_link(value[0]) }}
+  {% else %}
+    {{ value }}
+  {% endif %}
+{%- endmacro %}
+
+
+{% macro print_cwes(cwes) -%}
+  {% if cwes is iterable and cwes|length > 0 %}
+    {% set data = [] %}
+    {% for cwe in cwes %}
+      <b>{{ cwe.cwe_name or "?" }}</b> (<a href="http://cwe.mitre.org/data/definitions/{{ cwe.cwe_id | replace("CWE-", "") }}.html"
+      class="text-info" target="_blank">{{ cwe.cwe_id }}</a>)<br />
+    {% endfor %}
+  {% endif %}
+{% endmacro %}
+
+{% macro print_formatted(data, expand_label) -%}
+  {% if data is iterable and data is not string and data|length > 1 %}
+    {% set max_limit = 5 %}
+
+    {% for entry in data %}
+      {% if loop.index0 < max_limit %}
+        &#8226; {{ print_link(entry) }} <br/>
+      {% endif %}
+    {% endfor %}
+
+    {% if data|length > max_limit %}
+      {% set remaining = data|length - max_limit %}
+      <div>
+        <a href="#" class="text-light" data-toggle="collapse" data-target="#expand_{{ expand_label }}">
+          <i class="fa fa-caret-square-o-right" aria-hidden="true"></i>
+          More/Less ({{ remaining }})
+        </a>
+      </div>
+      <div id="expand_{{ expand_label }}" class="collapse">
+    {% endif %}
+
+    {% for entry in data %}
+      {% if loop.index0 >= max_limit %}
+        &#8226; {{ print_link(entry) }} <br/>
+      {% endif %}
+    {% endfor %}
+
+    {% if data|length > max_limit %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    {{ print_link(data) }}
+  {% endif %}
+{% endmacro %}

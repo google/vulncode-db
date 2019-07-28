@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block main_content %}
+<div class="row mb-3">
+    <div class="col-sm-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    Product:
+                    <p class="text-info d-inline">
+                        <b>{{ product|title }}</b>
+                    </p>
+                    <small>({{ vendor|title }})</small>
+                </h5>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-dark mb-0">
+                        <tr>
+                            <td style="width: 7%"><b>Repositories</b></td>
+                            <td>
+                                {% if repo_urls|length == 0 %}
+                                    <b><p class="text-warning d-inline">Unknown:</p></b>
+                                    <p class="d-inline">This might be proprietary software.</p>
+                                {% else %}
+                                    {% from 'macros/text_format.html' import print_formatted %}
+                                    {{ print_formatted(repo_urls, 'products') }}
+                                    {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="width: 7%"><b>#Vulnerabilities</b></td>
+                            <td>
+                                {{ product_vulns.total }}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                {% from 'macros/generate_vuln_table.html' import display_vuln_table %}
+                {% from 'macros/pagination.html' import display_vuln_pagination %}
+                <div id="vulnEntries">
+                    {% if product_vulns.rows == 0 %}
+                        No results found.
+                    {% else %}
+                        {{ display_vuln_table(product_vulns.items, 'serve_index', 'vcdb', '') }}
+                        {{ display_vuln_pagination(product_vulns, 'serve_index', 'vcdb', '') }}
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

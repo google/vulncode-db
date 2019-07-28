@@ -34,6 +34,9 @@ class Cpe(nvd_template.Cpe, NvdBase):
         INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
 
 
+Index("idx_cpe_vendor_product", Cpe.vendor, Cpe.product)
+
+
 class CveDetail(nvd_template.CveDetail, NvdBase):
     cve_id = Column(String(255))
 
@@ -124,7 +127,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
     published_date = Column(TIMESTAMP, index=True)
 
     def get_products(self):
-        return sorted(set([cpe.product for cpe in self.cpes]))
+        return sorted(set([(cpe.vendor, cpe.product) for cpe in self.cpes]))
 
     def get_languages(self):
         return sorted(set([cpe.language for cpe in self.cpes]))
@@ -177,7 +180,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
 
 Index("idx_nvd_jsons_cveid", Nvd.cve_id)
 
-load_only_cpe_product = joinedload(Nvd.cpes).load_only(Cpe.product)
+load_only_cpe_product = joinedload(Nvd.cpes).load_only(Cpe.vendor, Cpe.product)
 load_only_cwe_subset = joinedload(Nvd.cwes).load_only(Cwe.cwe_id)
 load_only_cwe_subset = load_only_cwe_subset.joinedload(Cwe.cwe_data).load_only(
     CweData.cwe_name)

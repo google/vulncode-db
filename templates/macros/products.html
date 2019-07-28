@@ -1,0 +1,5 @@
+{% macro print_product_links(products) -%}
+    {% for (vendor, product) in products %}
+        <a class="text-info link" target="_blank" href="{{ url_for("product.product_view", vendor=vendor, product=product) }}">{{ product|title }}</a>{% if loop.index0 < products|length - 1 %},{% endif %}
+    {% endfor %}
+{% endmacro %}

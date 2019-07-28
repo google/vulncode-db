@@ -1,65 +1,10 @@
+{% from 'macros/products.html' import print_product_links %}
+{% from 'macros/text_format.html' import print_link, print_cwes, print_formatted %}
+
 {% set vuln_view = vulnerability_details.vulnerability_view %}
 
 {% set commit_hash = vulnerability_details.commit_hash %}
 {% set repo_url = vulnerability_details.repo_url %}
-
-
-{% macro print_link(value) -%}
-  {% if value is string and value.startswith('http') %}
-    <a href="{{ value }}" class="text-info" target="_blank">{{ value }}</a>
-  {% elif value is iterable and value is not string %}
-    {{ print_link(value[0]) }}
-  {% else %}
-    {{ value }}
-  {% endif %}
-{%- endmacro %}
-
-{% macro print_cwes(cwes) -%}
-  {% if cwes is iterable and cwes|length > 0 %}
-    {% set data = [] %}
-    {% for cwe in cwes %}
-      <b>{{ cwe.cwe_name or "?" }}</b> (<a href="http://cwe.mitre.org/data/definitions/{{ cwe.cwe_id | replace("CWE-", "") }}.html"
-      class="text-info" target="_blank">{{ cwe.cwe_id }}</a>)<br />
-    {% endfor %}
-  {% endif %}
-{% endmacro %}
-
-{% macro print_formatted(data, expand_label) -%}
-  {% if data is iterable and data is not string and data|length > 1 %}
-    {% set max_limit = 5 %}
-
-    {% for entry in data %}
-      {% if loop.index0 < max_limit %}
-        &#8226; {{ print_link(entry) }} <br/>
-      {% endif %}
-    {% endfor %}
-
-    {% if data|length > max_limit %}
-      {% set remaining = data|length - max_limit %}
-      <div>
-        <a href="#" class="text-light" data-toggle="collapse" data-target="#expand_{{ expand_label }}">
-          <i class="fa fa-caret-square-o-right" aria-hidden="true"></i>
-          More/Less ({{ remaining }})
-        </a>
-      </div>
-      <div id="expand_{{ expand_label }}" class="collapse">
-    {% endif %}
-
-    {% for entry in data %}
-      {% if loop.index0 >= max_limit %}
-        &#8226; {{ print_link(entry) }} <br/>
-      {% endif %}
-    {% endfor %}
-
-    {% if data|length > max_limit %}
-      </div>
-    {% endif %}
-
-  {% else %}
-    {{ print_link(data) }}
-  {% endif %}
-{% endmacro %}
-
 
 <div class="card">
   <div class="card-body">
@@ -99,7 +44,8 @@
 
             <td>
               {% if products %}
-                {{ print_formatted(products, 'products') }}
+                {# {{ print_formatted(products, 'products') }} #}
+                {{ print_product_links(products) }}
               {% elif master_commit.repo_name %}
                 {{ master_commit.repo_name }} (repository)
               {% else %}
@@ -180,11 +126,11 @@
             </td>
           </tr>
 
-          {% set patches = vuln_view.known_patches %}
-          {% if patches %}
+          {% set patch_links = vuln_view.patch_links %}
+          {% if patch_links %}
           <tr>
             <td><b>Patches</b></td>
-            <td style="word-break:break-all;">{{ print_formatted(vuln_view.known_patches, 'patches') }}</td>
+            <td style="word-break:break-all;">{{ print_formatted(vuln_view.patch_links, 'patches') }}</td>
           </tr>
           {% endif %}
 
@@ -243,21 +189,21 @@
         <input type="hidden" name="id" value="{{vuln_id}}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       {% if commit_link %}
-      Commit Link:
-      <h5>
-        <a href="{{ commit_link }}" target="_blank">{{ commit_link }}</a>
-      </h5>
-      <input type="hidden" name="commits-0-commit_link" value="{{ commit_link }}">
+        Commit Link:
+        <h5>
+          <a href="{{ commit_link }}" target="_blank">{{ commit_link }}</a>
+        </h5>
+        <input type="hidden" name="commits-0-commit_link" value="{{ commit_link }}">
       {% endif %}
       {% if repo_url and commit_hash %}
-      Repository:
-      <h5>{{ repo_url }}</h5>
-      Commit:
-      <h5>{{ commit_hash }}</h5>
-      <input type="hidden" name="commits-0-repo_url" value="{{ repo_url }}">
-      <input type="hidden" name="commits-0-commit_hash" value="{{ commit_hash }}">
+        Repository:
+        <h5>{{ repo_url }}</h5>
+        Commit:
+        <h5>{{ commit_hash }}</h5>
+        <input type="hidden" name="commits-0-repo_url" value="{{ repo_url }}">
+        <input type="hidden" name="commits-0-commit_hash" value="{{ commit_hash }}">
       {% else %}
-      <h5>{{ vuln_id }}</h5>
+        <h5>{{ vuln_id }}</h5>
       {% endif %}
         <div class="alert alert-primary" role="alert">
         No entry for this data found.

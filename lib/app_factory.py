@@ -23,6 +23,7 @@ from flask import (
 from app.auth.routes import is_admin, bp as auth_bp
 from app.api.routes import bp as api_bp
 from app.vulnerability.routes import bp as vuln_bp
+from app.product.routes import bp as product_bp
 from flask_wtf.csrf import CSRFProtect
 from app.vcs_proxy.routes import bp as vcs_proxy_bp
 from flask_bootstrap import Bootstrap
@@ -50,7 +51,6 @@ def create_app(test_config=None):
 
 def register_route_checks(app):
 
-    @app.before_request
     def maintenance_check():
         if not cfg.MAINTENANCE_MODE:
             return
@@ -62,6 +62,13 @@ def register_route_checks(app):
             return
         if request.path != url_for("maintenance"):
             return redirect(url_for("maintenance"))
+
+    @app.before_request
+    def before_request():
+        # Clear cache to always also reload Jinja template macros.
+        if cfg.DEBUG:
+            app.jinja_env.cache = {}
+        maintenance_check()
 
 
 def register_extensions(app, test_config=None):
@@ -86,4 +93,5 @@ def register_blueprints(app):
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(vuln_bp)
+    app.register_blueprint(product_bp)
     app.register_blueprint(vcs_proxy_bp)

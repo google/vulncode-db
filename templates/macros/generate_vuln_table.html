@@ -1,101 +1,67 @@
-{% macro display_pagination(pagination, endpoint, table_id, keyword) %}
-{% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl"} %}
+{% from 'macros/products.html' import print_product_links %}
 
-{% set page_num = table_id + '_p' %}
-<nav aria-label="Pagination">
-  {{(pagination.page - 1) * pagination.per_page + 1}}-{{(pagination.page - 1) * pagination.per_page + pagination.items | length}} of <b>{{pagination.total}} entries</b>
-
-  <ul class="pagination">
-    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-      <a class="page-link" href="{{ url_for(endpoint,  **{page_num:pagination.prev_num, "_anchor":table_id + "_tbl"}) }}" tabindex="-1">Previous</a>
-    </li>
-
-    {% set pagination_url_params = base_url_params %}
-    {% for p in pagination.iter_pages(left_edge=1, left_current=2, right_current=3, right_edge=1) %}
-    {% if p %}
-    {% set _dummy = pagination_url_params.update({page_num:p}) %}
-
-    {% if p != pagination.page %}
-    <li class="page-item">
-      <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}">{{ p }}</a>
-    </li>
-    {% else %}
-    <li class="page-item active">
-      <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}">{{ p }}</a>
-    </li>
-    {% endif %}
-    {% else %}
-    <li class="page-item disabled">
-      <span class="page-link ellipsis">&hellip;</span>
-    </li>
-    {% endif %}
-    {% endfor %}
-
-    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-      {% set _dummy = pagination_url_params.update({page_num:pagination.next_num}) %}
-      <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}">Next</a>
-    </li>
-
-  </ul>
-</nav>
-{% endmacro %}
-
-{% macro display_table(pagination_obj, endpoint, table_id, keyword) %}
-{% set pagination_param_key = table_id + '_p' %}
-{% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl", pagination_param_key:pagination_obj.page} %}
-<div class="table-responsive">
-  <table class="table table-hover table-light" id="{{ table_id }}_tbl">
-    <thead>
-    <tr>
-      <th>Date</th>
-      <th>ID</th>
-      <th>Summary</th>
-      <th>Products</th>
-      <th>Score</th>
-      <th>Patch</th>
-      {% set annotation_url_params = base_url_params %}
-      {% set _dummy = annotation_url_params.update({'sort_by':'annotation'}) %}
-      {# TODO: Add support to filter by columns here.
-          <a href="{{ url_for(endpoint, **annotation_url_params) }}"><i class="fa fa-caret-square-o-down" aria-hidden="true"></i></a>
-      #}
-      <th>Annotated</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for vuln_view in pagination_obj.items %}
-    <tr class="clickable-row" data-href="{{ url_for('vuln.vuln_view', vuln_id=vuln_view.id) }}">
-      <td>
-        {{ vuln_view.date_created }}
-      </td>
-      <td>{{ vuln_view.id or "N/A" }}</td>
-      <td>{{ vuln_view.comment | truncate(500) if vuln_view.comment else "N/A" }}</td>
-      <td>{{ vuln_view.products or "N/A" }}</td>
-      <td>
-        {% if vuln_view.score %}
-        {{ '%0.1f' % vuln_view.score }}
-        {% else %}
-        N/A
-        {% endif %}
-      </td>
-      <td>
-        {% if vuln_view.master_commit is not none %}
-          <i class="fa fa-check" style="color: #00FF00"></i>
-        {% elif vuln_view.vcdb_exists %}
-          <i class="fa fa-question" style="color: #777777"></i>
-        {% else %}
-          <i class="fa fa-times" style="color: #FF0000"></i>
-        {% endif %}
-      </td>
-      <td>
-        {% if vuln_view.annotated %}
-          <i class="fa fa-check" style="color: #00FF00"></i>
-        {% else %}
-          <i class="fa fa-times" style="color: #FF0000"></i>
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-</div>
+{% macro display_vuln_table(items, endpoint, table_id, keyword) %}
+  {% set pagination_param_key = table_id + '_p' %}
+  {% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl", pagination_param_key:items.page} %}
+  <div class="table-responsive">
+    <table class="table table-hover table-light" id="{{ table_id }}_tbl">
+      <thead>
+      <tr>
+        <th>Date</th>
+        <th>ID</th>
+        <th>Summary</th>
+        <th>Products</th>
+        <th>Score</th>
+        <th>Patch</th>
+        {% set annotation_url_params = base_url_params %}
+        {% set _dummy = annotation_url_params.update({'sort_by':'annotation'}) %}
+        {# TODO: Add support to filter by columns here.
+            <a href="{{ url_for(endpoint, **annotation_url_params) }}"><i class="fa fa-caret-square-o-down" aria-hidden="true"></i></a>
+        #}
+        <th>Annotated</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for vuln_view in items %}
+      <tr class="clickable-row" data-href="{{ url_for('vuln.vuln_view', vuln_id=vuln_view.id) }}">
+        <td>
+          {{ vuln_view.date_created }}
+        </td>
+        <td>{{ vuln_view.id or "N/A" }}</td>
+        <td>{{ vuln_view.comment | truncate(500) if vuln_view.comment else "N/A" }}</td>
+        <td>
+          {% if vuln_view.products %}
+            {{ print_product_links(vuln_view.products) }}
+          {% else %}
+            N/A
+          {% endif %}
+        </td>
+        <td>
+          {% if vuln_view.score %}
+            {{ '%0.1f' % vuln_view.score }}
+          {% else %}
+            N/A
+          {% endif %}
+        </td>
+        <td>
+          {% if vuln_view.master_commit is not none %}
+            <i class="fa fa-check" style="color: #00FF00"></i>
+          {% elif vuln_view.vcdb_exists %}
+            <i class="fa fa-question" style="color: #777777"></i>
+          {% else %}
+            <i class="fa fa-times" style="color: #FF0000"></i>
+          {% endif %}
+        </td>
+        <td>
+          {% if vuln_view.annotated %}
+            <i class="fa fa-check" style="color: #00FF00"></i>
+          {% else %}
+            <i class="fa fa-times" style="color: #FF0000"></i>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endmacro %}

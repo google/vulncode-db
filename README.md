@@ -18,24 +18,28 @@ The application might be unreliable, contains many bugs and is not feature compl
 ##  Directory structure
 ```
 ├── app
+│   └── [submodules with Flask routes and views]
 ├── cert (SSL certificates)
 ├── data
 │   ├── forms
-│   └── models
+│   └── models (Database models)
 ├── docker (Docker files)
-├── lib
+├── lib (helping libraries)
 │   └── vcs_handler
-├── static
+├── migrations (Flask-Migrate / Alembic files)
+├── static (CSS, JS and other static files)
 │   ├── css
 │   ├── js
 │   │   └── lib
 │   ├── monaco
 │   │   └── themes
 │   └── tutorial
-├── templates
+├── templates (Jinja2 templates)
 │   └── editor
-├── third_party (third-party content)
-└── vulnerable_code (temporary directory used for caching repositories)
+│   └── macros
+├── tests (Unit tests)
+├── third_party (Third-party content)
+└── vulnerable_code (Temporary directory used for caching repositories)
 ```
 
 ## Setup
@@ -65,11 +69,26 @@ The main application should then be available at `http://localhost:8080`.
 
 Please also see the documentation provided in `docker/README.md` for more details.
 
+## Terms of use
 
-## Third-party Data
+### Vulncode-DB Data
+
+This project provides exclusive data such as vulnerability annotations and mappings from vulnerability entries to corresponding patches
+and code. The terms of use apply to data provided through the website or implicitly through code in this repository.
+
+```
+Vulncode-DB hereby grants you a perpetual, worldwide, non-exclusive,
+no-charge, royalty-free, irrevocable copyright license to reproduce, prepare
+derivative works of, publicly display, publicly perform, sublicense, and
+distribute data which is exclusively provided by Vulncode-DB. Any copy you make for
+such purposes is authorized provided that you reproduce Vulncode-DB's copyright
+designation and this license in any such copy.
+```
+
+### Third-party Data
 This project builds upon data provided by the CVE and NVD data sets.
 
-### Common Vulnerabilities and Exposures (CVE®)
+#### Common Vulnerabilities and Exposures (CVE®)
 The [CVE®](https://cve.mitre.org/) is maintained by the Mitre Corporation.
 Please see the Mitre CVE®'s [Terms of use](https://cve.mitre.org/about/termsofuse.html):
 ```
@@ -81,7 +100,7 @@ such purposes is authorized provided that you reproduce MITRE's copyright
 designation and this license in any such copy.
 ```
 
-### National Vulnerabilitiy Database (NVD)
+#### National Vulnerabilitiy Database (NVD)
 The [National Vulnerability Database](https://nvd.nist.gov/) is maintained by the U.S. government.
 Please see the NVD's [FAQ](https://nvd.nist.gov/general/faq#1f2488ea-0492-45a7-ae5b-ad29bc31dd05):
 ```

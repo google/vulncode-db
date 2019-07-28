@@ -1,0 +1,60 @@
+{% macro display_vuln_pagination(pagination, endpoint, table_id, keyword) %}
+  {% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl"} %}
+
+  {% set page_num = table_id + '_p' %}
+  <nav aria-label="Pagination">
+    {{(pagination.page - 1) * pagination.per_page + 1}}-{{(pagination.page - 1) * pagination.per_page + pagination.items | length}} of <b>{{pagination.total}} entries</b>
+
+    <ul class="pagination">
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for(endpoint,  **{page_num:pagination.prev_num, "_anchor":table_id + "_tbl"}) }}" tabindex="-1">Previous</a>
+      </li>
+
+      {% set pagination_url_params = base_url_params %}
+      {% for p in pagination.iter_pages(left_edge=1, left_current=2, right_current=3, right_edge=1) %}
+      {% if p %}
+      {% set _dummy = pagination_url_params.update({page_num:p}) %}
+
+      {% if p != pagination.page %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}">{{ p }}</a>
+      </li>
+      {% else %}
+      <li class="page-item active">
+        <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}">{{ p }}</a>
+      </li>
+      {% endif %}
+      {% else %}
+      <li class="page-item disabled">
+        <span class="page-link ellipsis">&hellip;</span>
+      </li>
+      {% endif %}
+      {% endfor %}
+
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        {% set _dummy = pagination_url_params.update({page_num:pagination.next_num}) %}
+        <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}">Next</a>
+      </li>
+
+    </ul>
+  </nav>
+{% endmacro %}
+
+{% macro display_nvd_pagination(pagination, endpoint, table_id, keyword) %}
+  {% set base_url_params = {"keyword":keyword, "_anchor":table_id + "_tbl"} %}
+  {% set page_num = table_id + '_p' %}
+  {% set pagination_url_params = base_url_params %}
+  <nav aria-label="Pagination">
+    <ul class="pagination">
+      <li class="page-item {% if not pagination.has_previous %}disabled{% endif %}">
+        {% set _dummy = pagination_url_params.update(**{page_num:pagination.bookmark_previous, "_anchor":table_id + "_tbl"}) %}
+        <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}" tabindex="-1">Previous</a>
+      </li>
+
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        {% set _dummy = pagination_url_params.update({page_num:pagination.bookmark_next}) %}
+        <a class="page-link" href="{{ url_for(endpoint, **pagination_url_params) }}">Next</a>
+      </li>
+    </ul>
+  </nav>
+{% endmacro %}
