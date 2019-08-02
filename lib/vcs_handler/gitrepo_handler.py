@@ -52,8 +52,7 @@ REPO_PATH = "vulnerable_code/"
 
 # [SCHEMA]://[HOST]/[PATH].git#[COMMIT_HASH]
 # [SCHEMA]://[HOST]/[PATH].git@[COMMIT_HASH]
-URL_RE = re.compile(
-    r"^(?P<url>.*/(?P<name>[^/]+).git)(?:[#@](?P<commit>[a-fA-Z0-9]{7,}))?$")
+URL_RE = re.compile(r"^(?P<url>.*/(?P<name>[^/]+).git)(?:[#@](?P<commit>[a-fA-Z0-9]{7,}))?$")
 
 
 class GitTreeElement:
@@ -64,7 +63,6 @@ class GitTreeElement:
 
 def _file_list_dulwich(repo, tgt_env, recursive=False):
     """Get file list using dulwich"""
-
     def _traverse(tree, repo_obj, blobs, prefix):
         """Traverse through a dulwich Tree object recursively, accumulating all the blob paths within it in the "blobs" list"""
         for item in list(tree.items()):
@@ -96,7 +94,6 @@ def _file_list_dulwich(repo, tgt_env, recursive=False):
 
 
 class GitRepoHandler(VcsHandler):
-
     def __init__(self, app, resource_url):
         """Initializes the questionnaire object."""
         super(GitRepoHandler, self).__init__(app, resource_url)
@@ -110,8 +107,7 @@ class GitRepoHandler(VcsHandler):
         matches = URL_RE.search(resource_url)
         if not matches:
             raise InvalidIdentifierException(
-                "Please provide a valid ([SCHEMA]://[HOST]/[PATH].git#[COMMIT_HASH]) Git Repo link."
-            )
+                "Please provide a valid ([SCHEMA]://[HOST]/[PATH].git#[COMMIT_HASH]) Git Repo link.")
         self.repo_name = matches.group("name")
         self.repo_name = os.path.basename(self.repo_name)
         self.repo_url = matches.group("url")
@@ -132,8 +128,7 @@ class GitRepoHandler(VcsHandler):
     def _getPatcheSet(self, old_commit, new_commit):
 
         patch_diff = BytesIO()
-        write_tree_diff(patch_diff, self.repo.object_store, old_commit.tree,
-                        new_commit.tree)
+        write_tree_diff(patch_diff, self.repo.object_store, old_commit.tree, new_commit.tree)
         patch_diff.seek(0)
         patch = PatchSet(patch_diff, encoding="utf-8")
         return patch
@@ -153,17 +148,15 @@ class GitRepoHandler(VcsHandler):
         )
         repo_path = os.path.normpath(repo_path)
         if not repo_path.startswith(REPO_PATH + repo_hostname):
-            self._logError("Invalid path: %r + %r => %r", self.repo_url,
-                           self.repo_name, repo_path)
+            self._logError(f"Invalid path: {self.repo_name} + {self.repo_name} => {repo_path}")
             raise Exception("Can't clone repo. Invalid repository.")
 
         if not os.path.isdir(repo_path):
             # Using GitPython here since Dulwich was throwing weird errors like:
             # "IOError: Not a gzipped file" when fetching resources like:
             # https://git.centos.org/r/rpms/dhcp.git
-            if not GitPythonRepo.clone_from(
-                    self.repo_url, repo_path, bare=True):
-                self._logError("Can't clone repo {:s}.".format(self.repo_name))
+            if not GitPythonRepo.clone_from(self.repo_url, repo_path, bare=True):
+                self._logError(f"Can't clone repo {self.repo_name}.")
                 raise Exception("Can't clone repo.")
 
         self.repo = Repo(repo_path)
@@ -205,8 +198,7 @@ class GitRepoHandler(VcsHandler):
             elif file.is_removed_file:
                 status = "removed"
 
-            file_metadata = CommitFilesMetadata(file.path, status, file.added,
-                                                file.removed)
+            file_metadata = CommitFilesMetadata(file.path, status, file.added, file.removed)
             files_metadata.append(file_metadata)
         return files_metadata
 
@@ -231,8 +223,7 @@ class GitRepoHandler(VcsHandler):
             commit_hash = self.commit_hash
 
         if not commit_hash:
-            self._logError("No commit_hash provided for repo URL: {:s}.".format(
-                self.repo_url))
+            self._logError(f"No commit_hash provided for repo URL: {self.repo_url}.")
             raise Exception("Please provide a commit_hash.")
 
         # py 3 compatiblity. Dulwich expects hashes to be bytes
@@ -243,15 +234,11 @@ class GitRepoHandler(VcsHandler):
             return None
 
         if commit_hash not in self.repo:
-            self._logError(
-                "Can't find commit_hash {} in given repo. Fetching updates and retry."
-                .format(commit_hash))
+            self._logError(f"Can't find commit_hash {commit_hash} in given repo. Fetching updates and retry.")
             self._fetch_remote()
 
         if commit_hash not in self.repo:
-            self._logError(
-                "Can't find commit_hash {} in given repo. Cancelling request."
-                .format(commit_hash))
+            self._logError(f"Can't find commit_hash {commit_hash} in given repo. Cancelling request.")
             raise Exception("Can't find commit_hash in given repo.")
 
         commit = self.repo[commit_hash]
@@ -270,11 +257,9 @@ class GitRepoHandler(VcsHandler):
         patched_files = {}
         for file in patch_files_metadata:
             if file.status == "added":
-                patched_file_sha = self._getItemHashFromPath(
-                    commit_hash, file.path)
+                patched_file_sha = self._getItemHashFromPath(commit_hash, file.path)
             else:
-                patched_file_sha = self._getItemHashFromPath(
-                    parent_commit_hash, file.path)
+                patched_file_sha = self._getItemHashFromPath(parent_commit_hash, file.path)
             patched_files[file.path] = {
                 "status": file.status,
                 "sha": patched_file_sha,

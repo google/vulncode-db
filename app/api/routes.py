@@ -38,18 +38,13 @@ def calculate_revision_updates(wrapper, old, new, attrs):
     new_keys = frozenset(list(new_dict.keys()))
 
     intersection = old_keys & new_keys
-    current_app.logger.debug(
-        "%d old, %d new, %d intersecting",
-        len(old_keys),
-        len(new_keys),
-        len(intersection),
-    )
-    # current_app.logger.debug('%s old, %s new, %s intersecting', old_keys, new_keys, intersection)
+    current_app.logger.debug(f"{len(old_keys)} old, {len(new_keys)} new, {len(intersection)} intersecting")
+    # current_app.logger.debug(f'{old_keys} old, {new_keys} new, {intersection} intersecting')
 
     # archive removed comments
     for k in old_keys - new_keys:
         o = old_dict[k]
-        current_app.logger.debug("Archiving %s", str(k))
+        current_app.logger.debug(f"Archiving {k!s}")
         o.archive()
 
     # filter new comments
@@ -63,10 +58,10 @@ def calculate_revision_updates(wrapper, old, new, attrs):
             if getattr(o, attr) != getattr(n, attr):
                 break
         else:
-            current_app.logger.debug("No changes for %s", str(k))
+            current_app.logger.debug(f"No changes for {k!s}")
             continue
         # archive old version
-        current_app.logger.debug("Archiving %s", str(k))
+        current_app.logger.debug(f"Archiving {k!s}")
         o.archive()
         n.revision = o.revision + 1
         updated_comments.append(n)
@@ -74,7 +69,6 @@ def calculate_revision_updates(wrapper, old, new, attrs):
 
 
 class Hashable(object):
-
     def __init__(self, item, key):
         self.item = item
         self.key = key
@@ -90,46 +84,35 @@ class Hashable(object):
         return hash(self.value)
 
     def __repr__(self):
-        return "{} ({})".format(str(self), hash(self))
+        return f"{str(self)} ({hash(self)})"
+
+
+class HashableComment(Hashable):
+    def __init__(self, comment):
+        super(HashableComment, self).__init__(comment, lambda c: (c.row_from, c.row_to))
+
+    def __str__(self):
+        return f"comment @ {self.value}"
+
+
+class HashableMarker(Hashable):
+    def __init__(self, marker):
+        super(HashableMarker, self).__init__(marker, lambda m: (m.row_from, m.row_to, m.column_from, m.column_to))
+
+    def __str__(self):
+        return "marker @ {0.row_from}:{0.column_from} - {0.row_to}:{0.column_to}".format(self.item)
 
 
 def update_file_comments(file_obj, new_comments):
 
-    class HashableComment(Hashable):
-
-        def __init__(self, comment):
-            super(HashableComment,
-                  self).__init__(comment, lambda c: (c.row_from, c.row_to))
-
-        def __str__(self):
-            return "comment @ {}".format(self.value)
-
-    updated_comments = calculate_revision_updates(HashableComment,
-                                                  file_obj.comments,
-                                                  new_comments,
-                                                  ["text", "sort_pos"])
-
+    updated_comments = calculate_revision_updates(HashableComment, file_obj.comments, new_comments, ["text", "sort_pos"])
     # add updated comments
     file_obj.comments += updated_comments
 
 
 def update_file_markers(file_obj, new_markers):
 
-    class HashableMarker(Hashable):
-
-        def __init__(self, marker):
-            super(HashableMarker, self).__init__(
-                marker, lambda m:
-                (m.row_from, m.row_to, m.column_from, m.column_to))
-
-        def __str__(self):
-            return "marker @ {0.row_from}:{0.column_from} - {0.row_to}:{0.column_to}".format(
-                self.item)
-
-    updated_markers = calculate_revision_updates(HashableMarker,
-                                                 file_obj.markers, new_markers,
-                                                 ["marker_class"])
-
+    updated_markers = calculate_revision_updates(HashableMarker, file_obj.markers, new_markers, ["marker_class"])
     # add updated comments
     file_obj.markers += updated_markers
 
@@ -149,14 +132,12 @@ def bug_save_editor_data():
             return create_json_response("Please create an entry first", 404)
 
         if not vuln_view.master_commit:
-            current_app.logger.error(
-                "Vuln (id: {:d}) has no linked Git commits!".format(
-                    vuln_view.id))
+            current_app.logger.error("Vuln (id: {vuln_view.id}) has no linked Git commits!")
             return create_json_response("Entry has no linked Git link!", 404)
 
         master_commit = vulnerability_details.getMasterCommit()
 
-        # print("DATA: {:s}".format(str(request.json)))
+        # print("DATA: {request.json}"
         old_files = master_commit.repository_files
         current_app.logger.debug("%d old files", len(old_files))
         # Flush any old custom content of this vulnerability first.
@@ -164,15 +145,11 @@ def bug_save_editor_data():
         for file in request.get_json():
             for of in old_files:
                 if of.file_path == file["path"] or of.file_hash == file["hash"]:
-                    current_app.logger.debug(
-                        "Found old file: %s",
-                        (file["path"], file["hash"], file["name"]))
+                    current_app.logger.debug("Found old file: %s", (file["path"], file["hash"], file["name"]))
                     file_obj = of
                     break
             else:
-                current_app.logger.debug(
-                    "Creating new file: %s",
-                    (file["path"], file["hash"], file["name"]))
+                current_app.logger.debug("Creating new file: %s", (file["path"], file["hash"], file["name"]))
                 file_obj = RepositoryFiles(
                     file_name=file["name"],
                     file_path=file["path"],

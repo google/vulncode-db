@@ -54,15 +54,13 @@ def manually_read_app_config():
 
 
 def measure_execution_time(label):
-
     def decorator(func):
-
         def wrapper(*args, **kwargs):
             start = time.time()
             res = func(*args, **kwargs)
             end = time.time()
 
-            print("[{}] {}s elapsed".format(label, end - start))
+            print(f"[{label}] {end - start}s elapsed")
             return res
 
         return wrapper

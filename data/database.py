@@ -53,8 +53,7 @@ class Database:
         insp = reflection.Inspector.from_engine(self.db.engine)
         for name in insp.get_table_names():
             for index in insp.get_indexes(name):
-                self.db.engine.execute("DROP INDEX IF EXISTS {:s}".format(
-                    index["name"]))
+                self.db.engine.execute(f"DROP INDEX IF EXISTS {index['name']}")
         self.app.logger.warning("!!! Attention !!! FLUSHED the main database.")
 
         # Create the database from all model definitions.

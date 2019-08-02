@@ -1,5 +1,5 @@
 pylint
-yapf
+yapf>=0.28
 astroid==1.6.1
 pyyaml
 Flask==1.0.2

@@ -20,7 +20,6 @@ from lib.utils import get_file_contents
 
 
 class TestUtils(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -32,9 +31,7 @@ class TestUtils(unittest.TestCase):
         dummy_data = "data"
         dummy_path = "/var/path/file.txt"
 
-        mock_open.side_effect = [
-            mock.mock_open(read_data=dummy_data).return_value
-        ]
+        mock_open.side_effect = [mock.mock_open(read_data=dummy_data).return_value]
         actual_data = get_file_contents(dummy_path)
         self.assertEqual(actual_data, dummy_data)
         mock_open.assert_called_once_with(dummy_path)

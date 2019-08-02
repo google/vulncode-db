@@ -28,9 +28,7 @@ DEBUG = False
 MAINTENANCE_MODE = os.getenv("MAINTENANCE_MODE", "false").lower() == "true"
 
 # Enables connecting to the remote database using the cloud sql proxy.
-USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = (
-    os.getenv("USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY",
-              "false").lower() == "true")
+USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = (os.getenv("USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY", "false").lower() == "true")
 
 IS_PROD = IS_QA = IS_LOCAL = False
 if os.getenv("SERVER_SOFTWARE", "").startswith("Google App Engine/"):
@@ -44,8 +42,7 @@ if os.getenv("SERVER_SOFTWARE", "").startswith("Google App Engine/"):
     elif appname == os.environ["PROD_PROJECT_ID"]:
         IS_PROD = True
     else:
-        raise AssertionError(
-            "Deployed in unknown environment: %s.".format(appname))
+        raise AssertionError(f"Deployed in unknown environment: {appname}.")
 
 if not IS_PROD and not IS_QA:
     IS_LOCAL = True
@@ -77,10 +74,7 @@ else:
 def gen_connection_string():
     # if not on Google then use local MySQL
     if IS_PROD or IS_QA:
-        conn_template = (
-            "mysql+mysqldb://%s:%s@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/%s"
-        )
-        return conn_template % (MYSQL_USER, MYSQL_PASS, MYSQL_CONNECTION_NAME)
+        return f"mysql+mysqldb://{MYSQL_USER}:{MYSQL_PASS}@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/MYSQL_CONNECTION_NAME"
     else:
         use_name = MYSQL_USER
         use_pass = MYSQL_PASS
@@ -95,8 +89,7 @@ def gen_connection_string():
             use_name = os.environ["CLOUDSQL_NAME"]
             use_pass = os.environ["CLOUDSQL_PASS"]
             use_port = int(os.getenv("CLOUDSQL_PORT", 3307))
-        conn_template = "mysql+mysqldb://%s:%s@%s:%d/_DB_NAME_"
-        return conn_template % (use_name, use_pass, use_host, use_port)
+        return f"mysql+mysqldb://{use_name}:{use_pass}@{use_host}:{use_port}/_DB_NAME_"
 
 
 SQLALCHEMY_DATABASE_URI = gen_connection_string().replace("_DB_NAME_", "main")
@@ -122,10 +115,7 @@ SECRET_KEY = os.getenv("COOKIE_SECRET_KEY", "")
 
 PATCH_REGEX = r".*(github\.com|\.git|\.patch|\/hg\.|\/\+\/)"
 
-GOOGLE_OAUTH = {
-    "consumer_key": os.getenv("OAUTH_CONSUMER_KEY", ""),
-    "consumer_secret": os.getenv("OAUTH_CONSUMER_SECRET", "")
-}
+GOOGLE_OAUTH = {"consumer_key": os.getenv("OAUTH_CONSUMER_KEY", ""), "consumer_secret": os.getenv("OAUTH_CONSUMER_SECRET", "")}
 
 # Make sure relevant properties are always set for QA and PROD.
 if IS_PROD or IS_QA:
