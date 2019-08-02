@@ -57,10 +57,7 @@ def authorized():
     if resp is None:
         error_message = "Access denied"
         if "error_reason" in request.args:
-            error_message += ": reason=%s error=%s" % (
-                request.args["error_reason"],
-                request.args["error_description"],
-            )
+            error_message += f": reason={request.args['error_reason']} error={request.args['error_description']}"
         return error_message
     # don't leak access_token into the session cookie
     # session['google_token'] = (resp['access_token'], '')
@@ -102,10 +99,7 @@ def load_user():
 
         user = User.query.filter_by(email=email).one_or_none()
         if not user:
-            user = User(
-                email=email,
-                full_name=data["name"],
-                profile_picture=data["picture"])
+            user = User(email=email, full_name=data["name"], profile_picture=data["picture"])
         else:
             user.full_name = data["name"]
             user.profile_picture = data["picture"]
@@ -146,8 +140,7 @@ def login_required(redirect=False):
             if not is_authenticated():
                 if redirect:
                     session["redirect_path"] = request.full_path
-                    return google.authorize(
-                        callback=url_for("auth.authorized", _external=True))
+                    return google.authorize(callback=url_for("auth.authorized", _external=True))
                 else:
                     return abort(401)
             return func(*args, **kwargs)
@@ -166,8 +159,7 @@ def admin_required(redirect=False):
             if not is_admin():
                 if redirect:
                     session["redirect_path"] = request.full_path
-                    return google.authorize(
-                        callback=url_for("auth.authorized", _external=True))
+                    return google.authorize(callback=url_for("auth.authorized", _external=True))
                 else:
                     return abort(401)
             return func(*args, **kwargs)

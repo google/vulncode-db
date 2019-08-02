@@ -62,7 +62,7 @@ def measure_execution_time(label):
             res = func(*args, **kwargs)
             end = time.time()
 
-            print("[{}] {}s elapsed".format(label, end - start))
+            print(f"[{label}] {end - start}s elapsed")
             return res
 
         return wrapper

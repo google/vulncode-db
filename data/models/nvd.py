@@ -30,8 +30,7 @@ class Affect(nvd_template.Affect, NvdBase):
 
 
 class Cpe(nvd_template.Cpe, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
 
 
 Index("idx_cpe_vendor_product", Cpe.vendor, Cpe.product)
@@ -59,17 +58,12 @@ Index("idx_cvsss2_extra_nvd_json_id", Cvss2Extra.nvd_json_id)
 
 
 class Cvss3(nvd_template.Cvss3, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
 
 
 class Cwe(nvd_template.Cwe, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
-    cwe_data = relationship(
-        CweData,
-        primaryjoin="foreign(CweData.cwe_id) == Cwe.cwe_id",
-        uselist=False)
+    nvd_json_id = Column(INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    cwe_data = relationship(CweData, primaryjoin="foreign(CweData.cwe_id) == Cwe.cwe_id", uselist=False)
 
     @property
     def cwe_name(self):
@@ -77,8 +71,7 @@ class Cwe(nvd_template.Cwe, NvdBase):
 
 
 class Description(nvd_template.Description, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
 
 
 class EnvCpe(nvd_template.EnvCpe, NvdBase):
@@ -111,8 +104,7 @@ Index("idx_nvd_xmls_cveid", NvdXml.cve_id)
 
 
 class Reference(nvd_template.Reference, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
 
 
 class Nvd(nvd_template.NvdJson, NvdBase):
@@ -147,16 +139,13 @@ class Nvd(nvd_template.NvdJson, NvdBase):
 
     @classmethod
     def get_all_by_link_substring(cls, substring):
-        return (cls.query.join(Nvd.references).filter(
-            Reference.link.contains(substring)).order_by(
-                Nvd.created_at.desc()).distinct())
+        return (cls.query.join(Nvd.references).filter(Reference.link.contains(substring)).order_by(
+            Nvd.created_at.desc()).distinct())
 
     @classmethod
     def get_all_by_link_regex(cls, regex):
-        return (cls.query.join(Nvd.references, aliased=True).filter(
-            Reference.link.op("regexp")(regex)).order_by(
-                Nvd.created_at.desc()).distinct().options(
-                    default_nvd_view_options))
+        return (cls.query.join(Nvd.references, aliased=True).filter(Reference.link.op("regexp")(regex)).order_by(
+            Nvd.created_at.desc()).distinct().options(default_nvd_view_options))
 
     @classmethod
     def get_by_commit_hash(cls, commit_hash):
@@ -164,8 +153,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
 
     @classmethod
     def get_by_cve_id(cls, cve_id):
-        return (cls.query.filter_by(
-            cve_id=cve_id).options(default_nvd_view_options).first())
+        return (cls.query.filter_by(cve_id=cve_id).options(default_nvd_view_options).first())
 
     @property
     def description(self):
@@ -182,11 +170,9 @@ Index("idx_nvd_jsons_cveid", Nvd.cve_id)
 
 load_only_cpe_product = joinedload(Nvd.cpes).load_only(Cpe.vendor, Cpe.product)
 load_only_cwe_subset = joinedload(Nvd.cwes).load_only(Cwe.cwe_id)
-load_only_cwe_subset = load_only_cwe_subset.joinedload(Cwe.cwe_data).load_only(
-    CweData.cwe_name)
+load_only_cwe_subset = load_only_cwe_subset.joinedload(Cwe.cwe_data).load_only(CweData.cwe_name)
 load_only_base_score = joinedload(Nvd.cvss3).load_only(Cvss3.base_score)
-load_only_description_value = joinedload(Nvd.descriptions).load_only(
-    Description.value)
+load_only_description_value = joinedload(Nvd.descriptions).load_only(Description.value)
 default_nvd_view_options = [
     load_only_cpe_product,
     load_only_cwe_subset,

@@ -63,9 +63,7 @@ class NvdBase(db.Model):
             # Disable Index
             attribute.index = None
             # Create a custom index here.
-            indices += (Index(
-                idx_format.format(tbl_name=cls.__tablename__, col_name=key),
-                key),)
+            indices += (Index(idx_format.format(tbl_name=cls.__tablename__, col_name=key), key),)
         return indices + ({"schema": "cve"},)
 
 
