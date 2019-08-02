@@ -99,14 +99,11 @@ class GithubHandler(VcsHandler):
     def getFileProviderUrl(self):
         owner = self.repo_owner
         repo = self.repo_name
-        HASH_PLACEHOLDER = HASH_PLACEHOLDER,
         return f"https://api.github.com/repos/{owner}/{repo}/git/blobs/{HASH_PLACEHOLDER}"
 
     def getRefFileProviderUrl(self):
         owner = self.repo_owner
         repo = self.repo_name
-        PATH_PLACEHOLDER = PATH_PLACEHOLDER
-        HASH_PLACEHOLDER = HASH_PLACEHOLDER
         return f"https://api.github.com/repos/{owner}/{repo}/contents/{PATH_PLACEHOLDER}?ref={HASH_PLACEHOLDER}"
 
     def getFileUrl(self):

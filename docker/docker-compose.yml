@@ -27,7 +27,7 @@ services:
       MYSQL_ROOT_PASSWORD: pass
     # Publishing mysql port as 3308 for debugging purposes.
     ports:
-      - "3308:3306"
+      - "3306:3306" # Development config
     expose:
       - "3306"
 
@@ -59,4 +59,3 @@ services:
     # The main application will be reachable from your host on http://127.0.0.1:8080
     ports:
       - "8080:8080"
-
