@@ -50,7 +50,6 @@ def create_app(test_config=None):
 
 
 def register_route_checks(app):
-
     def maintenance_check():
         if not cfg.MAINTENANCE_MODE:
             return

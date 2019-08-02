@@ -69,7 +69,6 @@ def calculate_revision_updates(wrapper, old, new, attrs):
 
 
 class Hashable(object):
-
     def __init__(self, item, key):
         self.item = item
         self.key = key
@@ -89,7 +88,6 @@ class Hashable(object):
 
 
 class HashableComment(Hashable):
-
     def __init__(self, comment):
         super(HashableComment, self).__init__(comment, lambda c: (c.row_from, c.row_to))
 
@@ -98,7 +96,6 @@ class HashableComment(Hashable):
 
 
 class HashableMarker(Hashable):
-
     def __init__(self, marker):
         super(HashableMarker, self).__init__(marker, lambda m: (m.row_from, m.row_to, m.column_from, m.column_to))
 

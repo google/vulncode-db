@@ -132,9 +132,7 @@ def is_authenticated():
 
 
 def login_required(redirect=False):
-
     def decorator(func):
-
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not is_authenticated():
@@ -151,9 +149,7 @@ def login_required(redirect=False):
 
 
 def admin_required(redirect=False):
-
     def decorator(func):
-
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not is_admin():

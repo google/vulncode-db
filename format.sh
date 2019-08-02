@@ -42,7 +42,7 @@ fi
 if which yapf &>/dev/null
 then
   info 'Formatting python files with yapf'
-  YAPF_STYLE='{based_on_style: chromium, indent_width: 4, column_limit: 128}'
+  YAPF_STYLE='{based_on_style: pep8, indent_width: 4, column_limit: 128}'
   find . -maxdepth 1 -name "*.py" -print -exec yapf -i --style="${YAPF_STYLE}" {} \; | awk '{print "Reformatting "$1}'
   yapf -p -vv -i --recursive app lib data tests --style="${YAPF_STYLE}" || fatal 'Error during formatting python files'
 else

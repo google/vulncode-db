@@ -28,7 +28,6 @@ from data.models.base import db
 
 
 class ModelFieldList(FieldList):
-
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop("model", None)
         super(ModelFieldList, self).__init__(*args, **kwargs)

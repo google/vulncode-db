@@ -63,7 +63,6 @@ class GitTreeElement:
 
 def _file_list_dulwich(repo, tgt_env, recursive=False):
     """Get file list using dulwich"""
-
     def _traverse(tree, repo_obj, blobs, prefix):
         """Traverse through a dulwich Tree object recursively, accumulating all the blob paths within it in the "blobs" list"""
         for item in list(tree.items()):
@@ -95,7 +94,6 @@ def _file_list_dulwich(repo, tgt_env, recursive=False):
 
 
 class GitRepoHandler(VcsHandler):
-
     def __init__(self, app, resource_url):
         """Initializes the questionnaire object."""
         super(GitRepoHandler, self).__init__(app, resource_url)

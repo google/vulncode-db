@@ -54,5 +54,8 @@ def product_view(vendor=None, product=None):
         repo_urls += entry_repo_urls
     repo_urls = list(set(repo_urls))
 
-    return render_template(
-        "product_view.html", vendor=vendor, product=product, product_vulns=product_vulns, repo_urls=repo_urls)
+    return render_template("product_view.html",
+                           vendor=vendor,
+                           product=product,
+                           product_vulns=product_vulns,
+                           repo_urls=repo_urls)

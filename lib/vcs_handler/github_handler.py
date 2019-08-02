@@ -44,7 +44,6 @@ CACHE_DIR = "cache/"
 
 
 class GithubHandler(VcsHandler):
-
     def __init__(self, app, resource_url):
         """Initializes the questionnaire object."""
         super(GithubHandler, self).__init__(app, resource_url)

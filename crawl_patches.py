@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import sys
 import sqlparse
@@ -34,15 +33,12 @@ from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits, 
 from data.models.nvd import default_nvd_view_options
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
-
 if "MYSQL_CONNECTION_NAME" not in os.environ:
     print("[~] Executed outside AppEngine context. Manually loading config.")
     manually_read_app_config()
 
-
 sys.path.append("third_party/")
 pd.set_option("display.max_colwidth", -1)
-
 
 app = Flask(__name__, static_url_path="", template_folder="templates")
 # Load the Flask configuration parameters from a global config file.
@@ -101,14 +97,11 @@ def get_nvd_github_patch_candidates():
 
     patch_regex = r"github\.com/([^/]+)/([^/]+)/commit/([^/]+)"
 
-    sub_query = (
-        db.session.query(func.min(Reference.id)).filter(Reference.link.op("regexp")(patch_regex)).group_by(
-            Reference.nvd_json_id))
-    github_commit_candidates = (
-        db.session.query(Nvd.cve_id, Reference.link, Vulnerability).select_from(
-            join(Nvd,
-                 Reference).outerjoin(Vulnerability,
-                                      Nvd.cve_id == Vulnerability.cve_id)).filter(Reference.id.in_(sub_query)).with_labels())
+    sub_query = (db.session.query(func.min(Reference.id)).filter(Reference.link.op("regexp")(patch_regex)).group_by(
+        Reference.nvd_json_id))
+    github_commit_candidates = (db.session.query(Nvd.cve_id, Reference.link, Vulnerability).select_from(
+        join(Nvd, Reference).outerjoin(Vulnerability,
+                                       Nvd.cve_id == Vulnerability.cve_id)).filter(Reference.id.in_(sub_query)).with_labels())
 
     return github_commit_candidates
 

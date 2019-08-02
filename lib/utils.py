@@ -54,9 +54,7 @@ def manually_read_app_config():
 
 
 def measure_execution_time(label):
-
     def decorator(func):
-
         def wrapper(*args, **kwargs):
             start = time.time()
             res = func(*args, **kwargs)
