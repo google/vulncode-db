@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 
 HASH_PLACEHOLDER = "--ITEM_HASH--"
 PATH_PLACEHOLDER = "--PATH_PLACE--"

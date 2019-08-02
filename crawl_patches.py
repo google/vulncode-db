@@ -13,28 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import os
+import sys
+import sqlparse
+import pandas as pd
 from lib.utils import manually_read_app_config
 
-if not "MYSQL_CONNECTION_NAME" in os.environ:
-    print("[~] Executed outside AppEngine context. Manually loading config.")
-    manually_read_app_config()
-
-import sys
-
-sys.path.append("third_party/")
-
-import time
-
-import pandas as pd
-
-pd.set_option("display.max_colwidth", -1)
-from sqlalchemy import and_, or_, select, outerjoin, join, func, desc
 from flask import Flask
-from sqlalchemy import outerjoin
-from sqlalchemy.orm import lazyload
-
-import sqlparse
+from sqlalchemy import and_, join, func
 
 from colorama import Fore, Style
 from pygments import highlight
@@ -47,7 +34,15 @@ from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits, 
 from data.models.nvd import default_nvd_view_options
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
+
+if "MYSQL_CONNECTION_NAME" not in os.environ:
+    print("[~] Executed outside AppEngine context. Manually loading config.")
+    manually_read_app_config()
+
+
+sys.path.append("third_party/")
 pd.set_option("display.max_colwidth", -1)
+
 
 app = Flask(__name__, static_url_path="", template_folder="templates")
 # Load the Flask configuration parameters from a global config file.
@@ -251,7 +246,7 @@ def create_oss_entries():
     nvd_entries = nvd_entries.select_from(join(Nvd, Cpe).outerjoin(Vulnerability,
                                                                    Nvd.cve_id == Vulnerability.cve_id)).with_labels()
     nvd_entries = nvd_entries.filter(Vulnerability.cve_id.is_(None))
-    #nvd_entries = nvd_entries.options(default_nvd_view_options)
+    # nvd_entries = nvd_entries.options(default_nvd_view_options)
     nvd_entries = nvd_entries.join(OpenSourceProducts,
                                    and_(Cpe.vendor == OpenSourceProducts.vendor, Cpe.product == OpenSourceProducts.product))
     nvd_entries = nvd_entries.distinct(Nvd.cve_id)
@@ -264,10 +259,10 @@ def start_crawling():
 
     write_highlighted("1) Fetching entries from NVD with a direct github.com/*/commit/* commit link.")
     github_commit_candidates = get_nvd_github_patch_candidates()
-    #update_oss_table()
-    #exit()
-    #write_highlighted("Fetching all entries that affect open source software.")
-    #github_commit_candidates = create_oss_entries()
+    # update_oss_table()
+    # exit()
+    # write_highlighted("Fetching all entries that affect open source software.")
+    # github_commit_candidates = create_oss_entries()
     dump_query(github_commit_candidates)
 
     write_highlighted("2) Creating/updating existing Vcdb entries.")

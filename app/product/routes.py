@@ -36,9 +36,9 @@ def product_view(vendor=None, product=None):
     entries = entries.filter(Nvd.id.in_(sub_query)).with_labels()
     entries = entries.outerjoin(Vulnerability, Nvd.cve_id == Vulnerability.cve_id)
     entries = entries.options(default_nvd_view_options)
-    #.options(lazyload(Nvd.cpes))
-    #entries = entries.order_by(
-    #    asc(Vulnerability.date_created), desc(Vulnerability.id))
+    # .options(lazyload(Nvd.cpes))
+    # entries = entries.order_by(
+    # asc(Vulnerability.date_created), desc(Vulnerability.id))
     product_vulns = entries.paginate(1, per_page=10)
     product_vulns = VulnViewSqlalchemyPaginationObjectWrapper(product_vulns)
 
