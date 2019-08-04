@@ -13,21 +13,13 @@
 # limitations under the License.
 
 runtime: python37
-api_version: 1
-threadsafe: true
-
-libraries:
-- name: ssl
-  version: latest
-- name: MySQLdb
-  version: latest
 
 handlers:
 - url: /static
   static_dir: static
   secure: always
 - url: /.*
-  script: main.app
+  script: auto
   secure: always
 
 env_variables:

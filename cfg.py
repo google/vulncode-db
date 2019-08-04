@@ -33,19 +33,17 @@ USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = (
               "false").lower() == "true")
 
 IS_PROD = IS_QA = IS_LOCAL = False
-if os.getenv("SERVER_SOFTWARE", "").startswith("Google App Engine/"):
+if os.getenv("GAE_ENV", "").startswith("standard"):
     # Running on GAE. This is either PROD or QA.
-    from google.appengine.api.app_identity import get_application_id
-
-    appname = get_application_id()
+    appname = os.environ["GAE_APPLICATION"]
+    appname = appname.replace('s~', '')
 
     if appname == os.environ["QA_PROJECT_ID"]:
         IS_QA = True
     elif appname == os.environ["PROD_PROJECT_ID"]:
         IS_PROD = True
     else:
-        raise AssertionError(
-            "Deployed in unknown environment: %s.".format(appname))
+        raise AssertionError(f"Deployed in unknown environment: {appname}.")
 
 if not IS_PROD and not IS_QA:
     IS_LOCAL = True

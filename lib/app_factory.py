@@ -62,13 +62,13 @@ def register_route_checks(app):
 
     def maintenance_check():
         if not cfg.MAINTENANCE_MODE:
-            return
+            return None
         allowed_prefixes = ["/about", "/static", "/auth"]
         for prefix in allowed_prefixes:
             if request.path.startswith(prefix):
-                return
+                return None
         if is_admin():
-            return
+            return None
         if request.path != url_for("maintenance"):
             return redirect(url_for("maintenance"))
 
@@ -77,7 +77,7 @@ def register_route_checks(app):
         # Clear cache to always also reload Jinja template macros.
         if cfg.DEBUG:
             app.jinja_env.cache = {}
-        maintenance_check()
+        return maintenance_check()
 
 
 def register_extensions(app, test_config=None):
