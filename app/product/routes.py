@@ -12,53 +12,84 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import (
-    Blueprint,
-    render_template,
-)
-from sqlalchemy import and_
+import re
+from flask import (Blueprint, render_template)
+from sqlakeyset import get_page
+from sqlalchemy import and_, desc
+from sqlalchemy.orm import joinedload, Load
 
-from app.vulnerability.views.vulncode_db import VulnViewSqlalchemyPaginationObjectWrapper
-from app.vulnerability.views.vulnerability import VulnerabilityView
+from app.vulnerability.views.vulncode_db import VulnViewTypesetPaginationObjectWrapper
 from data.models.nvd import default_nvd_view_options, Cpe
 from data.database import DEFAULT_DATABASE, Vulnerability, Nvd
+from lib.utils import parse_pagination_param
 
 bp = Blueprint("product", __name__, url_prefix="/product")
 db = DEFAULT_DATABASE
+
+
+def get_unique_repo_urls(vulnerability_entries):
+    """
+    Retrieves a unique list of repository urls sorted by frequency.
+    :param vulnerability_entries:
+    :return:
+    """
+    unique_repo_urls = {}
+    for entry in vulnerability_entries:
+        if entry.Vulnerability is None:
+            continue
+        commits = entry.Vulnerability.commits
+        for commit in commits:
+            repo_url = commit.repo_url
+            if repo_url not in unique_repo_urls:
+                unique_repo_urls[repo_url] = 0
+            unique_repo_urls[repo_url] += 1
+
+    sorted_urls = sorted(
+        unique_repo_urls.items(), key=lambda item: item[1], reverse=True)
+    repo_urls = [pair[0] for pair in sorted_urls]
+    return repo_urls
+
+
+def get_entries_commits(full_base_query):
+    """
+    Takes a base query and only selects commit relevant data.
+    :param full_base_query:
+    :return:
+    """
+    entries_commits = full_base_query.options(Load(Vulnerability).defer('*'))
+    entries_commits = entries_commits.options(Load(Nvd).defer('*'))
+    entries_commits = entries_commits.options(joinedload(Vulnerability.commits))
+    entries_subset = entries_commits.all()
+    return entries_subset
+
 
 # Create a catch all route for product identifiers.
 @bp.route("/<vendor>/<product>")
 def product_view(vendor=None, product=None):
     sub_query = db.session.query(Cpe.nvd_json_id).filter(
-            and_(Cpe.vendor == vendor, Cpe.product == product)
-        ).distinct()
+        and_(Cpe.vendor == vendor, Cpe.product == product)).distinct()
+    number_vulns = sub_query.count()
 
     entries = db.session.query(Vulnerability, Nvd)
     entries = entries.filter(Nvd.id.in_(sub_query)).with_labels()
-    entries = entries.outerjoin(Vulnerability, Nvd.cve_id == Vulnerability.cve_id)
-    entries = entries.options(default_nvd_view_options)
-    #.options(lazyload(Nvd.cpes))
-    #entries = entries.order_by(
-    #    asc(Vulnerability.date_created), desc(Vulnerability.id))
-    product_vulns = entries.paginate(1, per_page=10)
-    product_vulns = VulnViewSqlalchemyPaginationObjectWrapper(product_vulns)
+    entries = entries.outerjoin(Vulnerability,
+                                Nvd.cve_id == Vulnerability.cve_id)
+    entries = entries.order_by(desc(Nvd.id))
 
-    # TODO: Remove this arbitrary limit here and make the queries more efficient.
-    entries_subset = entries.limit(50).all()
-    repo_urls = []
-    for entry in entries_subset:
-        if entry.Vulnerability is None or entry.Vulnerability.master_commit is None:
-            continue
-        vuln_view = VulnerabilityView(
-            entry.Vulnerability, entry.Nvd, preview=True)
-        commits = [vuln_view.master_commit] + vuln_view.known_commits
-        entry_repo_urls = [c.repo_url for c in commits]
-        repo_urls += entry_repo_urls
-    repo_urls = list(set(repo_urls))
+    bookmarked_page = parse_pagination_param("product_p")
+
+    per_page = 10
+    entries_full = entries.options(default_nvd_view_options)
+    product_vulns = get_page(entries_full, per_page, page=bookmarked_page)
+    product_vulns = VulnViewTypesetPaginationObjectWrapper(product_vulns.paging)
+
+    entries_commits = get_entries_commits(entries)
+    repo_urls = get_unique_repo_urls(entries_commits)
 
     return render_template(
         "product_view.html",
         vendor=vendor,
         product=product,
         product_vulns=product_vulns,
-        repo_urls=repo_urls)
+        repo_urls=repo_urls,
+        number_vulns=number_vulns)

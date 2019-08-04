@@ -43,10 +43,19 @@ def create_app(test_config=None):
     register_blueprints(app)
     register_extensions(app, test_config=test_config)
     register_route_checks(app)
+    register_custom_helpers(app)
 
     # Connect to the database and initialize SQLAlchemy.
     init_db(app)
     return app
+
+
+def register_custom_helpers(app):
+
+    def url_for_self(**args):
+        return url_for(request.endpoint, **dict(request.view_args, **args))
+
+    app.jinja_env.globals['url_for_self'] = url_for_self
 
 
 def register_route_checks(app):

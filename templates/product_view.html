@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}{{ product|title }}{% endblock %}
 {% block main_content %}
 <div class="row mb-3">
     <div class="col-sm-8 offset-md-2">
@@ -29,21 +30,17 @@
                         <tr>
                             <td style="width: 7%"><b>#Vulnerabilities</b></td>
                             <td>
-                                {{ product_vulns.total }}
+                                {{ number_vulns }}
                             </td>
                         </tr>
                     </table>
                 </div>
 
                 {% from 'macros/generate_vuln_table.html' import display_vuln_table %}
-                {% from 'macros/pagination.html' import display_vuln_pagination %}
+                {% from 'macros/pagination.html' import display_nvd_pagination %}
                 <div id="vulnEntries">
-                    {% if product_vulns.rows == 0 %}
-                        No results found.
-                    {% else %}
-                        {{ display_vuln_table(product_vulns.items, 'serve_index', 'vcdb', '') }}
-                        {{ display_vuln_pagination(product_vulns, 'serve_index', 'vcdb', '') }}
-                    {% endif %}
+                    {{ display_vuln_table(product_vulns.rows, 'product', '') }}
+                    {{ display_nvd_pagination(product_vulns, 'product', '') }}
                 </div>
 
             </div>
