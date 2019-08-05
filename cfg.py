@@ -74,7 +74,7 @@ else:
 def gen_connection_string():
     # if not on Google then use local MySQL
     if IS_PROD or IS_QA:
-        return f"mysql+mysqldb://{MYSQL_USER}:{MYSQL_PASS}@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/MYSQL_CONNECTION_NAME"
+        return f"mysql+mysqldb://{MYSQL_USER}:{MYSQL_PASS}@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/{MYSQL_CONNECTION_NAME}"
     else:
         use_name = MYSQL_USER
         use_pass = MYSQL_PASS

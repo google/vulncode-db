@@ -148,7 +148,7 @@ class GitRepoHandler(VcsHandler):
         )
         repo_path = os.path.normpath(repo_path)
         if not repo_path.startswith(REPO_PATH + repo_hostname):
-            self._logError(f"Invalid path: {self.repo_name} + {self.repo_name} => {repo_path}")
+            self._logError(f"Invalid path: {self.repo_url} + {self.repo_name} => {repo_path}")
             raise Exception("Can't clone repo. Invalid repository.")
 
         if not os.path.isdir(repo_path):
