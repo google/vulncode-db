@@ -59,13 +59,16 @@ class GithubHandler(VcsHandler):
 
     def parseResourceURL(self, resource_url):
         if not resource_url:
-            raise InvalidIdentifierException("Please provide a Github commit link.")
+            raise InvalidIdentifierException(
+                "Please provide a Github commit link.")
         url_data = urlparse(resource_url)
         git_path = url_data.path
         matches = re.match(r"/([^/]+)/([^/]+)/commit/([^/]+)/?$", git_path)
-        if (not url_data.hostname or "github.com" not in url_data.hostname or not matches):
+        if (not url_data.hostname or "github.com" not in url_data.hostname
+                or not matches):
             raise InvalidIdentifierException(
-                "Please provide a valid (https://github.com/{owner}/{repo}/commit/{hash}) commit link.")
+                "Please provide a valid (https://github.com/{owner}/{repo}/commit/{hash}) commit link."
+            )
         self.repo_owner, self.repo_name, self.commit_hash = matches.groups()
         self.commit_link = resource_url
 
@@ -91,7 +94,8 @@ class GithubHandler(VcsHandler):
                 for line in hunk:
                     if line.is_context:
                         continue
-                    patched_files[patched_file.filename]["deltas"].append(vars(line))
+                    patched_files[patched_file.filename]["deltas"].append(
+                        vars(line))
 
         return patched_files
 
@@ -120,12 +124,14 @@ class GithubHandler(VcsHandler):
     def _getFilesMetadata(self, github_files_metadata):
         files_metadata = []
         for file in github_files_metadata:
-            file_metadata = CommitFilesMetadata(file.filename, file.status, file.additions, file.deletions)
+            file_metadata = CommitFilesMetadata(file.filename, file.status,
+                                                file.additions, file.deletions)
             files_metadata.append(file_metadata)
         return files_metadata
 
     def _getPatchStats(self, commit_stats):
-        return CommitStats(commit_stats.additions, commit_stats.deletions, commit_stats.total)
+        return CommitStats(commit_stats.additions, commit_stats.deletions,
+                           commit_stats.total)
 
     def fetchCommitData(self, commit_hash=None):
         """Args:
@@ -142,7 +148,8 @@ class GithubHandler(VcsHandler):
             return cache_content
 
         # Fetch relevant information from Github.
-        github_repo = self.github.get_repo(f"{self.repo_owner}/{self.repo_name}")
+        github_repo = self.github.get_repo(
+            f"{self.repo_owner}/{self.repo_name}")
         commit = github_repo.get_commit(commit_hash)
         commit_parents = commit.commit.parents
         parent_commit_hash = commit_hash
@@ -158,7 +165,8 @@ class GithubHandler(VcsHandler):
         commit_stats = self._getPatchStats(commit.stats)
         files_metadata = self._getFilesMetadata(commit.files)
 
-        commit_date = int((commit.commit.committer.date - datetime.datetime(1970, 1, 1)).total_seconds())
+        commit_date = int((commit.commit.committer.date -
+                           datetime.datetime(1970, 1, 1)).total_seconds())
         commit_metadata = CommitMetadata(
             parent_commit_hash,
             commit_date,

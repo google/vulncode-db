@@ -67,18 +67,22 @@ def check_db_state():
         head_revs = frozenset(rev.revision for rev in heads)
 
         def check(rev, context):
-            db_revs = frozenset(rev.revision for rev in script.get_all_current(rev))
+            db_revs = frozenset(rev.revision
+                                for rev in script.get_all_current(rev))
             if db_revs ^ head_revs:
                 config.print_stdout(
                     "Current revision(s) for %s %s do not match the heads %s\n.Run ./manage.sh db upgrade.",
-                    alembic.util.obfuscate_url_pw(context.connection.engine.url),
+                    alembic.util.obfuscate_url_pw(
+                        context.connection.engine.url),
                     tuple(db_revs),
                     tuple(head_revs),
                 )
                 sys.exit(1)
             return []
 
-        with alembic.runtime.environment.EnvironmentContext(config, script, fn=check):
+        with alembic.runtime.environment.EnvironmentContext(config,
+                                                            script,
+                                                            fn=check):
             script.run_env()
 
 

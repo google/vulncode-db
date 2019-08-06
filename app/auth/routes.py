@@ -37,7 +37,8 @@ def init_auth(state):
 def login():
     if is_authenticated():
         return redirect("/")
-    return google.authorize(callback=url_for("auth.authorized", _external=True))
+    return google.authorize(
+        callback=url_for("auth.authorized", _external=True))
 
 
 @bp.route("/logout", methods=["GET"])
@@ -51,7 +52,8 @@ def authorized():
     try:
         resp = google.authorized_response()
     except Exception:
-        current_app.logger.exception("Error during handling the oauth response")
+        current_app.logger.exception(
+            "Error during handling the oauth response")
         abort(400)
 
     if resp is None:
@@ -99,7 +101,9 @@ def load_user():
 
         user = User.query.filter_by(email=email).one_or_none()
         if not user:
-            user = User(email=email, full_name=data["name"], profile_picture=data["picture"])
+            user = User(email=email,
+                        full_name=data["name"],
+                        profile_picture=data["picture"])
         else:
             user.full_name = data["name"]
             user.profile_picture = data["picture"]
@@ -138,7 +142,8 @@ def login_required(redirect=False):
             if not is_authenticated():
                 if redirect:
                     session["redirect_path"] = request.full_path
-                    return google.authorize(callback=url_for("auth.authorized", _external=True))
+                    return google.authorize(
+                        callback=url_for("auth.authorized", _external=True))
                 else:
                     return abort(401)
             return func(*args, **kwargs)
@@ -155,7 +160,8 @@ def admin_required(redirect=False):
             if not is_admin():
                 if redirect:
                     session["redirect_path"] = request.full_path
-                    return google.authorize(callback=url_for("auth.authorized", _external=True))
+                    return google.authorize(
+                        callback=url_for("auth.authorized", _external=True))
                 else:
                     return abort(401)
             return func(*args, **kwargs)

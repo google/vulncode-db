@@ -90,7 +90,8 @@ def main_api():
 
     vcs_handler = get_vcs_handler(app, resource_url)
     if not vcs_handler:
-        return create_json_response("Please provide a valid resource URL.", 400)
+        return create_json_response("Please provide a valid resource URL.",
+                                    400)
 
     # try:
     # Return a specific file's content if requested instead.
@@ -127,7 +128,8 @@ def start():
         app.logger.setLevel(logging.INFO)
 
     if "GITHUB_ACCESS_TOKEN" in vcs_config:
-        app.config["GITHUB_API_ACCESS_TOKEN"] = vcs_config["GITHUB_ACCESS_TOKEN"]
+        app.config["GITHUB_API_ACCESS_TOKEN"] = vcs_config[
+            "GITHUB_ACCESS_TOKEN"]
 
     cert_dir = os.path.join(root_dir, "cert")
     cert_file = os.path.join(cert_dir, "cert.pem")

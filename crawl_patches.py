@@ -72,12 +72,17 @@ def dump_query(query, filter_columns=None):
     num_rows = 5
 
     if hasattr(query, "statement"):
-        sql_query = str(query.statement.compile(dialect=None, compile_kwargs={"literal_binds": True}))
+        sql_query = str(
+            query.statement.compile(dialect=None,
+                                    compile_kwargs={"literal_binds": True}))
     else:
         sql_query = str(query)
 
-    formatted_sql_query = sqlparse.format(sql_query, reindent=True, keyword_case="upper")
-    highlighted_sql_query = highlight(formatted_sql_query, SqlLexer(), TerminalFormatter())
+    formatted_sql_query = sqlparse.format(sql_query,
+                                          reindent=True,
+                                          keyword_case="upper")
+    highlighted_sql_query = highlight(formatted_sql_query, SqlLexer(),
+                                      TerminalFormatter())
     print("Query:")
     print(f"{'-' * 15}\n{highlighted_sql_query}{'-' * 15}")
 
@@ -92,16 +97,19 @@ def dump_query(query, filter_columns=None):
 def get_nvd_github_patch_candidates():
     """Fetches concrete github.com commit links from the Nvd database.
 
-  :return:
-  """
+    :return:
+    """
 
     patch_regex = r"github\.com/([^/]+)/([^/]+)/commit/([^/]+)"
 
-    sub_query = (db.session.query(func.min(Reference.id)).filter(Reference.link.op("regexp")(patch_regex)).group_by(
-        Reference.nvd_json_id))
-    github_commit_candidates = (db.session.query(Nvd.cve_id, Reference.link, Vulnerability).select_from(
-        join(Nvd, Reference).outerjoin(Vulnerability,
-                                       Nvd.cve_id == Vulnerability.cve_id)).filter(Reference.id.in_(sub_query)).with_labels())
+    sub_query = (db.session.query(func.min(Reference.id)).filter(
+        Reference.link.op("regexp")(patch_regex)).group_by(
+            Reference.nvd_json_id))
+    github_commit_candidates = (db.session.query(
+        Nvd.cve_id, Reference.link, Vulnerability).select_from(
+            join(Nvd, Reference).outerjoin(
+                Vulnerability, Nvd.cve_id == Vulnerability.cve_id)).filter(
+                    Reference.id.in_(sub_query)).with_labels())
 
     return github_commit_candidates
 
@@ -134,9 +142,9 @@ def create_vcdb_entry(cve_id, commit_link=None):
 def store_or_update_vcdb_entries(github_commit_candidates):
     """Fetches or creates VCDB
 
-  :param github_commit_candidates:
-  :return:
-  """
+    :param github_commit_candidates:
+    :return:
+    """
     stats = {"created": 0, "updated": 0, "idle": 0, "skipped": 0}
 
     for nvd_candidate in github_commit_candidates:
@@ -163,7 +171,8 @@ def store_or_update_vcdb_entries(github_commit_candidates):
                 raise Exception("Incorrect vulnerability cve_id!")
 
             if existing_vcdb_vulnerability.master_commit:
-                if (existing_vcdb_vulnerability.master_commit.repo_owner != vulnerability_suggestion.master_commit.repo_owner):
+                if (existing_vcdb_vulnerability.master_commit.repo_owner !=
+                        vulnerability_suggestion.master_commit.repo_owner):
                     has_changed = True
 
                 if (existing_vcdb_vulnerability.master_commit.commit_link !=
@@ -178,8 +187,10 @@ def store_or_update_vcdb_entries(github_commit_candidates):
                 stats["updated"] += 1
                 # TODO: Consider updating more attributes here.
                 # Update only the commit_link and repo_owner for now.
-                existing_vcdb_vulnerability.master_commit.commit_link = (vulnerability_suggestion.master_commit.commit_link)
-                existing_vcdb_vulnerability.master_commit.repo_owner = (vulnerability_suggestion.master_commit.repo_owner)
+                existing_vcdb_vulnerability.master_commit.commit_link = (
+                    vulnerability_suggestion.master_commit.commit_link)
+                existing_vcdb_vulnerability.master_commit.repo_owner = (
+                    vulnerability_suggestion.master_commit.repo_owner)
                 db.session.add(existing_vcdb_vulnerability)
             else:
                 stats["idle"] += 1
@@ -210,19 +221,25 @@ def print_stats(stats):
 def update_oss_table():
     # Fetch all distinct vendor, product tuples from the main table.
     unique_products = db.session.query(Cpe.vendor, Cpe.product)
-    unique_products = unique_products.select_from(join(Nvd, Cpe).outerjoin(Vulnerability, Vulnerability.cve_id == Nvd.cve_id))
+    unique_products = unique_products.select_from(
+        join(Nvd, Cpe).outerjoin(Vulnerability,
+                                 Vulnerability.cve_id == Nvd.cve_id))
     unique_products = unique_products.filter(Vulnerability.cve_id.isnot(None))
     unique_products = unique_products.distinct(Cpe.vendor, Cpe.product)
     # Fetch only entries which are not already contained in OpenSourceProducts.
     unique_products = unique_products.outerjoin(
-        OpenSourceProducts, and_(Cpe.vendor == OpenSourceProducts.vendor, Cpe.product == OpenSourceProducts.product))
-    unique_products = unique_products.filter(OpenSourceProducts.vendor.is_(None))
+        OpenSourceProducts,
+        and_(Cpe.vendor == OpenSourceProducts.vendor,
+             Cpe.product == OpenSourceProducts.product))
+    unique_products = unique_products.filter(
+        OpenSourceProducts.vendor.is_(None))
     dump_query(unique_products)
 
     # We don't do any updates for now.
     created = 0
     for entry in unique_products:
-        new_entry = OpenSourceProducts(vendor=entry.vendor, product=entry.product)
+        new_entry = OpenSourceProducts(vendor=entry.vendor,
+                                       product=entry.product)
         db.session.add(new_entry)
         sys.stdout.write(".")
         sys.stdout.flush()
@@ -236,12 +253,16 @@ def update_oss_table():
 
 def create_oss_entries():
     nvd_entries = db.session.query(Nvd.cve_id, Vulnerability)
-    nvd_entries = nvd_entries.select_from(join(Nvd, Cpe).outerjoin(Vulnerability,
-                                                                   Nvd.cve_id == Vulnerability.cve_id)).with_labels()
+    nvd_entries = nvd_entries.select_from(
+        join(Nvd,
+             Cpe).outerjoin(Vulnerability,
+                            Nvd.cve_id == Vulnerability.cve_id)).with_labels()
     nvd_entries = nvd_entries.filter(Vulnerability.cve_id.is_(None))
     # nvd_entries = nvd_entries.options(default_nvd_view_options)
-    nvd_entries = nvd_entries.join(OpenSourceProducts,
-                                   and_(Cpe.vendor == OpenSourceProducts.vendor, Cpe.product == OpenSourceProducts.product))
+    nvd_entries = nvd_entries.join(
+        OpenSourceProducts,
+        and_(Cpe.vendor == OpenSourceProducts.vendor,
+             Cpe.product == OpenSourceProducts.product))
     nvd_entries = nvd_entries.distinct(Nvd.cve_id)
     return nvd_entries
 
@@ -250,7 +271,9 @@ def create_oss_entries():
 def start_crawling():
     """- See how to best convert those entries into VCDB entries."""
 
-    write_highlighted("1) Fetching entries from NVD with a direct github.com/*/commit/* commit link.")
+    write_highlighted(
+        "1) Fetching entries from NVD with a direct github.com/*/commit/* commit link."
+    )
     github_commit_candidates = get_nvd_github_patch_candidates()
     # update_oss_table()
     # exit()

@@ -24,7 +24,12 @@ with open(os.path.join(cfg.BASE_DIR, "docker/db_schema.sql"), "rb") as f:
     _create_schemas_sql = f.read().decode("utf8")
 
 DOCKER_DB_URI = 'mysql+mysqldb://root:test_db_pass@tests-db:3306/main'
-TEST_CONFIG = {'TESTING': True, 'WTF_CSRF_ENABLED': False, 'DEBUG': True, 'SQLALCHEMY_DATABASE_URI': None}
+TEST_CONFIG = {
+    'TESTING': True,
+    'WTF_CSRF_ENABLED': False,
+    'DEBUG': True,
+    'SQLALCHEMY_DATABASE_URI': None
+}
 
 
 class FlaskTest(unittest.TestCase):

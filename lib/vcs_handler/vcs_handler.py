@@ -33,7 +33,8 @@ class CommitFilesMetadata(object):
 
 
 class CommitMetadata(object):
-    def __init__(self, parent_commit_hash, date, message, stats, files_metadata):
+    def __init__(self, parent_commit_hash, date, message, stats,
+                 files_metadata):
         self.parent_commit_hash = parent_commit_hash
         self.date = date
         self.message = message
@@ -97,5 +98,9 @@ class VcsHandler(object):
             }
             files.append(file)
 
-        data = {"commit": commit_data, "patched_files": patched_files, "files": files}
+        data = {
+            "commit": commit_data,
+            "patched_files": patched_files,
+            "files": files
+        }
         return data

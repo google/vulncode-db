@@ -61,8 +61,12 @@ def get_vcs_handler(app, resource_url):
     for vcs_handler in vcs_handlers:
         try:
             new_handler = vcs_handler(app, resource_url)
-            logging.debug(f"Parsing {resource_url} with {vcs_handler.__name__} succeeded")
+            logging.debug(
+                f"Parsing {resource_url} with {vcs_handler.__name__} succeeded"
+            )
         except InvalidIdentifierException as e:
-            logging.debug(f"Parsing {resource_url} with {vcs_handler.__name__} failed: {e}")
+            logging.debug(
+                f"Parsing {resource_url} with {vcs_handler.__name__} failed: {e}"
+            )
             pass
     return new_handler

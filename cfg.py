@@ -28,7 +28,8 @@ DEBUG = False
 MAINTENANCE_MODE = os.getenv("MAINTENANCE_MODE", "false").lower() == "true"
 
 # Enables connecting to the remote database using the cloud sql proxy.
-USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = (os.getenv("USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY", "false").lower() == "true")
+USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = (os.getenv(
+    "USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY", "false").lower() == "true")
 
 IS_PROD = IS_QA = IS_LOCAL = False
 if os.getenv("SERVER_SOFTWARE", "").startswith("Google App Engine/"):
@@ -115,7 +116,10 @@ SECRET_KEY = os.getenv("COOKIE_SECRET_KEY", "")
 
 PATCH_REGEX = r".*(github\.com|\.git|\.patch|\/hg\.|\/\+\/)"
 
-GOOGLE_OAUTH = {"consumer_key": os.getenv("OAUTH_CONSUMER_KEY", ""), "consumer_secret": os.getenv("OAUTH_CONSUMER_SECRET", "")}
+GOOGLE_OAUTH = {
+    "consumer_key": os.getenv("OAUTH_CONSUMER_KEY", ""),
+    "consumer_secret": os.getenv("OAUTH_CONSUMER_SECRET", "")
+}
 
 # Make sure relevant properties are always set for QA and PROD.
 if IS_PROD or IS_QA:

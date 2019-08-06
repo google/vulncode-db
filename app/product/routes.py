@@ -30,11 +30,13 @@ db = DEFAULT_DATABASE
 # Create a catch all route for product identifiers.
 @bp.route("/<vendor>/<product>")
 def product_view(vendor=None, product=None):
-    sub_query = db.session.query(Cpe.nvd_json_id).filter(and_(Cpe.vendor == vendor, Cpe.product == product)).distinct()
+    sub_query = db.session.query(Cpe.nvd_json_id).filter(
+        and_(Cpe.vendor == vendor, Cpe.product == product)).distinct()
 
     entries = db.session.query(Vulnerability, Nvd)
     entries = entries.filter(Nvd.id.in_(sub_query)).with_labels()
-    entries = entries.outerjoin(Vulnerability, Nvd.cve_id == Vulnerability.cve_id)
+    entries = entries.outerjoin(Vulnerability,
+                                Nvd.cve_id == Vulnerability.cve_id)
     entries = entries.options(default_nvd_view_options)
     # .options(lazyload(Nvd.cpes))
     # entries = entries.order_by(
@@ -48,7 +50,9 @@ def product_view(vendor=None, product=None):
     for entry in entries_subset:
         if entry.Vulnerability is None or entry.Vulnerability.master_commit is None:
             continue
-        vuln_view = VulnerabilityView(entry.Vulnerability, entry.Nvd, preview=True)
+        vuln_view = VulnerabilityView(entry.Vulnerability,
+                                      entry.Nvd,
+                                      preview=True)
         commits = [vuln_view.master_commit] + vuln_view.known_commits
         entry_repo_urls = [c.repo_url for c in commits]
         repo_urls += entry_repo_urls

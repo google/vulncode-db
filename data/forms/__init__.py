@@ -47,21 +47,33 @@ class ModelFieldList(FieldList):
 
 
 class CommitLinksForm(FlaskForm):
-    commit_link = StringField("Commit Link", validators=[validators.DataRequired(), validators.URL()])
-    repo_name = StringField("Repository Name", validators=[validators.DataRequired()])
+    commit_link = StringField(
+        "Commit Link",
+        validators=[validators.DataRequired(),
+                    validators.URL()])
+    repo_name = StringField("Repository Name",
+                            validators=[validators.DataRequired()])
 
-    repo_url = StringField("Git Repo URL", validators=[validators.Optional(), validators.URL()])
+    repo_url = StringField(
+        "Git Repo URL", validators=[validators.Optional(),
+                                    validators.URL()])
     commit_hash = StringField("Commit Hash", validators=[])
 
     def __init__(self, csrf_enabled=False, *args, **kwargs):
-        super(CommitLinksForm, self).__init__(csrf_enabled=csrf_enabled, *args, **kwargs)
+        super(CommitLinksForm, self).__init__(csrf_enabled=csrf_enabled,
+                                              *args,
+                                              **kwargs)
 
 
 class VulnerabilityResourcesForm(FlaskForm):
-    link = StringField("Link", validators=[validators.DataRequired(), validators.URL()])
+    link = StringField(
+        "Link", validators=[validators.DataRequired(),
+                            validators.URL()])
 
     def __init__(self, csrf_enabled=False, *args, **kwargs):
-        super(FlaskForm, self).__init__(csrf_enabled=csrf_enabled, *args, **kwargs)
+        super(FlaskForm, self).__init__(csrf_enabled=csrf_enabled,
+                                        *args,
+                                        **kwargs)
 
 
 class VulnerabilityDetailsForm(FlaskForm):
@@ -77,10 +89,15 @@ class VulnerabilityDetailsForm(FlaskForm):
     cve_id = StringField(
         "CVE-ID (if applicable)",
         filters=[lambda x: x and str(x).upper().strip(), lambda x: x or None],
-        validators=[validators.Optional(), validators.Regexp(r"^CVE-\d{4}-\d+$")],
+        validators=[
+            validators.Optional(),
+            validators.Regexp(r"^CVE-\d{4}-\d+$")
+        ],
     )
-    comment = TextAreaField("High-Level Bug Overview", validators=[validators.DataRequired()])
-    additional_resources = ModelFieldList(FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
+    comment = TextAreaField("High-Level Bug Overview",
+                            validators=[validators.DataRequired()])
+    additional_resources = ModelFieldList(
+        FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
     submit = SubmitField("Create/Update")
 
 
