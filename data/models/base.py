@@ -22,7 +22,6 @@ from sqlalchemy.ext.declarative import declared_attr
 # Note: This will slightly degrade performance. It might be better to adjust
 #       MariaDB server settings.
 class SQLAlchemy(SQLAlchemyBase):
-
     def apply_pool_defaults(self, app, options):
         super(SQLAlchemy, self).apply_pool_defaults(app, options)
         options["pool_pre_ping"] = True
@@ -65,8 +64,8 @@ class NvdBase(db.Model):
             # Create a custom index here.
             indices += (Index(
                 idx_format.format(tbl_name=cls.__tablename__, col_name=key),
-                key),)
-        return indices + ({"schema": "cve"},)
+                key), )
+        return indices + ({"schema": "cve"}, )
 
 
 class CweBase(db.Model):

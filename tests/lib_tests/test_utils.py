@@ -20,7 +20,6 @@ from lib.utils import get_file_contents
 
 
 class TestUtils(unittest.TestCase):
-
     def setUp(self):
         pass
 

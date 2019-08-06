@@ -28,7 +28,6 @@ from data.models.base import db
 
 
 class ModelFieldList(FieldList):
-
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop("model", None)
         super(ModelFieldList, self).__init__(*args, **kwargs)
@@ -49,10 +48,11 @@ class ModelFieldList(FieldList):
 
 class CommitLinksForm(FlaskForm):
     commit_link = StringField(
-        "Commit Link", validators=[validators.DataRequired(),
-                                   validators.URL()])
-    repo_name = StringField(
-        "Repository Name", validators=[validators.DataRequired()])
+        "Commit Link",
+        validators=[validators.DataRequired(),
+                    validators.URL()])
+    repo_name = StringField("Repository Name",
+                            validators=[validators.DataRequired()])
 
     repo_url = StringField(
         "Git Repo URL", validators=[validators.Optional(),
@@ -60,8 +60,9 @@ class CommitLinksForm(FlaskForm):
     commit_hash = StringField("Commit Hash", validators=[])
 
     def __init__(self, csrf_enabled=False, *args, **kwargs):
-        super(CommitLinksForm, self).__init__(
-            csrf_enabled=csrf_enabled, *args, **kwargs)
+        super(CommitLinksForm, self).__init__(csrf_enabled=csrf_enabled,
+                                              *args,
+                                              **kwargs)
 
 
 class VulnerabilityResourcesForm(FlaskForm):
@@ -70,8 +71,9 @@ class VulnerabilityResourcesForm(FlaskForm):
                             validators.URL()])
 
     def __init__(self, csrf_enabled=False, *args, **kwargs):
-        super(FlaskForm, self).__init__(
-            csrf_enabled=csrf_enabled, *args, **kwargs)
+        super(FlaskForm, self).__init__(csrf_enabled=csrf_enabled,
+                                        *args,
+                                        **kwargs)
 
 
 class VulnerabilityDetailsForm(FlaskForm):
@@ -92,8 +94,8 @@ class VulnerabilityDetailsForm(FlaskForm):
             validators.Regexp(r"^CVE-\d{4}-\d+$")
         ],
     )
-    comment = TextAreaField(
-        "High-Level Bug Overview", validators=[validators.DataRequired()])
+    comment = TextAreaField("High-Level Bug Overview",
+                            validators=[validators.DataRequired()])
     additional_resources = ModelFieldList(
         FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
     submit = SubmitField("Create/Update")
