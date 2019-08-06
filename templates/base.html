@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>{% block title %}Home{% endblock %} - Vulncode-DB</title>
   {% include 'header.html' %}
 </head>
 <body>
@@ -15,7 +18,7 @@
       <div id="dialog_placeholder"></div>
         {% if config.MAINTENANCE_MODE %}
           <div class="alert alert-warning alert-dismissible" role="alert">
-            <strong>Application is currently under maintenance.</strong>
+            <strong>Application is currently under maintenance. Please come back later.</strong>
           </div>
         {% endif %}
         {% if messages %}

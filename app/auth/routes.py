@@ -14,7 +14,7 @@
 
 from functools import wraps
 
-from flask import session, request, url_for, abort, redirect, Blueprint, g, current_app
+from flask import session, request, url_for, abort, redirect, Blueprint, g, current_app, flash
 from flask_oauthlib.client import OAuth
 from flask_oauthlib.contrib.apps import google
 
@@ -158,7 +158,11 @@ def admin_required(redirect=False):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not is_admin():
-                if redirect:
+                if current_app.config["IS_LOCAL"]:
+                    flash(
+                        "Admin access was granted without login for local dev environment.",
+                        "success")
+                elif redirect:
                     session["redirect_path"] = request.full_path
                     return google.authorize(
                         callback=url_for("auth.authorized", _external=True))

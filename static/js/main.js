@@ -240,8 +240,9 @@ $(function() {
           keyword: value,
         },
         success: (response) => {
+          const filtered_response = response.replace(/list_entries/g, '');
           // TODO: Refactor .html usage and AJAX handling to use JSON instead.
-          $('#vulnEntries').html(response);
+          $('#vulnEntries').html(filtered_response);
           initClickableElements();
         },
       });

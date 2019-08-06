@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+
+{% set vuln_view = vulnerability_details.vulnerability_view %}
+{% if vuln_view %}
+  {% block title %}{% set vuln_view = vulnerability_details.vulnerability_view %}{{ vuln_view.id }}{% endblock %}
+{% endif %}
+
 {% block main_content %}
   <script>
     const EDITOR_SETTINGS = {{ vulnerability_details.getSettings()|tojson }};

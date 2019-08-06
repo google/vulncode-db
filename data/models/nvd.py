@@ -35,7 +35,7 @@ class Cpe(nvd_template.Cpe, NvdBase):
                          index=True)
 
 
-Index("idx_cpe_vendor_product", Cpe.vendor, Cpe.product)
+Index("idx_cpe_product_lookup", Cpe.vendor, Cpe.product, Cpe.nvd_json_id)
 
 
 class CveDetail(nvd_template.CveDetail, NvdBase):

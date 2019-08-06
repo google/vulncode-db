@@ -13,9 +13,12 @@
 # limitations under the License.
 
 import os
+import re
 import time
+from functools import wraps
 
-from flask import jsonify
+from flask import jsonify, request
+from sqlakeyset import unserialize_bookmark
 
 
 def get_file_contents(path):
@@ -66,3 +69,33 @@ def measure_execution_time(label):
         return wrapper
 
     return decorator
+
+
+def filter_pagination_param(param):
+    filtered = re.sub('[^a-zA-Z\d\- <>:~]', '', param)
+    return filtered
+
+
+def parse_pagination_param(param_key):
+    pagination_param = request.args.get(param_key, None)
+    if not pagination_param:
+        return False
+    sanitized_param = filter_pagination_param(pagination_param)
+    unserialized_pagination = unserialize_bookmark(sanitized_param)
+    return unserialized_pagination
+
+
+def function_hooking_wrap(original_function, hooking_function):
+    """
+    Allows to hook a given function with a provided hooking function.
+    :param original_function:
+    :param hooking_function:
+    :return:
+    """
+
+    @wraps(original_function)
+    def hook(*args, **kwargs):
+        hooking_function(*args, **kwargs)
+        return original_function(*args, **kwargs)
+
+    return hook
