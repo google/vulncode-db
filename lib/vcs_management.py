@@ -25,14 +25,15 @@ from app.exceptions import InvalidIdentifierException
 
 
 def get_inheritor_clases(klass):
-    """Returns a list of all defined and valid vcs handlers.
+    """
+    Returns a list of all defined and valid vcs handlers.
 
-  Args:
+    Args:
     klass: Name of parent class.
 
-  Returns:
+    Returns:
     List: Defined vcs handlers.
-  """
+    """
     subclasses = set()
     work = [klass]
     while work:
@@ -45,24 +46,27 @@ def get_inheritor_clases(klass):
 
 
 def get_vcs_handler(app, resource_url):
-    """Tries to instantiate a vcs handler with teh given resource url.
+    """
+    Tries to instantiate a vcs handler with teh given resource url.
 
-  Args:
+    Args:
     app:
     resource_url:
 
-  Returns:
+    Returns:
     Null|VCS object: A valid vcs handler if available.
-  """
+    """
     new_handler = None
     vcs_handlers = get_inheritor_clases(VcsHandler)
     for vcs_handler in vcs_handlers:
         try:
             new_handler = vcs_handler(app, resource_url)
-            logging.debug("Parsing %s with %s succeeded", resource_url,
-                          vcs_handler.__name__)
+            logging.debug(
+                f"Parsing {resource_url} with {vcs_handler.__name__} succeeded"
+            )
         except InvalidIdentifierException as e:
-            logging.debug("Parsing %s with %s failed: %s", resource_url,
-                          vcs_handler.__name__, e)
+            logging.debug(
+                f"Parsing {resource_url} with {vcs_handler.__name__} failed: {e}"
+            )
             pass
     return new_handler

@@ -28,9 +28,8 @@ DEBUG = False
 MAINTENANCE_MODE = os.getenv("MAINTENANCE_MODE", "false").lower() == "true"
 
 # Enables connecting to the remote database using the cloud sql proxy.
-USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = (
-    os.getenv("USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY",
-              "false").lower() == "true")
+USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY = (os.getenv(
+    "USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY", "false").lower() == "true")
 
 IS_PROD = IS_QA = IS_LOCAL = False
 if os.getenv("GAE_ENV", "").startswith("standard"):
@@ -75,10 +74,7 @@ else:
 def gen_connection_string():
     # if not on Google then use local MySQL
     if IS_PROD or IS_QA:
-        conn_template = (
-            "mysql+mysqldb://%s:%s@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/%s"
-        )
-        return conn_template % (MYSQL_USER, MYSQL_PASS, MYSQL_CONNECTION_NAME)
+        return f"mysql+mysqldb://{MYSQL_USER}:{MYSQL_PASS}@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/{MYSQL_CONNECTION_NAME}"
     else:
         use_name = MYSQL_USER
         use_pass = MYSQL_PASS
@@ -93,8 +89,7 @@ def gen_connection_string():
             use_name = os.environ["CLOUDSQL_NAME"]
             use_pass = os.environ["CLOUDSQL_PASS"]
             use_port = int(os.getenv("CLOUDSQL_PORT", 3307))
-        conn_template = "mysql+mysqldb://%s:%s@%s:%d/_DB_NAME_"
-        return conn_template % (use_name, use_pass, use_host, use_port)
+        return f"mysql+mysqldb://{use_name}:{use_pass}@{use_host}:{use_port}/_DB_NAME_"
 
 
 SQLALCHEMY_DATABASE_URI = gen_connection_string().replace("_DB_NAME_", "main")

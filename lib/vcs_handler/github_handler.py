@@ -44,7 +44,6 @@ CACHE_DIR = "cache/"
 
 
 class GithubHandler(VcsHandler):
-
     def __init__(self, app, resource_url):
         """Initializes the questionnaire object."""
         super(GithubHandler, self).__init__(app, resource_url)
@@ -65,8 +64,8 @@ class GithubHandler(VcsHandler):
         url_data = urlparse(resource_url)
         git_path = url_data.path
         matches = re.match(r"/([^/]+)/([^/]+)/commit/([^/]+)/?$", git_path)
-        if (not url_data.hostname or "github.com" not in url_data.hostname or
-                not matches):
+        if (not url_data.hostname or "github.com" not in url_data.hostname
+                or not matches):
             raise InvalidIdentifierException(
                 "Please provide a valid (https://github.com/{owner}/{repo}/commit/{hash}) commit link."
             )
@@ -88,7 +87,7 @@ class GithubHandler(VcsHandler):
             if patched_file.patch is not None:
                 patch_str.write(patched_file.patch)
             patch_str.seek(0)
-            logging.debug("Parsing diff\n%s", patch_str.getvalue())
+            logging.debug(f"Parsing diff\n{patch_str.getvalue()}")
             patch = PatchSet(patch_str, encoding=None)
 
             for hunk in patch[0]:
@@ -101,31 +100,26 @@ class GithubHandler(VcsHandler):
         return patched_files
 
     def getFileProviderUrl(self):
-        return "https://api.github.com/repos/{owner}/{repo}/git/blobs/{HASH_PLACEHOLDER}".format(
-            owner=self.repo_owner,
-            repo=self.repo_name,
-            HASH_PLACEHOLDER=HASH_PLACEHOLDER,
-        )
+        owner = self.repo_owner
+        repo = self.repo_name
+        return f"https://api.github.com/repos/{owner}/{repo}/git/blobs/{HASH_PLACEHOLDER}"
 
     def getRefFileProviderUrl(self):
-        return "https://api.github.com/repos/{owner}/{repo}/contents/{PATH_PLACEHOLDER}?ref={HASH_PLACEHOLDER}".format(
-            owner=self.repo_owner,
-            repo=self.repo_name,
-            PATH_PLACEHOLDER=PATH_PLACEHOLDER,
-            HASH_PLACEHOLDER=HASH_PLACEHOLDER,
-        )
+        owner = self.repo_owner
+        repo = self.repo_name
+        return f"https://api.github.com/repos/{owner}/{repo}/contents/{PATH_PLACEHOLDER}?ref={HASH_PLACEHOLDER}"
 
     def getFileUrl(self):
-        return "https://github.com/{owner}/{repo}/blob/{commit_hash}/".format(
-            owner=self.repo_owner,
-            repo=self.repo_name,
-            commit_hash=self.commit_hash)
+        owner = self.repo_owner
+        repo = self.repo_name
+        commit_hash = self.commit_hash
+        return f"https://github.com/{owner}/{repo}/blob/{commit_hash}/"
 
     def getTreeUrl(self):
-        return "https://github.com/{owner}/{repo}/tree/{commit_hash}/".format(
-            owner=self.repo_owner,
-            repo=self.repo_name,
-            commit_hash=self.commit_hash)
+        owner = self.repo_owner,
+        repo = self.repo_name,
+        commit_hash = self.commit_hash
+        return f"https://github.com/{owner}/{repo}/tree/{commit_hash}/"
 
     def _getFilesMetadata(self, github_files_metadata):
         files_metadata = []
@@ -141,12 +135,10 @@ class GithubHandler(VcsHandler):
 
     def fetchCommitData(self, commit_hash=None):
         """Args:
+        commit_hash:
 
-      commit_hash:
-
-    Returns:
-
-    """
+        Returns:
+        """
         if not commit_hash:
             commit_hash = self.commit_hash
 
@@ -156,8 +148,8 @@ class GithubHandler(VcsHandler):
             return cache_content
 
         # Fetch relevant information from Github.
-        github_repo = self.github.get_repo("{owner}/{repo}".format(
-            owner=self.repo_owner, repo=self.repo_name))
+        github_repo = self.github.get_repo(
+            f"{self.repo_owner}/{self.repo_name}")
         commit = github_repo.get_commit(commit_hash)
         commit_parents = commit.commit.parents
         parent_commit_hash = commit_hash
@@ -167,7 +159,7 @@ class GithubHandler(VcsHandler):
         # Fetch the list of all files in the previous "vulnerable" state.
         # Note: We use recursive=False (default) to only fetch the highest layer.
         git_tree = github_repo.get_git_tree(parent_commit_hash)
-        """commit_url = commit.html_url commit_message = commit.commit.message affected_files = commit.files commit_parents = commit.commit.parents"""
+        # commit_url = commit.html_url commit_message = commit.commit.message affected_files = commit.files commit_parents = commit.commit.parents
         patched_files = self._ParsePatchPerFile(commit.files)
 
         commit_stats = self._getPatchStats(commit.stats)

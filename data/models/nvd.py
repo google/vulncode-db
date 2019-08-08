@@ -30,8 +30,9 @@ class Affect(nvd_template.Affect, NvdBase):
 
 
 class Cpe(nvd_template.Cpe, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10),
+                         ForeignKey("cve.nvd_jsons.id"),
+                         index=True)
 
 
 Index("idx_cpe_product_lookup", Cpe.vendor, Cpe.product, Cpe.nvd_json_id)
@@ -59,13 +60,15 @@ Index("idx_cvsss2_extra_nvd_json_id", Cvss2Extra.nvd_json_id)
 
 
 class Cvss3(nvd_template.Cvss3, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10),
+                         ForeignKey("cve.nvd_jsons.id"),
+                         index=True)
 
 
 class Cwe(nvd_template.Cwe, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10),
+                         ForeignKey("cve.nvd_jsons.id"),
+                         index=True)
     cwe_data = relationship(
         CweData,
         primaryjoin="foreign(CweData.cwe_id) == Cwe.cwe_id",
@@ -77,8 +80,9 @@ class Cwe(nvd_template.Cwe, NvdBase):
 
 
 class Description(nvd_template.Description, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10),
+                         ForeignKey("cve.nvd_jsons.id"),
+                         index=True)
 
 
 class EnvCpe(nvd_template.EnvCpe, NvdBase):
@@ -111,8 +115,9 @@ Index("idx_nvd_xmls_cveid", NvdXml.cve_id)
 
 
 class Reference(nvd_template.Reference, NvdBase):
-    nvd_json_id = Column(
-        INTEGER(10), ForeignKey("cve.nvd_jsons.id"), index=True)
+    nvd_json_id = Column(INTEGER(10),
+                         ForeignKey("cve.nvd_jsons.id"),
+                         index=True)
 
 
 class Nvd(nvd_template.NvdJson, NvdBase):

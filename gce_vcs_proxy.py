@@ -90,17 +90,18 @@ def main_api():
 
     vcs_handler = get_vcs_handler(app, resource_url)
     if not vcs_handler:
-        return create_json_response("Please provide a valid resource URL.", 400)
+        return create_json_response("Please provide a valid resource URL.",
+                                    400)
 
     # try:
     # Return a specific file's content if requested instead.
     if item_hash:
         content = vcs_handler.getFileContent(item_hash, item_path)
         if not content:
-            err = "Could not retrieve object with hash {}.".format(item_hash)
+            err = f"Could not retrieve object with hash {item_hash}."
             logging.error(err)
             return create_json_response(str(err), 400)
-        logging.info("Retrieved %s: %d bytes", item_hash, len(content))
+        logging.info(f"Retrieved {item_hash}: {len(content)} bytes")
         return content
     return vcs_handler.fetchCommitData(commit_hash)
     # except Exception as err:
@@ -138,8 +139,7 @@ def start():
     use_host = "0.0.0.0"
     use_port = 8088
     use_protocol = "https" if ssl_context else "http"
-    print("[+] Listening on: {}://{}:{}".format(use_protocol, use_host,
-                                                use_port))
+    print(f"[+] Listening on: {use_protocol}://{use_host}:{use_port}")
     app.run(host=use_host, port=use_port, ssl_context=ssl_context, debug=DEBUG)
 
 

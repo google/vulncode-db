@@ -59,7 +59,6 @@ def register_custom_helpers(app):
 
 
 def register_route_checks(app):
-
     def maintenance_check():
         if not cfg.MAINTENANCE_MODE:
             return None

@@ -64,7 +64,6 @@ class GitTreeElement:
 
 def _file_list_dulwich(repo, tgt_env, recursive=False):
     """Get file list using dulwich"""
-
     def _traverse(tree, repo_obj, blobs, prefix):
         """Traverse through a dulwich Tree object recursively, accumulating all the blob paths within it in the "blobs" list"""
         for item in list(tree.items()):
@@ -96,7 +95,6 @@ def _file_list_dulwich(repo, tgt_env, recursive=False):
 
 
 class GitRepoHandler(VcsHandler):
-
     def __init__(self, app, resource_url):
         """Initializes the questionnaire object."""
         super(GitRepoHandler, self).__init__(app, resource_url)
@@ -153,8 +151,9 @@ class GitRepoHandler(VcsHandler):
         )
         repo_path = os.path.normpath(repo_path)
         if not repo_path.startswith(REPO_PATH + repo_hostname):
-            self._logError("Invalid path: %r + %r => %r", self.repo_url,
-                           self.repo_name, repo_path)
+            self._logError(
+                f"Invalid path: {self.repo_url} + {self.repo_name} => {repo_path}"
+            )
             raise Exception("Can't clone repo. Invalid repository.")
 
         if not os.path.isdir(repo_path):
@@ -163,7 +162,7 @@ class GitRepoHandler(VcsHandler):
             # https://git.centos.org/r/rpms/dhcp.git
             if not GitPythonRepo.clone_from(
                     self.repo_url, repo_path, bare=True):
-                self._logError("Can't clone repo {:s}.".format(self.repo_name))
+                self._logError(f"Can't clone repo {self.repo_name}.")
                 raise Exception("Can't clone repo.")
 
         self.repo = Repo(repo_path)
@@ -231,8 +230,8 @@ class GitRepoHandler(VcsHandler):
             commit_hash = self.commit_hash
 
         if not commit_hash:
-            self._logError("No commit_hash provided for repo URL: {:s}.".format(
-                self.repo_url))
+            self._logError(
+                f"No commit_hash provided for repo URL: {self.repo_url}.")
             raise Exception("Please provide a commit_hash.")
 
         # py 3 compatiblity. Dulwich expects hashes to be bytes
@@ -244,14 +243,14 @@ class GitRepoHandler(VcsHandler):
 
         if commit_hash not in self.repo:
             self._logError(
-                "Can't find commit_hash {} in given repo. Fetching updates and retry."
-                .format(commit_hash))
+                f"Can't find commit_hash {commit_hash} in given repo. Fetching updates and retry."
+            )
             self._fetch_remote()
 
         if commit_hash not in self.repo:
             self._logError(
-                "Can't find commit_hash {} in given repo. Cancelling request."
-                .format(commit_hash))
+                f"Can't find commit_hash {commit_hash} in given repo. Cancelling request."
+            )
             raise Exception("Can't find commit_hash in given repo.")
 
         commit = self.repo[commit_hash]

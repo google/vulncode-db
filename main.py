@@ -14,17 +14,16 @@
 # limitations under the License.
 
 import os
+import sys
 import logging
 from logging.handlers import RotatingFileHandler
-import sys
-
-from flask import (send_from_directory, render_template)
 
 import alembic.script
 import alembic.runtime.environment
 from lib.utils import manually_read_app_config
+from flask import (send_from_directory, render_template)
 
-if not "MYSQL_CONNECTION_NAME" in os.environ:
+if "MYSQL_CONNECTION_NAME" not in os.environ:
     print("[~] Executed outside AppEngine context. Manually loading config.")
     manually_read_app_config()
 
@@ -32,6 +31,7 @@ from app.vulnerability.views.vulncode_db import VulncodeDB
 import cfg
 from data.database import DEFAULT_DATABASE
 from lib.app_factory import create_app
+
 app = create_app()
 db = DEFAULT_DATABASE.db
 
@@ -67,8 +67,8 @@ def check_db_state():
         head_revs = frozenset(rev.revision for rev in heads)
 
         def check(rev, context):
-            db_revs = frozenset(
-                rev.revision for rev in script.get_all_current(rev))
+            db_revs = frozenset(rev.revision
+                                for rev in script.get_all_current(rev))
             if db_revs ^ head_revs:
                 config.print_stdout(
                     "Current revision(s) for %s %s do not match the heads %s\n.Run ./manage.sh db upgrade.",
@@ -80,8 +80,9 @@ def check_db_state():
                 sys.exit(1)
             return []
 
-        with alembic.runtime.environment.EnvironmentContext(
-                config, script, fn=check):
+        with alembic.runtime.environment.EnvironmentContext(config,
+                                                            script,
+                                                            fn=check):
             script.run_env()
 
 
@@ -114,8 +115,7 @@ def main():
     use_host = "0.0.0.0"
     use_port = 8080
     use_protocol = "https" if ssl_context else "http"
-    print("[+] Listening on: {}://{}:{}".format(use_protocol, use_host,
-                                                use_port))
+    print(f"[+] Listening on: {use_protocol}://{use_host}:{use_port}")
     app.run(host=use_host, port=use_port, ssl_context=ssl_context, debug=True)
 
 

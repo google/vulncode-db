@@ -37,7 +37,8 @@ def init_auth(state):
 def login():
     if is_authenticated():
         return redirect("/")
-    return google.authorize(callback=url_for("auth.authorized", _external=True))
+    return google.authorize(
+        callback=url_for("auth.authorized", _external=True))
 
 
 @bp.route("/logout", methods=["GET"])
@@ -51,16 +52,14 @@ def authorized():
     try:
         resp = google.authorized_response()
     except Exception:
-        current_app.logger.exception("Error during handling the oauth response")
+        current_app.logger.exception(
+            "Error during handling the oauth response")
         abort(400)
 
     if resp is None:
         error_message = "Access denied"
         if "error_reason" in request.args:
-            error_message += ": reason=%s error=%s" % (
-                request.args["error_reason"],
-                request.args["error_description"],
-            )
+            error_message += f": reason={request.args['error_reason']} error={request.args['error_description']}"
         return error_message
     # don't leak access_token into the session cookie
     # session['google_token'] = (resp['access_token'], '')
@@ -102,10 +101,9 @@ def load_user():
 
         user = User.query.filter_by(email=email).one_or_none()
         if not user:
-            user = User(
-                email=email,
-                full_name=data["name"],
-                profile_picture=data["picture"])
+            user = User(email=email,
+                        full_name=data["name"],
+                        profile_picture=data["picture"])
         else:
             user.full_name = data["name"]
             user.profile_picture = data["picture"]
@@ -138,9 +136,7 @@ def is_authenticated():
 
 
 def login_required(redirect=False):
-
     def decorator(func):
-
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not is_authenticated():
@@ -158,9 +154,7 @@ def login_required(redirect=False):
 
 
 def admin_required(redirect=False):
-
     def decorator(func):
-
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not is_admin():
