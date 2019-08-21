@@ -72,7 +72,7 @@ def measure_execution_time(label):
 
 
 def filter_pagination_param(param):
-    filtered = re.sub('[^a-zA-Z\d\- <>:~]', '', param)
+    filtered = re.sub(r'[^a-zA-Z\d\- <>:~]', '', param)
     return filtered
 
 
@@ -92,7 +92,6 @@ def function_hooking_wrap(original_function, hooking_function):
     :param hooking_function:
     :return:
     """
-
     @wraps(original_function)
     def hook(*args, **kwargs):
         hooking_function(*args, **kwargs)

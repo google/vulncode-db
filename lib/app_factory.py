@@ -22,6 +22,7 @@ from flask import (
 )
 from app.auth.routes import is_admin, bp as auth_bp
 from app.api.routes import bp as api_bp
+from app.api.v1.routes import bp as api_v1_bp
 from app.vulnerability.routes import bp as vuln_bp
 from app.product.routes import bp as product_bp
 from flask_wtf.csrf import CSRFProtect
@@ -51,7 +52,6 @@ def create_app(test_config=None):
 
 
 def register_custom_helpers(app):
-
     def url_for_self(**args):
         return url_for(request.endpoint, **dict(request.view_args, **args))
 
@@ -100,6 +100,7 @@ def register_blueprints(app):
     """Register Flask blueprints."""
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(api_v1_bp)
     app.register_blueprint(vuln_bp)
     app.register_blueprint(product_bp)
     app.register_blueprint(vcs_proxy_bp)

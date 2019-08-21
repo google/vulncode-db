@@ -44,8 +44,9 @@ def get_unique_repo_urls(vulnerability_entries):
                 unique_repo_urls[repo_url] = 0
             unique_repo_urls[repo_url] += 1
 
-    sorted_urls = sorted(
-        unique_repo_urls.items(), key=lambda item: item[1], reverse=True)
+    sorted_urls = sorted(unique_repo_urls.items(),
+                         key=lambda item: item[1],
+                         reverse=True)
     repo_urls = [pair[0] for pair in sorted_urls]
     return repo_urls
 
@@ -58,7 +59,8 @@ def get_entries_commits(full_base_query):
     """
     entries_commits = full_base_query.options(Load(Vulnerability).defer('*'))
     entries_commits = entries_commits.options(Load(Nvd).defer('*'))
-    entries_commits = entries_commits.options(joinedload(Vulnerability.commits))
+    entries_commits = entries_commits.options(joinedload(
+        Vulnerability.commits))
     entries_subset = entries_commits.all()
     return entries_subset
 
@@ -81,15 +83,15 @@ def product_view(vendor=None, product=None):
     per_page = 10
     entries_full = entries.options(default_nvd_view_options)
     product_vulns = get_page(entries_full, per_page, page=bookmarked_page)
-    product_vulns = VulnViewTypesetPaginationObjectWrapper(product_vulns.paging)
+    product_vulns = VulnViewTypesetPaginationObjectWrapper(
+        product_vulns.paging)
 
     entries_commits = get_entries_commits(entries)
     repo_urls = get_unique_repo_urls(entries_commits)
 
-    return render_template(
-        "product_view.html",
-        vendor=vendor,
-        product=product,
-        product_vulns=product_vulns,
-        repo_urls=repo_urls,
-        number_vulns=number_vulns)
+    return render_template("product_view.html",
+                           vendor=vendor,
+                           product=product,
+                           product_vulns=product_vulns,
+                           repo_urls=repo_urls,
+                           number_vulns=number_vulns)
