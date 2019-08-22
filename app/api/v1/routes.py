@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from sqlalchemy import or_, and_
-from flask import jsonify, make_response, Blueprint
+from flask import jsonify, make_response, Blueprint, request, abort
 
 from data.database import DEFAULT_DATABASE as db
 from data.models import Vulnerability, Nvd, Description, Cpe
@@ -21,25 +21,33 @@ from data.models import Vulnerability, Nvd, Description, Cpe
 bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
 
 
-def api_404():
+@bp.app_errorhandler(404)
+def api_404(e=None):
     """Return a 404 in JSON format."""
-    return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
+    if request.path.startswith('/api'):
+        return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
+    else:
+        return e
 
 
-def api_500():
+@bp.app_errorhandler(500)
+def api_500(e=None):
     """Return a 500 in JSON format."""
-    return make_response(
-        jsonify({
-            'error': 'Internal server error',
-            'code': 500
-        }), 500)
+    if request.path.startswith('/api'):
+        return make_response(
+            jsonify({
+                'error': 'Internal server error',
+                'code': 500
+            }), 500)
+    else:
+        return e
 
 
 @bp.route("/product/<vendor_id>/<product_id>")
 def vulns_by_product(vendor_id=None, product_id=None):
     """View vulns associated to product."""
     if product_id is None or product_id is None:
-        return api_404()
+        return abort(404)
     nvd_ids = db.session.query(Cpe.nvd_json_id).filter(
         and_(Cpe.vendor == vendor_id,
              Cpe.product == product_id)).distinct().all()
@@ -48,12 +56,8 @@ def vulns_by_product(vendor_id=None, product_id=None):
     return jsonify({"count": count, "cve_ids": [x for x, in cve]})
 
 
-@bp.route("/search/product/<name>")
-def products(name=None):
-    """Return list of products matching name."""
-    products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        or_(Cpe.product.like(f"%{name}%"),
-            Cpe.vendor.like(f"%{name}%"))).distinct().all()
+def _cpesToJson(products):
+    """Jsonify Cpes for API routes."""
     count = len(products)
     return jsonify({
         "count":
@@ -65,11 +69,49 @@ def products(name=None):
     })
 
 
+@bp.route("/search/product/<name>")
+def search_product(name=None):
+    """Return list of products matching name."""
+    products = db.session.query(Cpe.product, Cpe.vendor).filter(
+        Cpe.product.like(f"%{name}%")).distinct().all()
+    return _cpesToJson(products)
+
+
+@bp.route("/search/vendor/<name>")
+def search_vendor(name=None):
+    """Return list of vendors matching name."""
+    products = db.session.query(Cpe.product, Cpe.vendor).filter(
+        Cpe.vendor.like(f"%{name}%")).distinct().all()
+    return _cpesToJson(products)
+
+
+@bp.route("/search/vendor_or_product/<name>")
+@bp.route("/search/product_or_vendor/<name>")
+def search_product_or_vendor(name=None):
+    """Return list of products and vendor matching name."""
+    products = db.session.query(Cpe.product, Cpe.vendor).filter(
+        or_(Cpe.product.like(f"%{name}%"),
+            Cpe.vendor.like(f"%{name}%"))).distinct().all()
+    return _cpesToJson(products)
+
+
+@bp.route("/search/vendor/<vendor>/product/<product>")
+@bp.route("/search/product/<product>/vendor/<vendor>")
+def search_product_vendor(vendor=None, product=None):
+    """Return list of products matching product and vendors matching vendor."""
+    if product is None or vendor is None:
+        return abort(404)
+    products = db.session.query(Cpe.product, Cpe.vendor).filter(
+        and_(Cpe.product.like(f"%{product}%"),
+             Cpe.vendor.like(f"%{vendor}%"))).distinct().all()
+    return _cpesToJson(products)
+
+
 @bp.route("/search/description/<description>")
 def vulns_for_description(description=None):
     """View vulns associated to description."""
     if description is None:
-        return api_404()
+        return abort(404)
     nvd_ids = db.session.query(Description.nvd_json_id).filter(
         Description.value.like(f'%{description}%')).distinct().all()
     count = len(nvd_ids)
@@ -80,22 +122,22 @@ def vulns_for_description(description=None):
 @bp.route("/<cve_id>")
 def vuln_view(cve_id=None):
     if cve_id is None:
-        return api_404()
+        return abort(404)
     vuln = Vulnerability.query.filter_by(cve_id=cve_id).first()
     if vuln is None:
         vuln = Nvd.query.filter_by(cve_id=cve_id).first()
         if vuln is None:
-            return api_404()
+            return abort(404)
     return jsonify(vuln.toJson())
 
 
 @bp.route("/details/<cve_id>")
 def vuln_view_detailled(cve_id=None):
     if cve_id is None:
-        return api_404()
+        return abort(404)
     vuln = Vulnerability.query.filter_by(cve_id=cve_id).first()
     if vuln is None:
         vuln = Nvd.query.filter_by(cve_id=cve_id).first()
         if vuln is None:
-            return api_404()
+            return abort(404)
     return jsonify(vuln.toJsonFull())
