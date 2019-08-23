@@ -69,7 +69,7 @@ def _cpesToJson(products):
     })
 
 
-@bp.route("/search/product/<name>")
+@bp.route("/search/product:<name>")
 def search_product(name=None):
     """Return list of products matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
@@ -77,7 +77,7 @@ def search_product(name=None):
     return _cpesToJson(products)
 
 
-@bp.route("/search/vendor/<name>")
+@bp.route("/search/vendor:<name>")
 def search_vendor(name=None):
     """Return list of vendors matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
@@ -85,8 +85,8 @@ def search_vendor(name=None):
     return _cpesToJson(products)
 
 
-@bp.route("/search/vendor_or_product/<name>")
-@bp.route("/search/product_or_vendor/<name>")
+@bp.route("/search/vendor_or_product:<name>")
+@bp.route("/search/product_or_vendor:<name>")
 def search_product_or_vendor(name=None):
     """Return list of products and vendor matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
@@ -95,8 +95,8 @@ def search_product_or_vendor(name=None):
     return _cpesToJson(products)
 
 
-@bp.route("/search/vendor/<vendor>/product/<product>")
-@bp.route("/search/product/<product>/vendor/<vendor>")
+@bp.route("/search/vendor:<vendor>/product:<product>")
+@bp.route("/search/product:<product>/vendor:<vendor>")
 def search_product_vendor(vendor=None, product=None):
     """Return list of products matching product and vendors matching vendor."""
     if product is None or vendor is None:
@@ -107,7 +107,7 @@ def search_product_vendor(vendor=None, product=None):
     return _cpesToJson(products)
 
 
-@bp.route("/search/description/<description>")
+@bp.route("/search/description:<description>")
 def vulns_for_description(description=None):
     """View vulns associated to description."""
     if description is None:
