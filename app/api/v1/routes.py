@@ -131,7 +131,7 @@ def vuln_view(cve_id=None):
 
 
 @bp.route("/details/<cve_id>")
-def vuln_view_detailled(cve_id=None):
+def vuln_view_detailed(cve_id=None):
     if cve_id is None:
         return abort(404)
     vuln = Vulnerability.query.filter_by(cve_id=cve_id).first()

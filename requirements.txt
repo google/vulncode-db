@@ -26,6 +26,8 @@ pandas==0.24.2
 colorama==0.4.1
 # Provides a WSGI werkzeug server alternative.
 #gevent==1.4.0
+# Required to make Flask's jsonify work with decimal numbers.
+simplejson>=3.16.0
 # ---------------------------------------
 # Misc. requirements
 sqlakeyset==0.1.1559103842

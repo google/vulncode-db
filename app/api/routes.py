@@ -144,7 +144,7 @@ def bug_save_editor_data():
 
         if not vuln_view.master_commit:
             current_app.logger.error(
-                "Vuln (id: {vuln_view.id}) has no linked Git commits!")
+                f"Vuln (id: {vuln_view.id}) has no linked Git commits!")
             return create_json_response("Entry has no linked Git link!", 404)
 
         master_commit = vulnerability_details.getMasterCommit()
