@@ -127,7 +127,7 @@ def vuln_view(cve_id=None):
         vuln = Nvd.query.filter_by(cve_id=cve_id).first()
         if vuln is None:
             return abort(404)
-    return jsonify(vuln.toJson())
+    return jsonify(vuln.to_json())
 
 
 @bp.route("/details/<cve_id>")
@@ -139,4 +139,4 @@ def vuln_view_detailled(cve_id=None):
         vuln = Nvd.query.filter_by(cve_id=cve_id).first()
         if vuln is None:
             return abort(404)
-    return jsonify(vuln.toJsonFull())
+    return jsonify(vuln.to_json_full())
