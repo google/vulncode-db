@@ -26,7 +26,7 @@ from sqlalchemy.orm import relationship, joinedload
 
 
 class Affect(nvd_template.Affect, NvdBase):
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'vendor': self.vendor,
@@ -40,7 +40,7 @@ class Cpe(nvd_template.Cpe, NvdBase):
                          ForeignKey("cve.nvd_jsons.id"),
                          index=True)
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'uri': self.uri,
@@ -69,7 +69,7 @@ Index("idx_cpe_product_lookup", Cpe.vendor, Cpe.product, Cpe.nvd_json_id)
 class CveDetail(nvd_template.CveDetail, NvdBase):
     cve_id = Column(String(255))
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'cve_id': self.cve_id,
@@ -82,7 +82,7 @@ Index("idx_cve_detail_cveid", CveDetail.cve_id)
 class Cvss2(nvd_template.Cvss2, NvdBase):
     nvd_xml_id = Column(INTEGER(10))
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'vector_string': self.vector_string,
@@ -103,7 +103,7 @@ Index("idx_cvsss2_nvd_xml_id", Cvss2.nvd_xml_id)
 class Cvss2Extra(nvd_template.Cvss2Extra, NvdBase):
     nvd_json_id = Column(INTEGER(10))
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'vector_string': self.vector_string,
@@ -132,7 +132,7 @@ class Cvss3(nvd_template.Cvss3, NvdBase):
                          ForeignKey("cve.nvd_jsons.id"),
                          index=True)
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'vector_string': self.vector_string,
@@ -164,7 +164,7 @@ class Cwe(nvd_template.Cwe, NvdBase):
     def cwe_name(self):
         return self.cwe_data.cwe_name if self.cwe_data else None
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'cwe_id': self.cwe_id,
@@ -177,7 +177,7 @@ class Description(nvd_template.Description, NvdBase):
                          ForeignKey("cve.nvd_jsons.id"),
                          index=True)
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'lang': self.lang,
@@ -190,7 +190,7 @@ class EnvCpe(nvd_template.EnvCpe, NvdBase):
     uri = Column(String(255))
     formatted_string = Column(String(255))
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'cpe_id': self.cpe_id,
@@ -221,7 +221,7 @@ Index("idx_envcpes_formatted_string", EnvCpe.formatted_string)
 
 
 class FeedMeta(nvd_template.FeedMeta, NvdBase):
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'url': self.url,
@@ -233,7 +233,7 @@ class FeedMeta(nvd_template.FeedMeta, NvdBase):
 class Jvn(nvd_template.Jvn, NvdBase):
     cve_id = Column(String(255))
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'cve_detail_id': self.cve_detail_id,
@@ -252,7 +252,7 @@ Index("idx_jvns_cveid", Jvn.cve_id)
 class NvdXml(nvd_template.NvdXml, NvdBase):
     cve_id = Column(String(255))
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'summary': self.summary,
@@ -269,7 +269,7 @@ class Reference(nvd_template.Reference, NvdBase):
                          ForeignKey("cve.nvd_jsons.id"),
                          index=True)
 
-    def toJson(self):
+    def to_json(self):
         """Serialize object properties as dict."""
         return {
             'source': self.source,
@@ -339,7 +339,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
     def score(self):
         return self.cvss3.base_score if self.cvss3 else None
 
-    def toJson(self):
+    def to_json(self):
         """Prepare object for Json serialisation."""
         products = [{
             'vendor': v,
@@ -363,7 +363,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
             'references': [l.link for l in self.references]
         }
 
-    def toJsonFull(self):
+    def to_json_full(self):
         """Serialize object properties as dict."""
         return {
             'is_processed': False,
@@ -375,21 +375,21 @@ class Nvd(nvd_template.NvdJson, NvdBase):
             'creator': None,
             'resource_links': [],
             'commits': [],
-            'nvd': self._toJsonFull(),
+            'nvd': self._to_json_full(),
             'has_annotations': False
         }
 
-    def _toJsonFull(self):
+    def _to_json_full(self):
         """Serialize object properties as dict."""
         return {
             'cve_id': self.cve_id,
-            'cwes': [c.toJson() for c in self.cwes if self.cwes is not None],
-            'cpes': [c.toJson() for c in self.cpes if self.cpes is not None],
-            'cvss3': self.cvss3.toJson() if self.cvss3 is not None else None,
-            'descriptions': [d.toJson() for d in self.descriptions],
+            'cwes': [c.to_json() for c in self.cwes if self.cwes is not None],
+            'cpes': [c.to_json() for c in self.cpes if self.cpes is not None],
+            'cvss3': self.cvss3.to_json() if self.cvss3 is not None else None,
+            'descriptions': [d.to_json() for d in self.descriptions],
             'published_date': self.published_date,
             'last_modified_date': self.last_modified_date,
-            'references': [r.toJson() for r in self.references],
+            'references': [r.to_json() for r in self.references],
         }
 
 

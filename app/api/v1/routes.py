@@ -56,17 +56,16 @@ def vulns_by_product(vendor_id=None, product_id=None):
     return jsonify({"count": count, "cve_ids": [x for x, in cve]})
 
 
-def _cpesToJson(products):
+def _cpes_to_json(products):
     """Jsonify Cpes for API routes."""
     count = len(products)
     return jsonify({
-        "count":
-        count,
+        "count": count,
         "products": [{
             'product': x,
             'vendor': y
         } for x, y, in products]
-    })
+    })  # yapf: disable
 
 
 @bp.route("/search/product:<name>")
@@ -74,7 +73,7 @@ def search_product(name=None):
     """Return list of products matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
         Cpe.product.like(f"%{name}%")).distinct().all()
-    return _cpesToJson(products)
+    return _cpes_to_json(products)
 
 
 @bp.route("/search/vendor:<name>")
@@ -82,7 +81,7 @@ def search_vendor(name=None):
     """Return list of vendors matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
         Cpe.vendor.like(f"%{name}%")).distinct().all()
-    return _cpesToJson(products)
+    return _cpes_to_json(products)
 
 
 @bp.route("/search/vendor_or_product:<name>")
@@ -92,7 +91,7 @@ def search_product_or_vendor(name=None):
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
         or_(Cpe.product.like(f"%{name}%"),
             Cpe.vendor.like(f"%{name}%"))).distinct().all()
-    return _cpesToJson(products)
+    return _cpes_to_json(products)
 
 
 @bp.route("/search/vendor:<vendor>/product:<product>")
@@ -104,7 +103,7 @@ def search_product_vendor(vendor=None, product=None):
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
         and_(Cpe.product.like(f"%{product}%"),
              Cpe.vendor.like(f"%{vendor}%"))).distinct().all()
-    return _cpesToJson(products)
+    return _cpes_to_json(products)
 
 
 @bp.route("/search/description:<description>")
