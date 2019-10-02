@@ -30,6 +30,29 @@ function fatal() {
   exit 1
 }
 
+function has-docker-access() {
+  if [ -n $DOCKER_ACCESS ]
+  then
+    return $DOCKER_ACCESS
+  elif docker info &> /dev/null
+  then
+    DOCKER_ACCESS=0
+    return 0
+  else
+    DOCKER_ACCESS=1
+    return 1
+  fi
+}
+
+function dock-comp() {
+  if has-docker-access
+  then
+    docker-compose "$@"
+  else
+    sudo docker-compose "$@"
+  fi
+}
+
 function setup_yaml() {
   example_file="example_${1}"
   target_file=$1
@@ -71,10 +94,10 @@ info "Setting up all relevant docker containers."
 if which docker-compose &>/dev/null
 then
   cd docker
-  sudo docker-compose build
+  dock-comp build
 else
   fatal 'Please install docker-compose.'
 fi
 
-info "You should be able to start everything with: ./docker/docker-admin.sh run"
+info "You should be able to start everything with: ./docker/docker-admin.sh start"
 error "Please also run ./docker/docker-admin.sh to see general information on how to fill the database and more."
