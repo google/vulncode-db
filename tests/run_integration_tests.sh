@@ -11,10 +11,11 @@ fi
 # Make sure we are in the project root directory before executing the test runner.
 cd ${BASEDIR}/../
 
-pytest \
+pytest -vv \
   --cov-config=.coveragerc \
   --cov-report html \
   --cov=app \
   --cov=lib \
   --cov=data \
+  --log-level=DEBUG \
   tests

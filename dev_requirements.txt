@@ -7,3 +7,4 @@ Flask-Migrate==2.2.1
 pytest==5.2.0
 pytest-mock==1.11.0
 pytest-cov==2.7.1
+pytest-flask-sqlalchemy==1.0.2

@@ -25,3 +25,4 @@ docker/cve-data/*
 !docker/cve-data/fetch_cwe.sh
 .coverage
 htmlcov
+.pytest_cache

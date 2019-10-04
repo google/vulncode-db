@@ -46,7 +46,8 @@ services:
       done;
       bash /app/tests/run_integration_tests.sh"
     environment:
-      - MYSQL_HOST=tests-db
+      MYSQL_HOST: tests-db
+      COOKIE_SECRET_KEY: not-so-secret
     depends_on:
       - tests-db
     volumes:

@@ -19,7 +19,7 @@ cd "$(dirname "$0")"
 DB_PATH="root:pass@tcp(database:3306)/cve?parseTime=true"
 
 function has-docker-access() {
-  if [ -n $DOCKER_ACCESS ]
+  if [ -n "$DOCKER_ACCESS" ]
   then
     return $DOCKER_ACCESS
   elif docker info &> /dev/null
