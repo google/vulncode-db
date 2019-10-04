@@ -17,5 +17,6 @@ pytest -vv \
   --cov=app \
   --cov=lib \
   --cov=data \
+  --cov=templates \
   --log-level=DEBUG \
   tests

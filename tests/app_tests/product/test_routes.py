@@ -26,7 +26,6 @@ def test_existing_product_with_vulns(client):
 @pytest.mark.integration
 def test_existing_product_without_vulns(client):
     resp = client.get('/product/Vendor 11/Product 1')
-    print(resp.data.decode())
     assert b'Vendor 11' in resp.data
     assert b'Product 1' in resp.data
     assert b'No results found' not in resp.data
