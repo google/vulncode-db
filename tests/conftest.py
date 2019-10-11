@@ -127,6 +127,12 @@ def _db(app):
                     )
                 ]
             ))
+        vulns.append(Vulnerability(
+            cve_id='CVE-1970-1500',
+            date_created=datetime.date.today(),
+            comment='Vulnerability {} comment'.format(len(vuln_cves)+1),
+            commits=[]
+        ))
         session.add_all(vulns)
         session.commit()
     return db
