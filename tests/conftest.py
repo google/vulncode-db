@@ -40,12 +40,6 @@ TEST_CONFIG = {
 }
 
 
-def pytest_configure(config):
-    config.addinivalue_line(
-        "markers", "integration: mark test to run only in integration tests"
-    )
-
-
 @pytest.fixture(scope='session')
 def app():
     app = create_app(TEST_CONFIG)
