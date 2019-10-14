@@ -71,7 +71,6 @@ class VulnerabilityResourcesForm(FlaskForm):
         csrf = False
 
 
-
 class VulnerabilityDetailsForm(FlaskForm):
     commits = ModelFieldList(
         FormField(CommitLinksForm),
