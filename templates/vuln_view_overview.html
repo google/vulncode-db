@@ -71,7 +71,7 @@
               <div class="markdown_comment comment_widget card pt-3 px-3 shadow-textarea mb-3">{{ comment.text }}</div>
             {#
               {% include 'snippet.html' %}
-              <script src="{{ url_for('serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}"></script>
+              <script src="{{ url_for('frontend.serve_static', path='js/embed.js', sid=comment.id, vuln_id=vuln_id) }}"></script>
             #}
             {% endfor %}
           </div>

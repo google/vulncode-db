@@ -21,4 +21,4 @@ jobs:
         pip3 install -t third_party -r dev_requirements.txt
     - name: Run Python tests
       run: |
-        ./tests/run_tests.sh
+        ./tests/run_unit_tests.sh

@@ -28,7 +28,7 @@
 
 </footer>
 <!-- Footer -->
-<script src="{{ url_for('serve_static', path='js/main.js') }}" type="module" crossorigin></script>
+<script src="{{ url_for('frontend.serve_static', path='js/main.js') }}" type="module" crossorigin></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
         crossorigin="anonymous"></script>
@@ -62,6 +62,6 @@
 </script>
 
 {# TODO: This is currently disabled. Enable it again once it becomes useful.
-  <script src="{{ url_for('serve_static', path='js/tutorial.js') }}" type="module"></script>
-  <link rel="stylesheet" href="{{ url_for('serve_static', path='css/tutorial.css') }}">
+  <script src="{{ url_for('frontend.serve_static', path='js/tutorial.js') }}" type="module"></script>
+  <link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/tutorial.css') }}">
 #}

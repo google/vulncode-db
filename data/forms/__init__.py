@@ -59,21 +59,16 @@ class CommitLinksForm(FlaskForm):
                                     validators.URL()])
     commit_hash = StringField("Commit Hash", validators=[])
 
-    def __init__(self, csrf_enabled=False, *args, **kwargs):
-        super(CommitLinksForm, self).__init__(csrf_enabled=csrf_enabled,
-                                              *args,
-                                              **kwargs)
+    class Meta:
+        csrf = False
 
 
 class VulnerabilityResourcesForm(FlaskForm):
     link = StringField(
         "Link", validators=[validators.DataRequired(),
                             validators.URL()])
-
-    def __init__(self, csrf_enabled=False, *args, **kwargs):
-        super(FlaskForm, self).__init__(csrf_enabled=csrf_enabled,
-                                        *args,
-                                        **kwargs)
+    class Meta:
+        csrf = False
 
 
 class VulnerabilityDetailsForm(FlaskForm):

@@ -21,41 +21,17 @@ from logging.handlers import RotatingFileHandler
 import alembic.script
 import alembic.runtime.environment
 from lib.utils import manually_read_app_config
-from flask import (send_from_directory, render_template)
 
 if "MYSQL_CONNECTION_NAME" not in os.environ:
     print("[~] Executed outside AppEngine context. Manually loading config.")
     manually_read_app_config()
 
-from app.vulnerability.views.vulncode_db import VulncodeDB
 import cfg
 from data.database import DEFAULT_DATABASE
 from lib.app_factory import create_app
 
 app = create_app()
 db = DEFAULT_DATABASE.db
-
-
-@app.route("/static/<path:path>")
-def serve_static(path):
-    return send_from_directory("static", path)
-
-
-@app.route("/")
-def serve_index():
-    vcdb = VulncodeDB()
-    return render_template("index.html", vcdb=vcdb)
-
-
-@app.route("/maintenance")
-def maintenance():
-    return render_template("maintenance.html")
-
-
-@app.route("/list_entries")
-def list_entries():
-    vcdb = VulncodeDB()
-    return render_template("list_vuln_entries.html", vcdb=vcdb)
 
 
 def check_db_state():

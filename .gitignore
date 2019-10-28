@@ -23,3 +23,6 @@ node_modules
 docker/db-data
 docker/cve-data/*
 !docker/cve-data/fetch_cwe.sh
+.coverage
+htmlcov
+.pytest_cache

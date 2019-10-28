@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="{{ url_for('serve_static', path='css/main.css') }}"/>
+  <link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/main.css') }}"/>
   <style>
     * { padding: 0; margin: 0; }
     html, body {
@@ -66,7 +66,7 @@
   const EDITOR_SETTINGS = {{ vulnerability_details.getSettings()|tojson }};
   window.EDITOR_SETTINGS = EDITOR_SETTINGS;
 </script>
-<script src="{{ url_for('serve_static', path='js/embed_internal.js') }}" type="module"></script>
+<script src="{{ url_for('frontend.serve_static', path='js/embed_internal.js') }}" type="module"></script>
 <!-- load monaco after all the other scripts to avoid issues with AMD defines -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.14.3/min/vs/loader.js"
         integrity="sha256-DCcsMJctA23m3sXp1RrDWMEb5YtO7w+6TIUVHzDnK6Y="

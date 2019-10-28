@@ -11,4 +11,12 @@ fi
 # Make sure we are in the project root directory before executing the test runner.
 cd ${BASEDIR}/../
 
-PYTHONPATH="third_party" python3 -m unittest discover -v
+pytest -vv \
+  --cov-config=.coveragerc \
+  --cov-report html \
+  --cov=app \
+  --cov=lib \
+  --cov=data \
+  --cov=templates \
+  --log-level=DEBUG \
+  tests

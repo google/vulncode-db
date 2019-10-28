@@ -18,6 +18,20 @@ cd "$(dirname "$0")"
 
 DB_PATH="root:pass@tcp(database:3306)/cve?parseTime=true"
 
+function has-docker-access() {
+  if [ -n "$DOCKER_ACCESS" ]
+  then
+    return $DOCKER_ACCESS
+  elif docker info &> /dev/null
+  then
+    DOCKER_ACCESS=0
+    return 0
+  else
+    DOCKER_ACCESS=1
+    return 1
+  fi
+}
+
 function die () {
   echo >&2 "$@"
   exit 1
@@ -40,31 +54,49 @@ function fatal() {
   exit 1
 }
 
+function dock-comp() {
+  if has-docker-access
+  then
+    docker-compose -f docker-compose.yml -f docker-compose.admin.yml "$@"
+  else
+    sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml "$@"
+  fi
+}
+
+function dock-comp-non-admin() {
+  if has-docker-access
+  then
+    docker-compose -f docker-compose.yml "$@"
+  else
+    sudo docker-compose -f docker-compose.yml "$@"
+  fi
+}
+
 function load_cwe_data() {
   info "Loading and importing CWE data."
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run go-cve-dictionary \
-  /vuls/fetch_cwe.sh
+  dock-comp run --rm go-cve-dictionary \
+    /vuls/fetch_cwe.sh
 }
 
 function load_current_year_cve_data() {
   info "Loading and importing CVE entries of this year."
   CURRENT_YEAR=$(date +"%Y")
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run go-cve-dictionary \
-  go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -years $CURRENT_YEAR
+  dock-comp run --rm go-cve-dictionary \
+    go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -years $CURRENT_YEAR
 }
 
 function load_latest() {
   info "Loading and importing latest CVE entries."
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run go-cve-dictionary \
-  go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -latest
+  dock-comp run --rm go-cve-dictionary \
+    go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -latest
 }
 
 function load_full_cve() {
   info "Loading and importing all CVE entries."
   for i in `seq 2002 $(date +"%Y")`
   do
-    sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run go-cve-dictionary \
-    go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -years $i
+    dock-comp run --rm go-cve-dictionary \
+      go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -years $i
   done
 }
 
@@ -75,39 +107,39 @@ function init_data() {
 }
 
 function crawl_patches() {
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run frontend \
-  python3 crawl_patches.py
+  dock-comp run --rm frontend \
+    python3 crawl_patches.py
 }
 
 function build_service() {
   USE_SERVICE=$1
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml build $USE_SERVICE
+  dock-comp build $USE_SERVICE
 }
 
 function format_code() {
   USE_SERVICE=$1
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run utils './format.sh'
+  dock-comp run --rm utils './format.sh'
 }
 
 function lint_code() {
   USE_SERVICE=$1
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run utils './lint.sh'
+  dock-comp run --rm utils './lint.sh'
 }
 
 function run_tests() {
   info "Starting tests."
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run tests
+  dock-comp run --rm tests
 }
 
 function stop_test_database() {
   info "Stopping the tests MySQL server and removing remaining test data."
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml stop tests-db
+  dock-comp rm --stop tests-db
 }
 
 function start_shell() {
   USE_SERVICE=$1
-  sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml run $USE_SERVICE \
-  sh -c '[ -f /bin/bash ] && (bash || true) || sh'
+  dock-comp run --rm $USE_SERVICE \
+    sh -c '[ -f /bin/bash ] && (bash || true) || sh'
 }
 
 function start_application() {
@@ -115,13 +147,13 @@ function start_application() {
   then
     info "Starting individual service."
     USE_SERVICE=$1
-    sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml start $USE_SERVICE
+    dock-comp start $USE_SERVICE
     return
   fi
   info "Available resources when deployed:"
   success "Main application: http://127.0.0.1:8080"
   success "VCS proxy: https://127.0.0.1:8088"
-  sudo docker-compose up
+  dock-comp-non-admin up
 }
 
 function stop_application() {
@@ -129,11 +161,27 @@ function stop_application() {
   then
     info "Stopping individual service."
     USE_SERVICE=$1
-    sudo docker-compose -f docker-compose.yml -f docker-compose.admin.yml stop $USE_SERVICE
+    dock-comp stop $USE_SERVICE
     return
   fi
   info "Stopping all services:"
-  sudo docker-compose down
+  dock-comp down
+}
+
+function logs() {
+  dock-comp logs $1
+}
+
+function ps() {
+  dock-comp ps "$@"
+}
+
+function exec() {
+  dock-comp exec "$@"
+}
+
+function services() {
+  ps --services | sort
 }
 
 function show_usage_string() {
@@ -146,8 +194,18 @@ case "$1" in
   start)
     start_application $2
     ;;
-   stop)
+  stop)
     stop_application $2
+    ;;
+  logs)
+    logs "$2"
+    ;;
+  ps)
+    ps
+    ;;
+  exec)
+    shift
+    exec "$@"
     ;;
   init)
     init_data
@@ -202,13 +260,14 @@ case "$1" in
   show_usage_string "format/lint" "Format/Lint the Python and JS code."
   show_usage_string "build [service]" "(Re)builds a given service."
   show_usage_string "shell [service]" "Launch a shell inside a given service."
+  show_usage_string "ps" "List running services."
+  show_usage_string "logs [service]" "Show logs of running service(s)."
+
   echo -e "\t --- Available services ---"
-  echo -e "\t\t vcs-proxy"
-  echo -e "\t\t database"
-  echo -e "\t\t go-cve-dictionary"
-  echo -e "\t\t frontend"
-  echo -e "\t\t utils"
-  echo -e "\t\t tests"
+  for svc in $(services)
+  do
+    echo -e "\t\t $svc"
+  done
   exit 1
 esac
 success "Done"
