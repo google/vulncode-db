@@ -56,6 +56,12 @@ def client(app, request, db_session):
         yield c
 
 
+@pytest.fixture
+def client_without_db(app, request):
+    with app.test_client() as c:
+        yield c
+
+
 @pytest.fixture(scope="session")
 def _db(app):
     """Returns session-wide initialised database."""
