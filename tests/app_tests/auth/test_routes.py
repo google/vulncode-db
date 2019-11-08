@@ -13,19 +13,14 @@
 # limitations under the License.
 import pytest
 from app.auth.routes import google
-
-
-def regular_user_info():
-    user_info = {
-        'email': 'regular_user@gmail.com',
-    }
-    return user_info
+from tests.conftest import as_user
+from tests.conftest import regular_user_info
 
 
 def test_authenticated_users_get_redirected_to_home(client_without_db):
     client = client_without_db
-    with client.session_transaction() as session:
-        session['user_info'] = regular_user_info()
+    as_user(client)
+
     resp = client.get('/auth/login')
     assert resp.status_code == 302
     assert resp.headers.get('Location') == 'http://localhost/'
@@ -40,8 +35,9 @@ def test_unauthenticated_users_get_redirected_to_oauth_consent_screen(client_wit
 
 def test_logout_clears_the_session(client_without_db):
     client = client_without_db
+    as_user(client)
+
     with client.session_transaction() as session:
-        session['user_info'] = regular_user_info()
         session['something_else'] = True
     resp = client.get('/auth/logout')
     assert resp.status_code == 302
@@ -89,6 +85,23 @@ def test_authorization_callback_access_denied(mocker, client_without_db):
     with client.session_transaction() as session:
         assert 'user_info' not in session
 
+
+def test_authorization_callback_access_denied_with_reason(mocker, client_without_db):
+    client = client_without_db
+    mocker.patch('app.auth.routes.google.authorized_response')
+    mocker.patch('app.auth.routes.google.get')
+    google.authorized_response.return_value = None
+
+    resp = client.get('/auth/authorized?error_reason=testing_unauthenticated&error_description=just+testing')
+
+    assert resp.status_code == 200
+    assert b'Access denied' in resp.data
+    assert b'testing_unauthenticated' in resp.data
+    assert b'just testing' in resp.data
+
+    assert google.authorized_response.called_once()
+    with client.session_transaction() as session:
+        assert 'user_info' not in session
 
 
 def test_authorization_callback_redirect(mocker, client_without_db):

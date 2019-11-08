@@ -11,4 +11,4 @@ pytest \
   --cov=lib \
   --cov=data \
   -m 'not integration' \
-  tests
+  tests "$@"

@@ -365,19 +365,13 @@ class Nvd(nvd_template.NvdJson, NvdBase):
 
     def to_json_full(self):
         """Serialize object properties as dict."""
-        return {
-            'is_processed': False,
-            'date_created': None,
-            'date_modified': None,
-            'comment': '',
-            'exploit_exists': False,
-            'cve_id': self.cve_id,
-            'creator': None,
-            'resource_links': [],
-            'commits': [],
-            'nvd': self._to_json_full(),
-            'has_annotations': False
-        }
+        data = self.to_json()
+        data['nvd'] = self._to_json_full()
+        data['commits'] = []
+        data['creator'] = None
+        data['date_created'] = None
+        data['date_modified'] = None
+        return data
 
     def _to_json_full(self):
         """Serialize object properties as dict."""
