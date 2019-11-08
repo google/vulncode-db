@@ -18,12 +18,13 @@ import cfg
 from data.database import DEFAULT_DATABASE
 from flask_migrate import upgrade as alembic_upgrade
 from lib.app_factory import create_app
+from data.models.user import User
 from data.models.vulnerability import Vulnerability
 from data.models.vulnerability import VulnerabilityGitCommits
-from data.models.vulnerability import VulnerabilityResources
 from data.models.nvd import Cpe
 from data.models.nvd import Nvd
 from data.models.nvd import Reference
+from data.models.nvd import Description
 import pytest
 
 
@@ -36,7 +37,9 @@ TEST_CONFIG = {
     'SQLALCHEMY_ENGINE_OPTIONS': {
         'echo': True,  # log queries
         # 'echo_pool': True,  # log connections
-    }
+    },
+    'APPLICATION_ADMINS': ['admin@vulncode-db.com'],
+    'IS_LOCAL': False,
 }
 
 
@@ -90,7 +93,11 @@ def _db(app):
         for i, cve in enumerate(cves, 1):
             nvds.append(Nvd(
                 cve_id=cve,
-                descriptions=[],
+                descriptions=[
+                    Description(
+                        value='Description {}'.format(i),
+                    ),
+                ],
                 references=[
                     Reference(
                         link='https://cve.mitre.org/cgi-bin/cvename.cgi?name={}'.format(cve),
@@ -140,5 +147,46 @@ def _db(app):
             commits=[]
         ))
         session.add_all(vulns)
+
+        users = [
+            User(
+                email='admin@vulncode-db.com',
+                full_name='Admin McAdmin',
+            ),
+            User(
+                email='user@vulncode-db.com',
+                full_name='User McUser',
+            )
+        ]
+        session.add_all(users)
+
         session.commit()
     return db
+
+
+def regular_user_info():
+    user_info = {
+        'email': 'user@vulncode-db.com',
+        'name': 'User McUser',
+        'picture': 'https://google.com/',
+    }
+    return user_info
+
+
+def admin_user_info():
+    user_info = {
+        'email': 'admin@vulncode-db.com',
+        'name': 'Admin McAdmin',
+        'picture': 'https://google.com/',
+    }
+    return user_info
+
+
+def as_admin(client):
+    with client.session_transaction() as session:
+        session['user_info'] = admin_user_info()
+
+
+def as_user(client):
+    with client.session_transaction() as session:
+        session['user_info'] = regular_user_info()
