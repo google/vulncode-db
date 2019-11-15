@@ -1,0 +1,27 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: 
+      - gh-actions
+  pull_request:
+    branches: 
+      - gh-actions
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r dev_requirements.txt
+    - name: Test with pytest
+      run: bash ./tests/run_unit_tests.sh
