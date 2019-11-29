@@ -1,0 +1,30 @@
+name: Integration Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Environment
+      run: env
+    - name: Checkout
+      run: |
+        if [ "$GITHUB_EVENT_NAME" == 'push' ]
+        then
+          git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && git checkout $GITHUB_SHA
+        else
+          git clone -b $GITHUB_HEAD_REF https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
+        fi
+    - name: Build base containers
+      run: ./setup.sh
+    - name: Run the tests
+      run: ./docker/docker-admin.sh test

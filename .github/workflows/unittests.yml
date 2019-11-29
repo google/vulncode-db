@@ -2,11 +2,11 @@ name: Unit Tests
 
 on:
   push:
-    branches: 
-      - gh-actions
+    branches:
+      - master
   pull_request:
-    branches: 
-      - gh-actions
+    branches:
+      - master
 
 jobs:
   build:
@@ -14,14 +14,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.7
+    - name: Environment
+      run: env
+    - name: Checkout
+      run: |
+        if [ "$GITHUB_EVENT_NAME" == 'push' ]
+        then
+          git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && git checkout $GITHUB_SHA
+        else
+          git clone -b $GITHUB_HEAD_REF https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
+        fi
+    - name: Setup Python 3.7
+      run: |
+        python_dir=$(ls -1d $RUNNER_TOOL_CACHE/Python/3.7*/x64 | tail -1)
+        echo "::add-path::${python_dir}"
+        echo "::add-path::${python_dir}/bin"
+        echo "::set-env name=pythonLocation,::${python_dir}"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r dev_requirements.txt
-    - name: Test with pytest
-      run: bash ./tests/run_unit_tests.sh
+        # Install mysql_config on machine to avoid "OSError: mysql_config not found" error during pip install for mysqlclient.
+        sudo apt-get update && sudo apt-get install -y libmysqlclient-dev
+        pip3 install -r requirements.txt
+        pip3 install -r dev_requirements.txt
+    - name: Run Python tests
+      run: |
+        ./tests/run_unit_tests.sh

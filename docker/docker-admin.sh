@@ -128,7 +128,7 @@ function lint_code() {
 
 function run_tests() {
   info "Starting tests."
-  dock-comp run --rm tests
+  dock-comp run --rm tests || exit 1
 }
 
 function stop_test_database() {
