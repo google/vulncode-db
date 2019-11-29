@@ -14,5 +14,6 @@ pytest \
   --cov=app \
   --cov=lib \
   --cov=data \
+  --color=yes \
   -m 'not integration' \
   tests "$@"

@@ -21,4 +21,5 @@ pytest -vv \
   --cov=data \
   --cov=templates \
   --log-level=DEBUG \
+  --color=yes \
   tests
