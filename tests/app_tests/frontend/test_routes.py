@@ -15,18 +15,21 @@ import pytest
 
 
 @pytest.mark.integration
+@pytest.mark.production
 def test_index(client):
     resp = client.get('/')
     assert resp.status_code == 200
 
 
 @pytest.mark.integration
+@pytest.mark.production
 def test_list_entries(client):
     resp = client.get('/list_entries')
     assert resp.status_code == 200
 
 
 @pytest.mark.integration
+@pytest.mark.production
 def test_maintenance(client):
     resp = client.get('/maintenance')
     assert resp.status_code == 200
@@ -34,6 +37,7 @@ def test_maintenance(client):
 
 
 @pytest.mark.integration
+@pytest.mark.production
 def test_static(client):
     resp = client.get('/static/js/main.js')
     assert resp.status_code == 200
@@ -41,12 +45,14 @@ def test_static(client):
 
 
 @pytest.mark.integration
+@pytest.mark.production
 def test_static_not_found(client):
     resp = client.get('/static/js/foo.bar')
     assert resp.status_code == 404
 
 
 @pytest.mark.integration
+@pytest.mark.production
 def test_static_path_traversal(client):
     path = '../' * 100
     resp = client.get('/static/' + path + 'etc/passwd')

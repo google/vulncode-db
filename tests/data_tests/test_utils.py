@@ -23,6 +23,7 @@ def test_populate_models_returns_empty_array_on_invalid_modules():
     assert populate_models('lib') == []
     assert populate_models('data') == []
 
+
 def test_populate_models_returns_models():
     models = populate_models('data.models')
     assert len(models) > 0

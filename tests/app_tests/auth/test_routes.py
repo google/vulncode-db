@@ -26,11 +26,13 @@ def test_authenticated_users_get_redirected_to_home(client_without_db):
     assert resp.headers.get('Location') == 'http://localhost/'
 
 
-def test_unauthenticated_users_get_redirected_to_oauth_consent_screen(client_without_db):
+def test_unauthenticated_users_get_redirected_to_oauth_consent_screen(
+        client_without_db):
     client = client_without_db
     resp = client.get('/auth/login')
     assert resp.status_code == 302
-    assert resp.headers.get('Location').startswith('https://accounts.google.com/o/oauth2/auth')
+    assert resp.headers.get('Location').startswith(
+        'https://accounts.google.com/o/oauth2/auth')
 
 
 def test_logout_clears_the_session(client_without_db):
@@ -52,11 +54,11 @@ def test_authorization_callback_success(mocker, client_without_db):
     mocker.patch('app.auth.routes.google.authorized_response')
     mocker.patch('app.auth.routes.google.get')
 
-    google.authorized_response.return_value = {
-        'access_token': 'TOKEN'
-    }
+    google.authorized_response.return_value = {'access_token': 'TOKEN'}
+
     class Resp:
         data = regular_user_info()
+
     google.get.return_value = Resp()
 
     resp = client.get('/auth/authorized')
@@ -86,13 +88,16 @@ def test_authorization_callback_access_denied(mocker, client_without_db):
         assert 'user_info' not in session
 
 
-def test_authorization_callback_access_denied_with_reason(mocker, client_without_db):
+def test_authorization_callback_access_denied_with_reason(
+        mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.google.authorized_response')
     mocker.patch('app.auth.routes.google.get')
     google.authorized_response.return_value = None
 
-    resp = client.get('/auth/authorized?error_reason=testing_unauthenticated&error_description=just+testing')
+    resp = client.get(
+        '/auth/authorized?error_reason=testing_unauthenticated&error_description=just+testing'
+    )
 
     assert resp.status_code == 200
     assert b'Access denied' in resp.data
@@ -109,11 +114,11 @@ def test_authorization_callback_redirect(mocker, client_without_db):
     mocker.patch('app.auth.routes.google.authorized_response')
     mocker.patch('app.auth.routes.google.get')
 
-    google.authorized_response.return_value = {
-        'access_token': 'TOKEN'
-    }
+    google.authorized_response.return_value = {'access_token': 'TOKEN'}
+
     class Resp:
         data = regular_user_info()
+
     google.get.return_value = Resp()
 
     with client.session_transaction() as session:

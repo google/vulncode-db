@@ -15,6 +15,7 @@ import datetime
 import os
 
 import cfg
+import requests
 from data.database import DEFAULT_DATABASE
 from flask_migrate import upgrade as alembic_upgrade
 from lib.app_factory import create_app
@@ -26,7 +27,6 @@ from data.models.nvd import Nvd
 from data.models.nvd import Reference
 from data.models.nvd import Description
 import pytest
-
 
 DOCKER_DB_URI = 'mysql+mysqldb://root:test_db_pass@tests-db:3306/main'
 TEST_CONFIG = {
@@ -41,6 +41,8 @@ TEST_CONFIG = {
     'APPLICATION_ADMINS': ['admin@vulncode-db.com'],
     'IS_LOCAL': False,
 }
+# Used for integration tests against the production environment.
+PROD_SERVER_URL = 'https://www.vulncode-db.com'
 
 
 @pytest.fixture(scope='session')
@@ -54,15 +56,63 @@ def app():
 
 
 @pytest.fixture
-def client(app, request, db_session):
-    with app.test_client() as c:
-        yield c
-
-
-@pytest.fixture
 def client_without_db(app, request):
     with app.test_client() as c:
         yield c
+
+
+class ResponseWrapper:
+    """
+    This ensures that the requests.Response interface is consistent with what
+    Werkzeug's response would look like.
+    """
+    def __init__(self, requests_response):
+        """
+        :param requests_response: requests.Response
+        """
+        self.response = requests_response
+
+    def __getattr__(self, item):
+        result = getattr(self.response, item)
+        return result
+
+    @property
+    def data(self):
+        return self.response.content
+
+
+class RequestsClient(requests.Session):
+    """
+    This client provides a similar API to Flask's app.test_client().
+    However, it uses Requests to actually execute valid requests against
+    a given endpoint for example for integration tests against production.
+    """
+    def __init__(self, base):
+        super().__init__()
+        self.base_url = base
+
+    def open(self, *args, **kwargs):
+        return self.request(*args, **kwargs)
+
+    def request(self, method, path, *args, **kwargs):
+        if path.startswith('/'):
+            url = self.base_url + path
+        else:
+            url = path
+        response = super().request(method, url=url, *args, **kwargs)
+        return ResponseWrapper(response)
+
+
+@pytest.fixture
+def client(app, request):
+    if request.config.getoption("-m") == 'production':
+        # Run production tests against the production service.
+        requests_client = RequestsClient(PROD_SERVER_URL)
+        yield requests_client
+    else:
+        request.fixturenames.append('db_session')
+        with app.test_client() as c:
+            yield c
 
 
 @pytest.fixture(scope="session")
@@ -84,35 +134,33 @@ def _db(app):
         alembic_upgrade()
 
         # create data
-        vuln_cves = list('CVE-1970-{}'.format(1000+i) for i in range(10))
-        new_cves = list('CVE-1970-{}'.format(2000+i) for i in range(10))
+        vuln_cves = list('CVE-1970-{}'.format(1000 + i) for i in range(10))
+        new_cves = list('CVE-1970-{}'.format(2000 + i) for i in range(10))
         cves = vuln_cves + new_cves
         session = db.session
 
         nvds = []
         for i, cve in enumerate(cves, 1):
-            nvds.append(Nvd(
-                cve_id=cve,
-                descriptions=[
-                    Description(
-                        value='Description {}'.format(i),
-                    ),
-                ],
-                references=[
-                    Reference(
-                        link='https://cve.mitre.org/cgi-bin/cvename.cgi?name={}'.format(cve),
-                        source='cve.mitre.org',
-                    ),
-                ],
-                published_date=datetime.date.today(),
-                cpes=[
-                    Cpe(
-                        vendor='Vendor {}'.format(i),
-                        product='Product {}'.format(j),
-                    )
-                    for j in range(1, 4)
-                ]
-            ))
+            nvds.append(
+                Nvd(cve_id=cve,
+                    descriptions=[
+                        Description(value='Description {}'.format(i), ),
+                    ],
+                    references=[
+                        Reference(
+                            link=
+                            'https://cve.mitre.org/cgi-bin/cvename.cgi?name={}'
+                            .format(cve),
+                            source='cve.mitre.org',
+                        ),
+                    ],
+                    published_date=datetime.date.today(),
+                    cpes=[
+                        Cpe(
+                            vendor='Vendor {}'.format(i),
+                            product='Product {}'.format(j),
+                        ) for j in range(1, 4)
+                    ]))
         session.add_all(nvds)
 
         vulns = []
@@ -124,28 +172,28 @@ def _db(app):
                 repo=repo_name,
             )
             commit = '{:07x}'.format(0x1234567 + i)
-            vulns.append(Vulnerability(
-                cve_id=cve,
+            vulns.append(
+                Vulnerability(
+                    cve_id=cve,
+                    date_created=datetime.date.today(),
+                    comment='Vulnerability {} comment'.format(i),
+                    commits=[
+                        VulnerabilityGitCommits(
+                            commit_link='{repo_url}commit/{commit}'.format(
+                                repo_url=repo_url,
+                                commit=commit,
+                            ),
+                            repo_owner=repo_owner,
+                            repo_name=repo_name,
+                            # repo_url=repo_url,
+                            commit_hash=commit)
+                    ]))
+        vulns.append(
+            Vulnerability(
+                cve_id='CVE-1970-1500',
                 date_created=datetime.date.today(),
-                comment='Vulnerability {} comment'.format(i),
-                commits=[
-                    VulnerabilityGitCommits(
-                        commit_link='{repo_url}commit/{commit}'.format(
-                            repo_url=repo_url, commit=commit,
-                        ),
-                        repo_owner=repo_owner,
-                        repo_name=repo_name,
-                        # repo_url=repo_url,
-                        commit_hash=commit
-                    )
-                ]
-            ))
-        vulns.append(Vulnerability(
-            cve_id='CVE-1970-1500',
-            date_created=datetime.date.today(),
-            comment='Vulnerability {} comment'.format(len(vuln_cves)+1),
-            commits=[]
-        ))
+                comment='Vulnerability {} comment'.format(len(vuln_cves) + 1),
+                commits=[]))
         session.add_all(vulns)
 
         users = [

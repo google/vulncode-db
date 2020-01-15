@@ -67,6 +67,7 @@ class VulnerabilityResourcesForm(FlaskForm):
     link = StringField(
         "Link", validators=[validators.DataRequired(),
                             validators.URL()])
+
     class Meta:
         csrf = False
 

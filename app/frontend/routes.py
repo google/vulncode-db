@@ -16,7 +16,6 @@ from flask import Blueprint
 from flask import render_template
 from flask import send_from_directory
 
-
 bp = Blueprint("frontend", __name__)
 
 

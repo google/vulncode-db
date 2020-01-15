@@ -15,17 +15,35 @@ import pytest
 from tests.conftest import as_admin
 from tests.conftest import as_user
 
-
 SAVE_VARIANTS = [
-    ({}, {}, 400, {'msg': 'Please provide a valid CVE ID or Git commit link.'}),
-    ({'id': 'CVE-1970-3000'}, {}, 404, {'msg': 'Please create an entry first'}),
-    ({'id': 'CVE-1970-2000'}, {}, 404, {'msg': 'Entry has no linked Git link!'}),
-    ({'id': 'CVE-1970-1000'}, {}, 200, {'msg': 'Update successful.'}),
-    ({'id': 'CVE-1970-1000'}, [
+    ({}, {}, 400, {
+        'msg': 'Please provide a valid CVE ID or Git commit link.'
+    }),
+    ({
+        'id': 'CVE-1970-3000'
+    }, {}, 404, {
+        'msg': 'Please create an entry first'
+    }),
+    ({
+        'id': 'CVE-1970-2000'
+    }, {}, 404, {
+        'msg': 'Entry has no linked Git link!'
+    }),
+    ({
+        'id': 'CVE-1970-1000'
+    }, {}, 200, {
+        'msg': 'Update successful.'
+    }),
+    ({
+        'id': 'CVE-1970-1000'
+    }, [
         {
-            'path': '/etc/passwd',
-            'hash': '12345678',
-            'name': 'passwd',
+            'path':
+            '/etc/passwd',
+            'hash':
+            '12345678',
+            'name':
+            'passwd',
             'comments': [{
                 'row_from': 1,
                 'row_to': 10,
@@ -40,13 +58,17 @@ SAVE_VARIANTS = [
                 'class': 'vulnerableMarker',
             }],
         },
-    ], 200, {'msg': 'Update successful.'}),
+    ], 200, {
+        'msg': 'Update successful.'
+    }),
 ]
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize('query, data, expected_code, expected_response', SAVE_VARIANTS)
-def test_save_editor_data(client, query, data, expected_code, expected_response):
+@pytest.mark.parametrize('query, data, expected_code, expected_response',
+                         SAVE_VARIANTS)
+def test_save_editor_data(client, query, data, expected_code,
+                          expected_response):
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
     assert resp.status_code == 401
@@ -55,8 +77,10 @@ def test_save_editor_data(client, query, data, expected_code, expected_response)
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize('query, data, expected_code, expected_response', SAVE_VARIANTS)
-def test_save_editor_data_as_admin(client, query, data, expected_code, expected_response):
+@pytest.mark.parametrize('query, data, expected_code, expected_response',
+                         SAVE_VARIANTS)
+def test_save_editor_data_as_admin(client, query, data, expected_code,
+                                   expected_response):
     as_admin(client)
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
@@ -66,8 +90,10 @@ def test_save_editor_data_as_admin(client, query, data, expected_code, expected_
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize('query, data, expected_code, expected_response', SAVE_VARIANTS)
-def test_save_editor_data_as_user(client, query, data, expected_code, expected_response):
+@pytest.mark.parametrize('query, data, expected_code, expected_response',
+                         SAVE_VARIANTS)
+def test_save_editor_data_as_user(client, query, data, expected_code,
+                                  expected_response):
     as_user(client)
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
