@@ -103,14 +103,19 @@ class RequestsClient(requests.Session):
         return ResponseWrapper(response)
 
 
+#TODO: Make dynamic db_session fixture loading working here. We don't need any
+#      valid database session for tests against the production environment.
+#      Pytest doesn't seem to correctly load db_session when appending it to
+#      fixturenames. This is mostly a performance issue for production tests.
 @pytest.fixture
-def client(app, request):
+def client(app, request, db_session):
+    #request.fixturenames.append('db_session')
     if request.config.getoption("-m") == 'production':
         # Run production tests against the production service.
         requests_client = RequestsClient(PROD_SERVER_URL)
         yield requests_client
     else:
-        request.fixturenames.append('db_session')
+        #request.fixturenames.append('db_session')
         with app.test_client() as c:
             yield c
 
