@@ -14,12 +14,7 @@ jobs:
       run: env
     - name: Checkout
       run: |
-        if [ "$GITHUB_EVENT_NAME" == 'push' ]
-        then
-          git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && git checkout $GITHUB_SHA
-        else
-          git clone -b $GITHUB_HEAD_REF https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
-        fi
+        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
     - name: Setup Python 3.7
       run: |
         python_dir=$(ls -1d $RUNNER_TOOL_CACHE/Python/3.7*/x64 | tail -1)
