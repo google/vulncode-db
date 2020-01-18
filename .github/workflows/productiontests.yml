@@ -3,10 +3,13 @@ name: Production Tests
 on:
   schedule:
   # * is a special character in YAML so you have to quote this string
-  - cron:  '0 12 * * *'
+  # Note: Time is specified in UTC.
+  - cron:  '0 */12 * * *'
+
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
@@ -15,19 +18,7 @@ jobs:
     - name: Checkout
       run: |
         git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
-    - name: Setup Python 3.7
-      run: |
-        python_dir=$(ls -1d $RUNNER_TOOL_CACHE/Python/3.7*/x64 | tail -1)
-        echo "::add-path::${python_dir}"
-        echo "::add-path::${python_dir}/bin"
-        echo "::set-env name=pythonLocation,::${python_dir}"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        # Install mysql_config on machine to avoid "OSError: mysql_config not found" error during pip install for mysqlclient.
-        sudo apt-get update && sudo apt-get install -y libmysqlclient-dev
-        pip3 install -r requirements.txt
-        pip3 install -r dev_requirements.txt
-    - name: Run Python tests
-      run: |
-        ./tests/run_production_tests.sh
+    - name: Build base containers
+      run: ./setup.sh
+    - name: Run the tests
+      run: ./docker/docker-admin.sh production_test

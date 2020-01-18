@@ -52,3 +52,20 @@ services:
       - tests-db
     volumes:
     - ../:/app
+
+  # TODO: This one is redundant to tests. Consider refactoring this.
+  production_tests:
+    image: frontend
+    # Wait for the database to be available before starting the tests.
+    command: >
+      bash -c "while ! (exec 6<>/dev/tcp/tests-db/3306) 2>/dev/null; do
+        echo 'Waiting for tests-db:3306...'; sleep 5;
+      done;
+      bash /app/tests/run_production_tests.sh"
+    environment:
+      MYSQL_HOST: tests-db
+      COOKIE_SECRET_KEY: not-so-secret
+    depends_on:
+    - tests-db
+    volumes:
+    - ../:/app

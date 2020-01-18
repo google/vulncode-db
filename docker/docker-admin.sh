@@ -131,6 +131,11 @@ function run_tests() {
   dock-comp run --rm tests || exit 1
 }
 
+function run_production_tests() {
+  info "Starting production tests."
+  dock-comp run --rm production_tests || exit 1
+}
+
 function stop_test_database() {
   info "Stopping the tests MySQL server and removing remaining test data."
   dock-comp rm --stop tests-db
@@ -212,6 +217,9 @@ case "$1" in
     ;;
   test)
     run_tests
+    ;;
+  production_test)
+    run_production_tests
     ;;
   stop_testdb)
     stop_test_database
