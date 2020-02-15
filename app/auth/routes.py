@@ -15,8 +15,8 @@
 from functools import wraps
 
 from flask import session, request, url_for, abort, redirect, Blueprint, g, current_app, flash
-from flask_oauthlib.client import OAuth
-from flask_oauthlib.contrib.apps import google
+from authlib.integrations.flask_client import OAuth
+from authlib.common.errors import AuthlibBaseError
 
 from data.database import DEFAULT_DATABASE
 from data.models import User
@@ -24,20 +24,33 @@ from data.models import User
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 db = DEFAULT_DATABASE.db
 
+
+def fetch_google_token():
+    return session.get('google_token')
+
+
+def update_google_token(token):
+    session['google_token'] = token
+    return session['google_token']
+
+
 oauth = OAuth()
-google = google.register_to(oauth, name="GOOGLE_OAUTH")
-
-
-@bp.record
-def init_auth(state):
-    oauth.init_app(state.app)
+oauth.register(name='google',
+               api_base_url='https://www.googleapis.com/',
+               access_token_url='https://www.googleapis.com/oauth2/token',
+               authorize_url='https://accounts.google.com/o/oauth2/auth',
+               refresh_token_url='https://oauth2.googleapis.com/token',
+               fetch_token=fetch_google_token,
+               update_token=update_google_token,
+               client_kwargs={'scope': 'email profile'})
 
 
 @bp.route("/login", methods=["GET"])
 def login():
     if is_authenticated():
         return redirect("/")
-    return google.authorize(
+
+    return oauth.google.authorize_redirect(
         callback=url_for("auth.authorized", _external=True))
 
 
@@ -49,25 +62,25 @@ def logout():
 
 @bp.route("/authorized")
 def authorized():
+    oauth.google.authorize_access_token()
     try:
-        resp = google.authorized_response()
-    except Exception:
+        resp = oauth.google.get(
+            'https://www.googleapis.com/oauth2/v3/userinfo')
+        data = resp.json()
+    except AuthlibBaseError as e:
         current_app.logger.exception(
-            "Error during handling the oauth response")
-        abort(400)
+            f"Error during handling the oauth response: {e.error}")
+        del session['google_token']
+        return False
 
-    if resp is None:
+    if "error_reason" in request.args:
         error_message = "Access denied"
-        if "error_reason" in request.args:
-            error_message += f": reason={request.args['error_reason']} error={request.args['error_description']}"
+        error_message += f": reason={request.args['error_reason']} error={request.args['error_description']}"
         return error_message
-    # don't leak access_token into the session cookie
-    # session['google_token'] = (resp['access_token'], '')
+
+    session["user_info"] = data
+
     do_redirect = session.pop("redirect_path", None)
-    me = google.get("userinfo", token=resp["access_token"]).data
-
-    session["user_info"] = me
-
     if do_redirect:
         return redirect(do_redirect)
 
@@ -113,25 +126,24 @@ def load_user():
     g.user = user
 
 
-@google.tokengetter
-def get_google_oauth_token():
-    return session.get("google_token")
-
-
 def is_authenticated():
-    if "user_info" in session:
+    if 'user_info' in session:
         return True
 
-    if "google_token" not in session:
+    if 'google_token' not in session:
         return False
 
-    data = google.get("userinfo").data
-    if data.get("error", False):
-        del session["google_token"]
+    try:
+        resp = oauth.google.get(
+            'https://www.googleapis.com/oauth2/v2/userinfo')
+        data = resp.json()
+    except AuthlibBaseError as e:
+        current_app.logger.exception(
+            f"Error during handling the oauth response: {e.error}")
+        del session['google_token']
         return False
 
-    session["user_info"] = data
-
+    session['user_info'] = data
     return True
 
 
@@ -142,7 +154,7 @@ def login_required(redirect=False):
             if not is_authenticated():
                 if redirect:
                     session["redirect_path"] = request.full_path
-                    return google.authorize(
+                    return oauth.google.authorize_redirect(
                         callback=url_for("auth.authorized", _external=True))
                 else:
                     return abort(401)
@@ -164,7 +176,7 @@ def admin_required(redirect=False):
                         "success")
                 elif redirect:
                     session["redirect_path"] = request.full_path
-                    return google.authorize(
+                    return oauth.google.authorize_redirect(
                         callback=url_for("auth.authorized", _external=True))
                 else:
                     return abort(401)

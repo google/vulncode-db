@@ -15,6 +15,7 @@ from app.api.routes import bp as api_bp
 from app.api.v1.routes import bp as api_v1_bp
 from app.auth.routes import bp as auth_bp
 from app.auth.routes import is_admin
+from app.auth.routes import oauth
 from app.frontend.routes import bp as frontend_bp
 from app.product.routes import bp as product_bp
 from app.vcs_proxy.routes import bp as vcs_proxy_bp
@@ -87,6 +88,9 @@ def register_extensions(app, test_config=None):
     # Setup CSRF protection.
     csrf = CSRFProtect()
     csrf.init_app(app)
+
+    # Setup OAuth.
+    oauth.init_app(app)
 
     if not cfg.IS_PROD and not test_config:
         # Activate a port of the django-debug-toolbar for Flask applications.

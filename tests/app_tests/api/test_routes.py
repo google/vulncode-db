@@ -72,7 +72,7 @@ def test_save_editor_data(client, query, data, expected_code,
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
     assert resp.status_code == 401
-    assert resp.headers['Content-Type'] == 'text/html'
+    assert 'text/html' in resp.headers['Content-Type']
     assert b'Unauthorized' in resp.data
 
 
@@ -85,7 +85,7 @@ def test_save_editor_data_as_admin(client, query, data, expected_code,
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
     assert resp.status_code == expected_code
-    assert resp.headers['Content-Type'] == 'application/json'
+    assert 'application/json' in resp.headers['Content-Type']
     assert resp.json == expected_response
 
 
@@ -98,5 +98,5 @@ def test_save_editor_data_as_user(client, query, data, expected_code,
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
     assert resp.status_code == 401
-    assert resp.headers['Content-Type'] == 'text/html'
+    assert 'text/html' in resp.headers['Content-Type']
     assert b'Unauthorized' in resp.data

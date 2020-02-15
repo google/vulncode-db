@@ -115,17 +115,15 @@ SECRET_KEY = os.getenv("COOKIE_SECRET_KEY", "")
 
 PATCH_REGEX = r".*(github\.com|\.git|\.patch|\/hg\.|\/\+\/)"
 
-GOOGLE_OAUTH = {
-    "consumer_key": os.getenv("OAUTH_CONSUMER_KEY", ""),
-    "consumer_secret": os.getenv("OAUTH_CONSUMER_SECRET", "")
-}
+GOOGLE_CLIENT_ID = os.getenv("OAUTH_CONSUMER_KEY", "")
+GOOGLE_CLIENT_SECRET = os.getenv("OAUTH_CONSUMER_SECRET", "")
 
 # Make sure relevant properties are always set for QA and PROD.
 if IS_PROD or IS_QA:
     assert len(CSRF_SESSION_KEY) > 0
     assert len(SECRET_KEY) > 0
-    assert len(GOOGLE_OAUTH["consumer_key"]) > 0
-    assert len(GOOGLE_OAUTH["consumer_secret"]) > 0
+    assert len(GOOGLE_CLIENT_ID) > 0
+    assert len(GOOGLE_CLIENT_SECRET) > 0
 
 # Emails (checked with OAuth) of admins who are allowed to make admin changes.
 APPLICATION_ADMINS = os.getenv("APPLICATION_ADMINS", "").replace(" ", "")
