@@ -15,10 +15,16 @@
 import os
 import re
 import time
+import sys
 from functools import wraps
 
 from flask import jsonify, request
 from sqlakeyset import unserialize_bookmark
+
+TRACING_PATH = "traces/"
+TRACING_ACTIVE = False
+TRACING_LOGGING = False
+TRACING_FILE_HANDLE = None
 
 
 def get_file_contents(path):
@@ -98,3 +104,57 @@ def function_hooking_wrap(original_function, hooking_function):
         return original_function(*args, **kwargs)
 
     return hook
+
+
+def log_trace(text):
+    global TRACING_ACTIVE, TRACING_FILE_HANDLE
+    if not TRACING_ACTIVE or not TRACING_FILE_HANDLE:
+        return
+    TRACING_FILE_HANDLE.write(text + "\n")
+
+
+def trace_func(frame, event, arg, stack_level=[0]):
+    if event == "call":
+        stack_level[0] += 2
+        func_name = frame.f_code.co_name
+        line_no = frame.f_lineno
+        file_name = frame.f_code.co_filename
+        trace_info = "-" * stack_level[0] + "> {} - {}:{}".format(
+            file_name, func_name, line_no)
+        log_trace(trace_info)
+        print(trace_info)
+    elif event == "return":
+        stack_level[0] -= 2
+    return trace_func
+
+
+def enable_tracing(enabled=True):
+    """
+    Tracing function to monitor application behavior in detail.
+
+    Usage:
+    enable_tracing(True)
+    CRITICAL_STATEMENT/s
+    enable_tracing(False)
+
+    :param enabled: If to enable or disable the tracing.
+    :return: 
+    """
+    global TRACING_PATH, TRACING_ACTIVE, TRACING_FILE_HANDLE
+    if enabled:
+        if TRACING_ACTIVE:
+            return
+        TRACING_ACTIVE = True
+        if not os.path.exists(TRACING_PATH):
+            os.makedirs(TRACING_PATH)
+
+        trace_file = time.strftime("trace_%Y%m%d-%H%M%S")
+        TRACING_FILE_HANDLE = open(TRACING_PATH + trace_file, "a+")
+        log_trace("-- Tracing Start --")
+        sys.setprofile(trace_func)
+    else:
+        sys.setprofile(None)
+        log_trace("-- Tracing End --")
+        TRACING_FILE_HANDLE.close()
+        TRACING_FILE_HANDLE = None
+        TRACING_ACTIVE = False

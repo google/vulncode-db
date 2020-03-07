@@ -13,6 +13,10 @@ fi
 # Make sure we are in the project root directory before executing the test runner.
 cd ${BASEDIR}/../
 
+# More pytest options:
+# -s:           To disable stdout capturing / to always show stdout.
+# -k "keyword": Filter tests for a specific keyword.
+
 pytest -vv \
   --cov-config=.coveragerc \
   --cov-report html \
