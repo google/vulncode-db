@@ -21,7 +21,6 @@ flask-debugtoolbar>=0.10.1
 setuptools>=40.6.3
 sqlparse==0.3.0
 pygments==2.4.2
-pandas==0.25.1
 colorama>=0.4.1
 # Provides a WSGI werkzeug server alternative.
 #gevent==1.4.0
