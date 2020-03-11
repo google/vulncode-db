@@ -4,4 +4,4 @@ Flask==1.1.1
 PyGithub==1.40
 unidiff==0.5.5
 pyyaml
-sqlakeyset==0.1.1579837191
+sqlakeyset==0.1.1559103842

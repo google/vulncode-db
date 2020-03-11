@@ -29,4 +29,4 @@ colorama>=0.4.1
 simplejson>=3.16.0
 # ---------------------------------------
 # Misc. requirements
-sqlakeyset==0.1.1579837191
+sqlakeyset==0.1.1559103842
