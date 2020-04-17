@@ -26,3 +26,5 @@ docker/cve-data/*
 .coverage
 htmlcov
 .pytest_cache
+.mypy_cache
+.vscode

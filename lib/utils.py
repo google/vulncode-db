@@ -19,7 +19,7 @@ import sys
 from functools import wraps
 
 from flask import jsonify, request
-from sqlakeyset import unserialize_bookmark
+from sqlakeyset import unserialize_bookmark  # type: ignore
 
 TRACING_PATH = "traces/"
 TRACING_ACTIVE = False
@@ -138,7 +138,7 @@ def enable_tracing(enabled=True):
     enable_tracing(False)
 
     :param enabled: If to enable or disable the tracing.
-    :return: 
+    :return:
     """
     global TRACING_PATH, TRACING_ACTIVE, TRACING_FILE_HANDLE
     if enabled:

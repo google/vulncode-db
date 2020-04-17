@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask_wtf import FlaskForm
-from wtforms import (
+from flask_wtf import FlaskForm  # type: ignore
+from wtforms import (  # type: ignore
     StringField,
     TextAreaField,
     SubmitField,

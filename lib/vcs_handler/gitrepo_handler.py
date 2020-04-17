@@ -27,24 +27,24 @@ from app.exceptions import InvalidIdentifierException
 from flask import url_for, jsonify
 
 from io import BytesIO
-from unidiff import PatchSet
-from dulwich.repo import Repo
+from unidiff import PatchSet  # type: ignore
+from dulwich.repo import Repo  # type: ignore
 
 # Packages like GitPython are not supported on GAE since they make use of
 # c libraries or other system utilities. We only use such packages on other
 # sytems like GCE VMs.
 try:
-    from git import Repo as GitPythonRepo
+    from git import Repo as GitPythonRepo  # type: ignore
 except ImportError:
     pass
 
 from urllib.parse import urlparse
-import dulwich.errors
+import dulwich.errors  # type: ignore
 import dulwich.repo
-import dulwich.client
-import dulwich.config
-import dulwich.objects
-from dulwich.patch import write_tree_diff
+import dulwich.client  # type: ignore
+import dulwich.config  # type: ignore
+import dulwich.objects  # type: ignore
+from dulwich.patch import write_tree_diff  # type: ignore
 from dulwich import porcelain
 import re
 

@@ -26,9 +26,9 @@ from flask import Flask
 from flask import redirect
 from flask import request
 from flask import url_for
-from flask_bootstrap import Bootstrap
-from flask_debugtoolbar import DebugToolbarExtension
-from flask_wtf.csrf import CSRFProtect
+from flask_bootstrap import Bootstrap  # type: ignore
+from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
+from flask_wtf.csrf import CSRFProtect  # type: ignore
 
 
 def create_app(test_config=None):

@@ -48,4 +48,20 @@ else
   fatal 'Please install pylint'
 fi
 
+if which bandit &>/dev/null
+then
+  info 'Checking python files with bandit'
+  bandit -r app data lib
+else
+  fatal 'Please install bandit'
+fi
+
+if which mypy &>/dev/null
+then
+  info 'Linting python files with mypy'
+  mypy --warn-unused-ignores app data lib
+else
+  fatal 'Please install mypy'
+fi
+
 success "Done. Happy coding :)"

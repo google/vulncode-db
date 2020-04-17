@@ -15,8 +15,8 @@
 # Attention: DO NOT DELETE THE * IMPORT BELOW
 # -> Required to import all model definitions to allow database creation.
 
-from flask_script import Manager
-from flask_migrate import Migrate, MigrateCommand
+from flask_script import Manager  # type: ignore
+from flask_migrate import Migrate, MigrateCommand  # type: ignore
 from sqlalchemy.engine import reflection
 
 from data.models import *

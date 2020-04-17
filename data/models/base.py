@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask_sqlalchemy import SQLAlchemy as SQLAlchemyBase
-from flask_marshmallow import Marshmallow
+from flask_sqlalchemy import SQLAlchemy as SQLAlchemyBase  # type: ignore
+from flask_marshmallow import Marshmallow  # type: ignore
 from sqlalchemy import Index
 from sqlalchemy.ext.declarative import declared_attr
 

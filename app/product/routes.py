@@ -14,7 +14,7 @@
 
 import re
 from flask import (Blueprint, render_template)
-from sqlakeyset import get_page
+from sqlakeyset import get_page  # type: ignore
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import joinedload, Load
 
@@ -67,7 +67,7 @@ def get_entries_commits(full_base_query):
 
 # Create a catch all route for product identifiers.
 @bp.route("/<vendor>/<product>")
-def product_view(vendor=None, product=None):
+def product_view(vendor: str = None, product: str = None):
     sub_query = db.session.query(Cpe.nvd_json_id).filter(
         and_(Cpe.vendor == vendor, Cpe.product == product)).distinct()
     number_vulns = sub_query.count()

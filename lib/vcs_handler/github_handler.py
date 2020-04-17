@@ -18,8 +18,8 @@ import os
 import re
 
 from urllib.parse import urlparse
-from github import Github, InputGitTreeElement
-from unidiff import PatchSet
+from github import Github, InputGitTreeElement  # type: ignore
+from unidiff import PatchSet  # type: ignore
 from flask import jsonify
 
 from app.exceptions import InvalidIdentifierException
