@@ -31,13 +31,14 @@
             {{ wtf.form_field(form.comment) }}
             {{ wtf.form_field(form.cve_id) }}
 
-
+            {# TODO: Enable this once custom resource links are supported again.
             <h4>Misc</h4>
             <div class="form-group">
               {% for l in form.additional_resources %}
                 {{ wtf.form_field(l.form.link) }}
               {% endfor %}
             </div>
+            #}
 
             {{ wtf.form_field(form.submit, button_map={'submit':'primary'}) }}
           </form>

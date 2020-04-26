@@ -14,16 +14,12 @@
 
 from flask_wtf import FlaskForm  # type: ignore
 from wtforms import (  # type: ignore
-    StringField,
-    TextAreaField,
-    SubmitField,
-    FieldList,
-    FormField,
+    StringField, TextAreaField, SubmitField, FieldList, FormField,
     IntegerField,
 )
 from wtforms import validators
 
-from data.models import VulnerabilityGitCommits, VulnerabilityResources
+from data.models import VulnerabilityGitCommits
 from data.models.base import db
 
 
@@ -63,13 +59,14 @@ class CommitLinksForm(FlaskForm):
         csrf = False
 
 
-class VulnerabilityResourcesForm(FlaskForm):
-    link = StringField(
-        "Link", validators=[validators.DataRequired(),
-                            validators.URL()])
-
-    class Meta:
-        csrf = False
+# TODO: Enable this once custom resource links are supported again.
+#class VulnerabilityResourcesForm(FlaskForm):
+#    link = StringField(
+#        "Link", validators=[validators.DataRequired(),
+#                            validators.URL()])
+#
+#    class Meta:
+#        csrf = False
 
 
 class VulnerabilityDetailsForm(FlaskForm):
@@ -92,8 +89,9 @@ class VulnerabilityDetailsForm(FlaskForm):
     )
     comment = TextAreaField("High-Level Bug Overview",
                             validators=[validators.DataRequired()])
-    additional_resources = ModelFieldList(
-        FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
+    # TODO: Enable this once custom resource links are supported again.
+    #additional_resources = ModelFieldList(
+    #    FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
     submit = SubmitField("Create/Update")
 
 

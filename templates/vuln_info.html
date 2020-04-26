@@ -175,6 +175,7 @@
         </table>
       </div>
 
+      {# TODO: Enable this once custom resource links are supported again.
       {% if vuln_view.additional_resources %}
         <h5>Additional Resources</h5>
         <div class="list-group">
@@ -183,6 +184,7 @@
           {% endfor %}
         </div>
       {% endif %}
+      #}
 
     {% else %}
     <form action="{{ url_for('vuln.create_vuln', vuln_id=None) }}" method="post">
