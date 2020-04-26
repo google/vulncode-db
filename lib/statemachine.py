@@ -22,6 +22,7 @@ def event(state):
             func._on_state = set()
         func._on_state.add(state)
         return func
+
     return inner
 
 
@@ -48,12 +49,12 @@ def transition(from_state, to_state):
             func._on_transition = set()
         func._on_transition.add((from_state, to_state))
         return func
+
     return inner
 
 
 class NoTransition(Exception):
     """Raised if this transition was not defined."""
-
     def __init__(self, from_state, to_state):
         self.from_state = from_state
         self.to_state = to_state
@@ -64,7 +65,6 @@ class NoTransition(Exception):
 
 class TransitionDenied(Exception):
     """Raised if this transition was denied by a transition handler."""
-
     def __init__(self, name, from_state, to_state, why):
         self.name = name
         self.from_state = from_state
@@ -77,7 +77,6 @@ class TransitionDenied(Exception):
 
 class StateMachineMeta(enum.EnumMeta):
     """Metaclass for StateMachine."""
-
     def __call__(cls, *args, **kwargs):
         obj = object.__new__(cls)
         obj.__init__(*args, **kwargs)
@@ -223,7 +222,6 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
      END -> FOO [label="FooState.exception"];
     }
     """
-
     @staticmethod
     def __new_member__(enumcls, value):
         if type(value) is not int:
@@ -279,7 +277,6 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
             '{} -> {} [label="{}"];'.format(cls._value2member_map_[f].name,
                                             cls._value2member_map_[t].name,
                                             l.name)
-            for (f, t), ls in cls.__change_listeners__.items()
-            for l in ls
+            for (f, t), ls in cls.__change_listeners__.items() for l in ls
         ]
         return 'digraph {\n %s\n}' % '\n '.join(transitions)
