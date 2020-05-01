@@ -39,6 +39,7 @@ VULN_INFO_DETAILED_VARIANTS = [
         'commits': [{
             'commit_hash': '1234568',
             'commit_link': 'https://github.com/OWNER/REPO1/commit/1234568',
+            'relevant_files': [],
             'repo_name': 'REPO1',
             'repo_owner': 'OWNER',
             'repo_url': 'https://github.com/OWNER/REPO1'
