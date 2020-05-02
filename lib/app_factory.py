@@ -68,8 +68,8 @@ def register_route_checks(app):
                 return None
         if is_admin():
             return None
-        if request.path != url_for('maintenance'):
-            return redirect(url_for('maintenance'))
+        if request.path != url_for('frontend.maintenance'):
+            return redirect(url_for('frontend.maintenance'))
 
     @app.before_request
     def before_request():
