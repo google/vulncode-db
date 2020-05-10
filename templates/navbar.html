@@ -14,19 +14,23 @@
     <ul class="navbar-nav mt-2 mt-md-0">
       <li class="nav-item">
         {% if g.user %}
-          <span class="navbar-brand">
-        {% if g.user.profile_picture %}
-          <img src="{{ g.user.profile_picture|replace("/photo", "/s30-cc-rw/photo") }}" width="30"
-               height="30">
-        {% endif %}
-            Hello {{ g.user.full_name }}</span>
+          <li>
+            {% if g.user.profile_picture %}
+              <img src="{{ g.user.profile_picture|replace("/photo", "/s30-cc-rw/photo") }}" width="30"
+                   height="30">
+            {% endif %}
+            <span class="navbar-brand">{{ g.user.full_name }}</span>
           </li>
           <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+            <a class="nav-link" href="{{ url_for('profile.view_proposals') }}">Proposals</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+          </li>
         {% else %}
           <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
         {% endif %}
-        </li>
+      </li>
     </ul>
     <!--
     <form class="form-inline mt-2 mt-md-0">

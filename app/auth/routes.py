@@ -37,9 +37,8 @@ def update_google_token(token):
 oauth = OAuth()
 oauth.register(name='google',
                api_base_url='https://www.googleapis.com/',
-               access_token_url='https://www.googleapis.com/oauth2/token',
+               access_token_url='https://accounts.google.com/o/oauth2/token',
                authorize_url='https://accounts.google.com/o/oauth2/auth',
-               refresh_token_url='https://oauth2.googleapis.com/token',
                fetch_token=fetch_google_token,
                update_token=update_google_token,
                client_kwargs={'scope': 'email profile'})
@@ -51,7 +50,7 @@ def login():
         return redirect("/")
 
     return oauth.google.authorize_redirect(
-        callback=url_for("auth.authorized", _external=True))
+        redirect_uri=url_for("auth.authorized", _external=True))
 
 
 @bp.route("/logout", methods=["GET"])
@@ -155,7 +154,8 @@ def login_required(redirect=False):
                 if redirect:
                     session["redirect_path"] = request.full_path
                     return oauth.google.authorize_redirect(
-                        callback=url_for("auth.authorized", _external=True))
+                        redirect_uri=url_for("auth.authorized",
+                                             _external=True))
                 else:
                     return abort(401)
             return func(*args, **kwargs)
@@ -177,7 +177,8 @@ def admin_required(redirect=False):
                 elif redirect:
                     session["redirect_path"] = request.full_path
                     return oauth.google.authorize_redirect(
-                        callback=url_for("auth.authorized", _external=True))
+                        redirect_uri=url_for("auth.authorized",
+                                             _external=True))
                 else:
                     return abort(401)
             return func(*args, **kwargs)

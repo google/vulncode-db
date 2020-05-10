@@ -8,35 +8,72 @@
 
 <div class="card">
   <div class="card-body">
+
+    {% if edit_mode %}
+      <form class="form" method="post" role="form">
+      {{ form.hidden_tag() }}
+      {{ wtf.form_errors(form, hiddens="only") }}
+    {% endif %}
+
     {% if vuln_view %}
-    {% set vuln_id = vuln_view.id %}
+      {% set vuln_id = vuln_view.id %}
 
-    <h5 class="card-title">
-      ID:
-      <p class="text-info d-inline">
-        <b>{{ vuln_view.id }}</b>
-        {% if vuln_view.cve_id %}
-        <small>(<a href="https://nvd.nist.gov/vuln/detail/{{ vuln_view.cve_id }}" target="_blank">NVD</a>)</small>
-        {% endif %}
-      </p>
-      - Vulnerability Info
-      <small><a href="{{ url_for('vuln.create_vuln', vuln_id=vuln_id) }}">(edit)</a></small>
-    </h5>
-
-    <h6 class="card-subtitle mb-2 text-muted">{{ vuln_view.date_created }}</h6>
-
-    <div class="row mb-1">
-      <div class="col-sm-12">
-        <p>
-        {% if vuln_view.comment %}
-          {{ vuln_view.comment }}
-        {% else %}-{% endif %}
-        </p>
+      <div class="navbar-expand-md navbar-light bg-white">
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav mr-auto"></ul>
+          <ul class="navbar-nav mt-2 mt-md-0">
+            {# Hiding the "READ" button for now.
+            <li class="nav-item">
+              <a class="nav-link p-0" href="{{ url_for('vuln.vuln_view', vuln_id=vuln_view.id) }}"><button type="button" class="btn btn-link btn-tb active">Read</button></a>
+            </li>
+            #}
+            <li class="nav-item">
+              <a class="nav-link p-0" href="{{ url_for('vuln.edit_vuln', vuln_id=vuln_id) }}"><button type="button" class="btn btn-dark btn-tb">Edit</button></a>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
 
-    {% set master_commit = vuln_view.master_commit %}
-    <div class="table-responsive">
+      <h5 class="card-title d-inline">
+        <p class="text-info">
+          {% if vuln_view.cve_id %}
+            {% if edit_mode %}
+              {{ wtf.form_field(form.cve_id) }}
+            {% else %}
+              <a href="{{ url_for('vuln.vuln_view', vuln_id=vuln_view.id) }}" class="text-info">
+              <b>{{ vuln_view.id }}</b>
+              </a>
+              <small>(<a href="https://nvd.nist.gov/vuln/detail/{{ vuln_view.cve_id }}" target="_blank">NVD</a>)</small>
+            {% endif %}
+          {% else %}}
+          <a href="{{ url_for('vuln.vuln_view', vuln_id=vuln_view.id) }}" class="text-info">
+              ID: <b>{{ vuln_view.id }}</b>
+          </a>
+          {% endif %}
+        </p>
+      </h5>
+
+      <h6 class="card-subtitle mb-2 text-muted">{{ vuln_view.date_created }}</h6>
+
+      <div class="row mb-1">
+        <div class="col-sm-12">
+          {% if edit_mode %}
+            {# TODO: Take a look at an adaptive form here
+              set comment_rows = form.comment.data.split("\n")|length
+            #}
+            {{ wtf.form_field(form.comment, rows=6) }}
+          {% else %}
+            <p>
+              {% if vuln_view.comment %}
+              {{ vuln_view.comment }}
+              {% else %}-{% endif %}
+            </p>
+          {% endif %}
+        </div>
+      </div>
+
+      {% set master_commit = vuln_view.master_commit %}
+      <div class="table-responsive">
         <table class="table table-hover table-dark mb-0">
           <tr>
             <td style="width: 7%"><b>Products</b></td>
@@ -186,27 +223,33 @@
       {% endif %}
       #}
 
+
+      {% if edit_mode %}
+        {{ wtf.form_field(form.submit, button_map={'submit':'primary'}) }}
+        </form>
+      {% endif %}
     {% else %}
-    <form action="{{ url_for('vuln.create_vuln', vuln_id=None) }}" method="post">
+      {# TODO: Deprecated, remove this whole section! #}
+      <form action="{{ url_for('vuln.create_vuln', vuln_id=None) }}" method="post">
         <input type="hidden" name="id" value="{{vuln_id}}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-      {% if commit_link %}
-        Commit Link:
-        <h5>
-          <a href="{{ commit_link }}" target="_blank">{{ commit_link }}</a>
-        </h5>
-        <input type="hidden" name="commits-0-commit_link" value="{{ commit_link }}">
-      {% endif %}
-      {% if repo_url and commit_hash %}
-        Repository:
-        <h5>{{ repo_url }}</h5>
-        Commit:
-        <h5>{{ commit_hash }}</h5>
-        <input type="hidden" name="commits-0-repo_url" value="{{ repo_url }}">
-        <input type="hidden" name="commits-0-commit_hash" value="{{ commit_hash }}">
-      {% else %}
-        <h5>{{ vuln_id }}</h5>
-      {% endif %}
+        {% if commit_link %}
+          Commit Link:
+          <h5>
+            <a href="{{ commit_link }}" target="_blank">{{ commit_link }}</a>
+          </h5>
+          <input type="hidden" name="commits-0-commit_link" value="{{ commit_link }}">
+        {% endif %}
+        {% if repo_url and commit_hash %}
+          Repository:
+          <h5>{{ repo_url }}</h5>
+          Commit:
+          <h5>{{ commit_hash }}</h5>
+          <input type="hidden" name="commits-0-repo_url" value="{{ repo_url }}">
+          <input type="hidden" name="commits-0-commit_hash" value="{{ commit_hash }}">
+        {% else %}
+          <h5>{{ vuln_id }}</h5>
+        {% endif %}
         <div class="alert alert-primary" role="alert">
         No entry for this data found.
         <button type="submit" class="btn btn-link">Create new entry</button>

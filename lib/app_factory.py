@@ -20,6 +20,7 @@ from app.frontend.routes import bp as frontend_bp
 from app.product.routes import bp as product_bp
 from app.vcs_proxy.routes import bp as vcs_proxy_bp
 from app.vulnerability.routes import bp as vuln_bp
+from app.profile.routes import bp as profile_bp
 import cfg
 from data.database import init_app as init_db
 from flask import Flask
@@ -109,3 +110,4 @@ def register_blueprints(app):
     app.register_blueprint(product_bp)
     app.register_blueprint(vcs_proxy_bp)
     app.register_blueprint(vuln_bp)
+    app.register_blueprint(profile_bp)

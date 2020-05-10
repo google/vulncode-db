@@ -80,7 +80,7 @@ class VulnerabilityDetailsForm(FlaskForm):
     # The filters argument is used to have Null fields instead of empty strings.
     # This is important since the cve_id is supposed to be unique OR Null.
     cve_id = StringField(
-        "CVE-ID (if applicable)",
+        "CVE-ID",
         filters=[lambda x: x and str(x).upper().strip(), lambda x: x or None],
         validators=[
             validators.Optional(),
@@ -92,7 +92,7 @@ class VulnerabilityDetailsForm(FlaskForm):
     # TODO: Enable this once custom resource links are supported again.
     #additional_resources = ModelFieldList(
     #    FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
-    submit = SubmitField("Create/Update")
+    submit = SubmitField("Propose change")
 
 
 class VulnerabilityDeleteForm(FlaskForm):
