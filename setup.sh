@@ -18,11 +18,11 @@ function info() {
 }
 
 function error() {
-  echo -e "[\e[91m!\e[0m]" "$@"
+  echo -e "\t[\e[91m!\e[0m]" "$@"
 }
 
 function success() {
-  echo -e "[\e[92m+\e[0m]" "$@"
+  echo -e "\t[\e[92m+\e[0m]" "$@"
 }
 
 function fatal() {
@@ -57,15 +57,25 @@ function setup_yaml() {
   example_file="example_${1}"
   target_file=$1
   info "Checking for ${target_file} existence."
-  if [[ -f $target_file ]]; then
+  if [[ -f ${target_file} ]]; then
     success "Available."
     return
   fi
-  cp $example_file $target_file
-  if [[ ! -f $target_file ]]; then
+  cp ${example_file} ${target_file}
+  if [[ ! -f ${target_file} ]]; then
     fatal "Can't create ${target_file}. Is ${example_file} still present?"
   fi
   success "Created."
+}
+
+function check_dependencies() {
+  third_party_dep="third_party/go-cve-dictionary"
+
+  if [[ ! -d ${third_party_dep} || ! $(ls -A ${third_party_dep}) ]]; then
+    error "Required third-party dependency '${third_party_dep}' is not satisfied (non-existent or empty)."
+    fatal "Execute: git submodule update --init --recursive"
+  fi
+  success "Satisfied."
 }
 
 function setup_certs() {
@@ -83,12 +93,15 @@ function setup_certs() {
   success "Created."
 }
 
-info "Making sure all configuration files are available."
+info "Ensuring all *.yaml configuration files are available."
 setup_yaml app.yaml
 setup_yaml vcs_proxy.yaml
 
-info "Making sure SSL certificates for the VCS proxy exist."
+info "Ensuring SSL certificates for the VCS proxy exist."
 setup_certs
+
+info "Ensuring all third-party dependencies are satisfied."
+check_dependencies
 
 info "Setting up all relevant docker containers."
 if which docker-compose &>/dev/null

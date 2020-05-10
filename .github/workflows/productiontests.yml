@@ -17,7 +17,7 @@ jobs:
       run: env
     - name: Checkout
       run: |
-        git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
+        git clone --recursive https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
     - name: Build base containers
       run: ./setup.sh
     - name: Run the tests

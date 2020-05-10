@@ -19,6 +19,10 @@ import sqlparse
 import pandas as pd
 from lib.utils import manually_read_app_config
 
+if "MYSQL_CONNECTION_NAME" not in os.environ:
+    print("[~] Executed outside AppEngine context. Manually loading config.")
+    manually_read_app_config()
+
 from flask import Flask
 from sqlalchemy import and_, join, func
 
@@ -33,9 +37,6 @@ from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits, 
 from data.models.nvd import default_nvd_view_options
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
-if "MYSQL_CONNECTION_NAME" not in os.environ:
-    print("[~] Executed outside AppEngine context. Manually loading config.")
-    manually_read_app_config()
 
 sys.path.append("third_party/")
 pd.set_option("display.max_colwidth", -1)

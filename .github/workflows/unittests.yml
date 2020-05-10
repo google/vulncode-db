@@ -20,9 +20,9 @@ jobs:
       run: |
         if [ "$GITHUB_EVENT_NAME" == 'push' ]
         then
-          git clone https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && git checkout $GITHUB_SHA
+          git clone --recursive https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && git checkout $GITHUB_SHA
         else
-          git clone -b $GITHUB_HEAD_REF https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
+          git clone --recursive -b $GITHUB_HEAD_REF https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
         fi
     - name: Setup Python 3.7
       run: |
