@@ -47,7 +47,10 @@ def check_db_state():
                                 for rev in script.get_all_current(rev))
             if db_revs ^ head_revs:
                 config.print_stdout(
-                    "Current revision(s) for %s %s do not match the heads %s\n.Run ./manage.sh db upgrade.",
+                    ("Current revision(s) for %s %s do not match the heads %s!\n"
+                     "Run ./docker/docker-admin.sh upgrade\n"
+                     "(Outside of docker you can directly run: ./manage.sh db upgrade)"
+                     ),
                     alembic.util.obfuscate_url_pw(
                         context.connection.engine.url),
                     tuple(db_revs),
