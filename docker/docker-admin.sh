@@ -111,6 +111,11 @@ function crawl_patches() {
     python3 crawl_patches.py
 }
 
+function upgrade_db() {
+  dock-comp run --rm frontend \
+    ./manage.sh db upgrade
+}
+
 function build_service() {
   USE_SERVICE=$1
   dock-comp build $USE_SERVICE
@@ -192,58 +197,19 @@ function services() {
 function show_usage_string() {
   COMMAND=$1
   DESCRIPTION=$2
-  printf "\t %-20s \t %-50s\n" "$COMMAND" "$DESCRIPTION"
+  printf "\t %-25s \t %-50s\n" "$COMMAND" "$DESCRIPTION"
 }
 
 case "$1" in
+  # Service/Container management. ----------------------------------
   start)
     start_application $2
     ;;
   stop)
     stop_application $2
     ;;
-  logs)
-    logs "$2"
-    ;;
   ps)
     ps
-    ;;
-  exec)
-    shift
-    exec "$@"
-    ;;
-  init)
-    init_data
-    ;;
-  test)
-    run_tests
-    ;;
-  production_test)
-    run_production_tests
-    ;;
-  stop_testdb)
-    stop_test_database
-    ;;
-  cwe_data)
-    load_cwe_data
-    ;;
-  current_year_cve_data)
-    load_current_year_cve_data
-    ;;
-  full_cve)
-    load_full_cve
-    ;;
-  latest)
-    load_latest
-    ;;
-  crawl_patches)
-    crawl_patches
-    ;;
-  format)
-    format_code
-    ;;
-  lint)
-    lint_code
     ;;
   build)
     [ "$#" -eq 2 ] || die "Please specify a service."
@@ -253,25 +219,75 @@ case "$1" in
     [ "$#" -eq 2 ] || die "Please specify a service."
     start_shell $2
     ;;
+  logs)
+    logs "$2"
+    ;;
+  exec)
+    shift
+    exec "$@"
+    ;;
+  # Data management. ----------------------------------
+  init)
+    init_data
+    ;;
+  latest)
+    load_latest
+    ;;
+  current_year_cve_data)
+    load_current_year_cve_data
+    ;;
+  full_cve)
+    load_full_cve
+    ;;
+  cwe_data)
+    load_cwe_data
+    ;;
+  crawl_patches)
+    crawl_patches
+    ;;
+  upgrade)
+    upgrade_db
+    ;;
+  # Code maintenance and testing. ----------------------------------
+  format)
+    format_code
+    ;;
+  lint)
+    lint_code
+    ;;
+  test)
+    run_tests
+    ;;
+  stop_testdb)
+    stop_test_database
+    ;;
+  production_test)
+    run_production_tests
+    ;;
   *)
   echo "Usage: $0 [COMMAND]"
-  echo "Commands:"
+  echo "Service/Container management:"
   show_usage_string "start/stop ([service])" "Start/stop all (or one specific) service/s and its dependencies."
-  show_usage_string "init" "Loads some initial data: CWE and CVE data from last 8 days."
-  show_usage_string "test" "Execute the application tests."
-  show_usage_string "stop_testdb" "Stop the test database and remove any remaining test data."
-  show_usage_string "cwe_data" "Load CWE id<->description mapping data."
-  show_usage_string "current_year_cve_data" "Load CVE data for the current year only."
-  show_usage_string "full_cve" "Load all available CVE entries."
-  show_usage_string "latest" "Load latest CVE entries (useful for automation)."
-  show_usage_string "crawl_patches" "Run crawl_patches.py inside the frontend container."
-  show_usage_string "format/lint" "Format/Lint the Python and JS code."
+  show_usage_string "ps" "List running services."
   show_usage_string "build [service]" "(Re)builds a given service."
   show_usage_string "shell [service]" "Launch a shell inside a given service."
-  show_usage_string "ps" "List running services."
   show_usage_string "logs [service]" "Show logs of running service(s)."
 
-  echo -e "\t --- Available services ---"
+  echo "Data management:"
+  show_usage_string "init" "Loads some initial data: CWE and CVE data from last 8 days."
+  show_usage_string "latest" "Load latest CVE entries (useful for automation)."
+  show_usage_string "current_year_cve_data" "Load CVE data for the current year only."
+  show_usage_string "full_cve" "Load all available CVE entries."
+  show_usage_string "cwe_data" "Load CWE id<->description mapping data."
+  show_usage_string "crawl_patches" "Run crawl_patches.py inside the frontend container."
+  show_usage_string "upgrade" "Upgrades the database to the newest specification."
+
+  echo "Code maintenance and testing:"
+  show_usage_string "format/lint" "Format/Lint the Python and JS code."
+  show_usage_string "test" "Execute the application tests."
+  show_usage_string "stop_testdb" "Stop the test database and remove any remaining test data."
+
+  echo "--- Available services ---"
   for svc in $(services)
   do
     echo -e "\t\t $svc"
