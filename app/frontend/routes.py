@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from app.vulnerability.views.vulncode_db import VulncodeDB
 from flask import Blueprint
 from flask import render_template
 from flask import send_from_directory
+
+from app.vulnerability.views.vulncode_db import VulncodeDB
 
 bp = Blueprint("frontend", __name__)
 

@@ -14,7 +14,8 @@
 
 from functools import wraps
 
-from flask import session, request, url_for, abort, redirect, Blueprint, g, current_app, flash
+from flask import (session, request, url_for, abort, redirect, Blueprint, g,
+                   current_app, flash)
 from authlib.integrations.flask_client import OAuth  # type: ignore
 from authlib.common.errors import AuthlibBaseError  # type: ignore
 
@@ -34,7 +35,7 @@ def update_google_token(token):
     return session['google_token']
 
 
-oauth = OAuth()
+oauth = OAuth()  # pylint: disable=invalid-name
 oauth.register(name='google',
                api_base_url='https://www.googleapis.com/',
                access_token_url='https://accounts.google.com/o/oauth2/token',
@@ -66,15 +67,16 @@ def authorized():
         resp = oauth.google.get(
             'https://www.googleapis.com/oauth2/v3/userinfo')
         data = resp.json()
-    except AuthlibBaseError as e:
+    except AuthlibBaseError as ex:
         current_app.logger.exception(
-            f"Error during handling the oauth response: {e.error}")
+            f"Error during handling the oauth response: {ex.error}")
         del session['google_token']
         return False
 
     if "error_reason" in request.args:
         error_message = "Access denied"
-        error_message += f": reason={request.args['error_reason']} error={request.args['error_description']}"
+        error_message += f": reason={request.args['error_reason']}"
+        error_message += f" error={request.args['error_description']}"
         return error_message
 
     session["user_info"] = data
@@ -136,9 +138,9 @@ def is_authenticated():
         resp = oauth.google.get(
             'https://www.googleapis.com/oauth2/v2/userinfo')
         data = resp.json()
-    except AuthlibBaseError as e:
+    except AuthlibBaseError as ex:
         current_app.logger.exception(
-            f"Error during handling the oauth response: {e.error}")
+            f"Error during handling the oauth response: {ex.error}")
         del session['google_token']
         return False
 
@@ -146,18 +148,17 @@ def is_authenticated():
     return True
 
 
-def login_required(redirect=False):
+def login_required(do_redirect=False):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if not is_authenticated():
-                if redirect:
+                if do_redirect:
                     session["redirect_path"] = request.full_path
                     return oauth.google.authorize_redirect(
                         redirect_uri=url_for("auth.authorized",
                                              _external=True))
-                else:
-                    return abort(401)
+                return abort(401)
             return func(*args, **kwargs)
 
         return wrapper
@@ -172,7 +173,8 @@ def admin_required(redirect=False):
             if not is_admin():
                 if current_app.config["IS_LOCAL"]:
                     flash(
-                        "Admin access was granted without login for local dev environment.",
+                        "Admin access was granted without login for local dev "
+                        "environment.",
                         "success")
                 elif redirect:
                     session["redirect_path"] = request.full_path

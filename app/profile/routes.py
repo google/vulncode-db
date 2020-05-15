@@ -12,23 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 from flask import (Blueprint, render_template)
-from sqlakeyset import get_page  # type: ignore
-from sqlalchemy import and_, desc
-from sqlalchemy.orm import joinedload, Load
 
-from app.vulnerability.views.vulncode_db import VulnViewTypesetPaginationObjectWrapper
-from data.models.nvd import default_nvd_view_options, Cpe, Nvd
-from data.models.vulnerability import Vulnerability
-from data.database import DEFAULT_DATABASE
-from lib.utils import parse_pagination_param
 
 bp = Blueprint("profile", __name__, url_prefix="/profile")
-db = DEFAULT_DATABASE
 
 
 # Create a catch all route for profile identifiers.
 @bp.route("/proposals")
 def view_proposals(vendor: str = None, profile: str = None):
+    del vendor, profile
     return render_template("profile/proposals_view.html")
