@@ -19,8 +19,9 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm import joinedload, Load
 
 from app.vulnerability.views.vulncode_db import VulnViewTypesetPaginationObjectWrapper
-from data.models.nvd import default_nvd_view_options, Cpe
-from data.database import DEFAULT_DATABASE, Vulnerability, Nvd
+from data.models.nvd import default_nvd_view_options, Cpe, Nvd
+from data.models.vulnerability import Vulnerability
+from data.database import DEFAULT_DATABASE
 from lib.utils import parse_pagination_param
 
 bp = Blueprint("product", __name__, url_prefix="/product")

@@ -15,8 +15,8 @@
 from functools import wraps
 
 from flask import session, request, url_for, abort, redirect, Blueprint, g, current_app, flash
-from authlib.integrations.flask_client import OAuth
-from authlib.common.errors import AuthlibBaseError
+from authlib.integrations.flask_client import OAuth  # type: ignore
+from authlib.common.errors import AuthlibBaseError  # type: ignore
 
 from data.database import DEFAULT_DATABASE
 from data.models import User

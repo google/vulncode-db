@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from flask_sqlalchemy import SQLAlchemy as SQLAlchemyBase  # type: ignore
+from flask_sqlalchemy import DefaultMeta
 from flask_marshmallow import Marshmallow  # type: ignore
 from sqlalchemy import Index
 from sqlalchemy.ext.declarative import declared_attr
@@ -31,7 +32,9 @@ db = SQLAlchemy()
 ma = Marshmallow()
 
 
-class MainBase(db.Model):
+BaseModel: DefaultMeta = db.Model
+
+class MainBase(BaseModel):
     # N.B. We leave the schema out on purpose as alembic gets confused otherwise.
     # The default schema is already main (as specified in the connection string).
     # Also see:
@@ -48,7 +51,7 @@ class MainBase(db.Model):
     )
 
 
-class NvdBase(db.Model):
+class NvdBase(BaseModel):
     __abstract__ = True
 
     @declared_attr
@@ -68,6 +71,6 @@ class NvdBase(db.Model):
         return indices + ({"schema": "cve"}, )
 
 
-class CweBase(db.Model):
+class CweBase(BaseModel):
     __table_args__ = {"schema": "cwe"}
     __abstract__ = True

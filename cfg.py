@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import os
+from typing import List
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -127,7 +128,7 @@ if IS_PROD or IS_QA:
 
 # Emails (checked with OAuth) of admins who are allowed to make admin changes.
 APPLICATION_ADMINS = os.getenv("APPLICATION_ADMINS", "").replace(" ", "")
-APPLICATION_ADMINS = APPLICATION_ADMINS.split(",")
+APPLICATION_ADMINS: List[str] = APPLICATION_ADMINS.split(",")
 
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 
@@ -139,6 +140,6 @@ APP_CERT_FILE = "cert/cert.pem"
 
 # local overrides
 try:
-    from local_cfg import *
+    from local_cfg import *  # type: ignore
 except ImportError:
     pass
