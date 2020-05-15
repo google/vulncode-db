@@ -34,8 +34,8 @@ def get_file_contents(path):
 
 
 def write_contents(path, content):
-    with open(path, "w") as f:
-        f.write(content)
+    with open(path, "w") as file:
+        file.write(content)
 
 
 def create_json_response(msg, status_code=200, **kwargs):
@@ -49,7 +49,7 @@ def create_json_response(msg, status_code=200, **kwargs):
 def manually_read_app_config():
     """Load app.yaml environment variables manually."""
     try:
-        import yaml
+        import yaml  # pylint: disable=import-outside-toplevel
     except ImportError:
         return None
     with open("app.yaml") as file:
@@ -113,7 +113,10 @@ def log_trace(text):
     TRACING_FILE_HANDLE.write(text + "\n")
 
 
-def trace_func(frame, event, arg, stack_level=[0]):
+def trace_func(frame, event, arg, stack_level=None):
+    if stack_level is None:
+        stack_level = [0]
+    del arg
     if event == "call":
         stack_level[0] += 2
         func_name = frame.f_code.co_name

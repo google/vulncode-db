@@ -75,22 +75,24 @@ else:
 def gen_connection_string():
     # if not on Google then use local MySQL
     if IS_PROD or IS_QA:
-        return f"mysql+mysqldb://{MYSQL_USER}:{MYSQL_PASS}@localhost:3306/_DB_NAME_?unix_socket=/cloudsql/{MYSQL_CONNECTION_NAME}"
-    else:
-        use_name = MYSQL_USER
-        use_pass = MYSQL_PASS
-        use_host = "127.0.0.1"
-        use_port = 3306
-        if "MYSQL_HOST" in os.environ:
-            use_host = os.environ["MYSQL_HOST"]
-        elif "MYSQL_LOCAL_PORT" in os.environ:
-            use_port = int(os.environ["MYSQL_LOCAL_PORT"])
+        return (f"mysql+mysqldb://{MYSQL_USER}:{MYSQL_PASS}@localhost:3306"
+                f"/_DB_NAME_?unix_socket=/cloudsql/{MYSQL_CONNECTION_NAME}")
 
-        if USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY:
-            use_name = os.environ["CLOUDSQL_NAME"]
-            use_pass = os.environ["CLOUDSQL_PASS"]
-            use_port = int(os.getenv("CLOUDSQL_PORT", 3307))
-        return f"mysql+mysqldb://{use_name}:{use_pass}@{use_host}:{use_port}/_DB_NAME_"
+    use_name = MYSQL_USER
+    use_pass = MYSQL_PASS
+    use_host = "127.0.0.1"
+    use_port = 3306
+    if "MYSQL_HOST" in os.environ:
+        use_host = os.environ["MYSQL_HOST"]
+    elif "MYSQL_LOCAL_PORT" in os.environ:
+        use_port = int(os.environ["MYSQL_LOCAL_PORT"])
+
+    if USE_REMOTE_DB_THROUGH_CLOUDSQL_PROXY:
+        use_name = os.environ["CLOUDSQL_NAME"]
+        use_pass = os.environ["CLOUDSQL_PASS"]
+        use_port = int(os.getenv("CLOUDSQL_PORT", '3307'))
+    return (f"mysql+mysqldb://{use_name}:{use_pass}@{use_host}:{use_port}"
+            "/_DB_NAME_")
 
 
 SQLALCHEMY_DATABASE_URI = gen_connection_string().replace("_DB_NAME_", "main")
@@ -135,11 +137,14 @@ DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 # Disable link intercepts for the Flask toolbar.
 DEBUG_TB_INTERCEPT_REDIRECTS = False
 
-# We use certificate pinning to ensure correct communication between components.
+# We use certificate pinning to ensure correct communication between
+# components.
 APP_CERT_FILE = "cert/cert.pem"
 
 # local overrides
 try:
+    # pylint: disable=wildcard-import
     from local_cfg import *  # type: ignore
+    # pylint: enable=wildcard-import
 except ImportError:
     pass

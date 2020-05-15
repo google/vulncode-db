@@ -11,6 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from flask import Flask
+from flask import redirect
+from flask import request
+from flask import url_for
+from flask_bootstrap import Bootstrap  # type: ignore
+from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
+from flask_wtf.csrf import CSRFProtect  # type: ignore
+
 from app.api.routes import bp as api_bp
 from app.api.v1.routes import bp as api_v1_bp
 from app.auth.routes import bp as auth_bp
@@ -23,13 +31,6 @@ from app.vulnerability.routes import bp as vuln_bp
 from app.profile.routes import bp as profile_bp
 import cfg
 from data.database import init_app as init_db
-from flask import Flask
-from flask import redirect
-from flask import request
-from flask import url_for
-from flask_bootstrap import Bootstrap  # type: ignore
-from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
-from flask_wtf.csrf import CSRFProtect  # type: ignore
 
 
 def create_app(test_config=None):
@@ -73,7 +74,7 @@ def register_route_checks(app):
             return redirect(url_for('frontend.maintenance'))
 
     @app.before_request
-    def before_request():
+    def before_request():  # pylint: disable=unused-variable
         # Clear cache to always also reload Jinja template macros.
         if cfg.DEBUG:
             app.jinja_env.cache = {}

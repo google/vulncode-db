@@ -19,13 +19,13 @@ from flask_script import Manager  # type: ignore
 from flask_migrate import Migrate, MigrateCommand  # type: ignore
 from sqlalchemy.engine import reflection
 
-from data.models import *
+from data.models import *  # pylint: disable=wildcard-import
 from data.models.base import db, ma
 
 
 class Database:
     db = db
-    ma = ma
+    ma = ma  # pylint: disable=invalid-name
     migrate = Migrate(db=db)
     manager = Manager()
 

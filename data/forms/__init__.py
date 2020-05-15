@@ -34,9 +34,9 @@ class ModelFieldList(FieldList):
         if not hasattr(obj, name):
             setattr(obj, name, [])
         while len(getattr(obj, name)) < len(self.entries):
-            newModel = self.model()
-            db.session.add(newModel)
-            getattr(obj, name).append(newModel)
+            new_model = self.model()
+            db.session.add(new_model)
+            getattr(obj, name).append(new_model)
         while len(getattr(obj, name)) > len(self.entries):
             db.session.delete(getattr(obj, name).pop())
         super(ModelFieldList, self).populate_obj(obj, name)
@@ -74,7 +74,7 @@ class VulnerabilityDetailsForm(FlaskForm):
         FormField(CommitLinksForm),
         model=VulnerabilityGitCommits,
         min_entries=1,
-        default=[lambda: VulnerabilityGitCommits()],
+        default=[VulnerabilityGitCommits],
     )
 
     # The filters argument is used to have Null fields instead of empty strings.

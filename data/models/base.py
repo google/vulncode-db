@@ -15,7 +15,7 @@
 from flask_sqlalchemy import SQLAlchemy as SQLAlchemyBase  # type: ignore
 from flask_sqlalchemy import DefaultMeta
 from flask_marshmallow import Marshmallow  # type: ignore
-from sqlalchemy import Index
+from sqlalchemy import Index, Column, Integer, func, DateTime
 from sqlalchemy.ext.declarative import declared_attr
 
 
@@ -29,25 +29,25 @@ class SQLAlchemy(SQLAlchemyBase):
 
 
 db = SQLAlchemy()
-ma = Marshmallow()
+ma = Marshmallow()  # pylint: disable=invalid-name
 
 
 BaseModel: DefaultMeta = db.Model
 
 class MainBase(BaseModel):
-    # N.B. We leave the schema out on purpose as alembic gets confused otherwise.
-    # The default schema is already main (as specified in the connection string).
-    # Also see:
+    # N.B. We leave the schema out on purpose as alembic gets confused
+    # otherwise. The default schema is already main (as specified in the
+    # connection string). Also see:
     # https://github.com/sqlalchemy/alembic/issues/519#issuecomment-442533633
     # __table_args__ = {'schema': 'main'}
     __abstract__ = True
 
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
-    date_modified = db.Column(
-        db.DateTime,
-        default=db.func.current_timestamp(),
-        onupdate=db.func.current_timestamp(),
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    date_created = Column(DateTime, default=func.current_timestamp())
+    date_modified = Column(
+        DateTime,
+        default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
     )
 
 
@@ -55,20 +55,24 @@ class NvdBase(BaseModel):
     __abstract__ = True
 
     @declared_attr
-    def __table_args__(cls):
-        indices = ()
+    def __table_args__(cls):  # pylint: disable=no-self-argument
+        indices = []
         idx_format = "idx_{tbl_name}_{col_name}"
         for key in cls.__dict__:
             attribute = cls.__dict__[key]
+            # pylint: disable=no-member
             if not isinstance(attribute, db.Column) or not attribute.index:
                 continue
+            # pylint: enable=no-member
+
             # Disable Index
             attribute.index = None
             # Create a custom index here.
-            indices += (Index(
+            indices.append(Index(
                 idx_format.format(tbl_name=cls.__tablename__, col_name=key),
-                key), )
-        return indices + ({"schema": "cve"}, )
+                key))
+        indices.append({"schema": "cve"})
+        return tuple(indices)
 
 
 class CweBase(BaseModel):

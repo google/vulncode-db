@@ -36,7 +36,7 @@ def update_google_token(token):
 
 
 oauth = OAuth()  # pylint: disable=invalid-name
-oauth.register(name='google',
+oauth.register(name='google',  # nosec
                api_base_url='https://www.googleapis.com/',
                access_token_url='https://accounts.google.com/o/oauth2/token',
                authorize_url='https://accounts.google.com/o/oauth2/auth',
@@ -166,7 +166,7 @@ def login_required(do_redirect=False):
     return decorator
 
 
-def admin_required(redirect=False):
+def admin_required(do_redirect=False):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -176,13 +176,12 @@ def admin_required(redirect=False):
                         "Admin access was granted without login for local dev "
                         "environment.",
                         "success")
-                elif redirect:
+                elif do_redirect:
                     session["redirect_path"] = request.full_path
                     return oauth.google.authorize_redirect(
                         redirect_uri=url_for("auth.authorized",
                                              _external=True))
-                else:
-                    return abort(401)
+                return abort(401)
             return func(*args, **kwargs)
 
         return wrapper

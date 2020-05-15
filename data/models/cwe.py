@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from sqlalchemy import Column, Text, String
+
 from data.models.base import CweBase
 from data.utils import populate_models
-from sqlalchemy import Column, Text, String
 
 
 class CweData(CweBase):

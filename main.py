@@ -20,15 +20,19 @@ from logging.handlers import RotatingFileHandler
 
 import alembic.script
 import alembic.runtime.environment
+
 from lib.utils import manually_read_app_config
 
 if "MYSQL_CONNECTION_NAME" not in os.environ:
     print("[~] Executed outside AppEngine context. Manually loading config.")
     manually_read_app_config()
 
+# pylint: disable=wrong-import-position
 import cfg
 from data.database import DEFAULT_DATABASE
-from lib.app_factory import create_app
+from lib.app_factory import create_app  # pylint: disable=ungrouped-imports
+# pylint: enable=wrong-import-position
+
 
 app = create_app()
 db = DEFAULT_DATABASE.db
@@ -47,10 +51,10 @@ def check_db_state():
                                 for rev in script.get_all_current(rev))
             if db_revs ^ head_revs:
                 config.print_stdout(
-                    ("Current revision(s) for %s %s do not match the heads %s!\n"
-                     "Run ./docker/docker-admin.sh upgrade\n"
-                     "(Outside of docker you can directly run: ./manage.sh db upgrade)"
-                     ),
+                    "Current revision(s) for %s %s do not match the heads %s!\n"
+                    "Run ./docker/docker-admin.sh upgrade\n"
+                    "(Outside of docker you can directly run: ./manage.sh db"
+                    " upgrade)",
                     alembic.util.obfuscate_url_pw(
                         context.connection.engine.url),
                     tuple(db_revs),
@@ -76,13 +80,14 @@ def main():
     handler.setLevel(logging.WARNING)
 
     # app.logger = logging.getLogger('tdm')
-    app.logger.addHandler(handler)
-    app.logger.addHandler(logging.StreamHandler(stream=sys.stdout))
+    logger: logging.Logger = app.logger
+    logger.addHandler(handler)
+    logger.addHandler(logging.StreamHandler(stream=sys.stdout))
     if cfg.DEBUG:
-        app.logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
         logging.getLogger("root").setLevel(logging.DEBUG)
     else:
-        app.logger.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
 
     # cert_dir = os.path.join(root_dir, 'cert')
     # cert_file = os.path.join(cert_dir, 'cert.pem')
