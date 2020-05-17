@@ -7,7 +7,7 @@
 
 {% block main_content %}
   <script>
-    const EDITOR_SETTINGS = {{ vulnerability_details.getSettings()|tojson }};
+    const EDITOR_SETTINGS = {{ vulnerability_details.get_settings()|tojson }};
     window.EDITOR_SETTINGS = EDITOR_SETTINGS;
   </script>
 

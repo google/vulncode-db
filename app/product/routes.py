@@ -12,15 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
 from flask import (Blueprint, render_template)
 from sqlakeyset import get_page  # type: ignore
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import joinedload, Load
 
-from app.vulnerability.views.vulncode_db import VulnViewTypesetPaginationObjectWrapper
-from data.models.nvd import default_nvd_view_options, Cpe
-from data.database import DEFAULT_DATABASE, Vulnerability, Nvd
+from app.vulnerability.views.vulncode_db import (
+    VulnViewTypesetPaginationObjectWrapper,
+)
+from data.models.nvd import default_nvd_view_options, Cpe, Nvd
+from data.models.vulnerability import Vulnerability
+from data.database import DEFAULT_DATABASE
 from lib.utils import parse_pagination_param
 
 bp = Blueprint("product", __name__, url_prefix="/product")
@@ -57,8 +59,10 @@ def get_entries_commits(full_base_query):
     :param full_base_query:
     :return:
     """
+    # pylint: disable=no-member
     entries_commits = full_base_query.options(Load(Vulnerability).defer('*'))
     entries_commits = entries_commits.options(Load(Nvd).defer('*'))
+    # pylint: enable=no-member
     entries_commits = entries_commits.options(joinedload(
         Vulnerability.commits))
     entries_subset = entries_commits.all()

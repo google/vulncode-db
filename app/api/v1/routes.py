@@ -22,16 +22,15 @@ bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
 
 
 @bp.app_errorhandler(404)
-def api_404(e=None):
+def api_404(ex=None):
     """Return a 404 in JSON format."""
     if request.path.startswith('/api'):
         return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
-    else:
-        return e
+    return ex
 
 
 @bp.app_errorhandler(500)
-def api_500(e=None):
+def api_500(ex=None):
     """Return a 500 in JSON format."""
     if request.path.startswith('/api'):
         return make_response(
@@ -39,8 +38,7 @@ def api_500(e=None):
                 'error': 'Internal server error',
                 'code': 500
             }), 500)
-    else:
-        return e
+    return ex
 
 
 @bp.route("/product/<vendor_id>/<product_id>")

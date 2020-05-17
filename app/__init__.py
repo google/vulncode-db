@@ -15,7 +15,7 @@
 from flask import flash, redirect, url_for
 
 
-def flashError(text, redirect_target=None):
+def flash_error(text, redirect_target=None):
     flash(text, "danger")
     if redirect_target:
         return redirect(url_for(redirect_target))

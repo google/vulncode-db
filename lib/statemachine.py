@@ -56,6 +56,7 @@ def transition(from_state, to_state):
 class NoTransition(Exception):
     """Raised if this transition was not defined."""
     def __init__(self, from_state, to_state):
+        super().__init__()
         self.from_state = from_state
         self.to_state = to_state
 
@@ -66,13 +67,15 @@ class NoTransition(Exception):
 class TransitionDenied(Exception):
     """Raised if this transition was denied by a transition handler."""
     def __init__(self, name, from_state, to_state, why):
+        super().__init__()
         self.name = name
         self.from_state = from_state
         self.to_state = to_state
         self.why = why
 
     def __str__(self):
-        return f'Transition {self.from_state} -> {self.to_state} denied by {self.name}: {self.why}'
+        return f'Transition {self.from_state} -> {self.to_state} ' + \
+               f'denied by {self.name}: {self.why}'
 
 
 class StateMachineMeta(enum.EnumMeta):
@@ -103,13 +106,12 @@ class StateMachineMeta(enum.EnumMeta):
                     remove.add(name)
                 if hasattr(value, '_on_transition'):
                     transitions = value._on_transition
-                    for transition in transitions:
-                        current, next = transition
+                    for (current, next_state) in transitions:
                         if isinstance(current, enum.Enum):
                             current = current.value
-                        if isinstance(next, enum.Enum):
-                            next = next.value
-                        change_listeners[(current, next)].append(value)
+                        if isinstance(next_state, enum.Enum):
+                            next_state = next_state.value
+                        change_listeners[(current, next_state)].append(value)
                     remove.add(name)
             for name in remove:
                 del classdict[name]
@@ -224,7 +226,7 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
     """
     @staticmethod
     def __new_member__(enumcls, value):
-        if type(value) is not int:
+        if type(value) is not int:  # pylint: disable=unidiomatic-typecheck
             raise TypeError(f'Values of {enumcls.__name__} must be ints')
         obj = object.__new__(enumcls)
         obj.__init__ = lambda self: None

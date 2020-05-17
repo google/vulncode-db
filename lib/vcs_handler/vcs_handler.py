@@ -17,14 +17,14 @@ PATH_PLACEHOLDER = "--PATH_PLACE--"
 VULN_ID_PLACEHOLDER = "--ID_PLACE--"
 
 
-class CommitStats(object):
+class CommitStats:
     def __init__(self, additions, deletions, total):
         self.additions = additions
         self.deletions = deletions
         self.total = total
 
 
-class CommitFilesMetadata(object):
+class CommitFilesMetadata:
     def __init__(self, path, status, additions, deletions):
         self.path = path
         self.status = status
@@ -32,7 +32,7 @@ class CommitFilesMetadata(object):
         self.deletions = deletions
 
 
-class CommitMetadata(object):
+class CommitMetadata:
     def __init__(self, parent_commit_hash, date, message, stats,
                  files_metadata):
         self.parent_commit_hash = parent_commit_hash
@@ -42,7 +42,7 @@ class CommitMetadata(object):
         self.files_metadata = files_metadata
 
 
-class VcsHandler(object):
+class VcsHandler:
     def __init__(self, app, resource_url):
         self.app = app
         self.resource_url = resource_url
@@ -54,32 +54,33 @@ class VcsHandler(object):
         self.repo_name = None
         self.repo_url = None
 
-    def _logError(self, error, *args, **kwargs):
+    def _log_error(self, error, *args, **kwargs):
         if self.app:
             return self.app.logger.error(error, *args, **kwargs)
 
-    def getFileContent(self, item_hash, item_path=None):
+    def get_file_content(self, item_hash, item_path=None):
         pass
 
-    def fetchCommitData(self, commit_hash):
+    def fetch_commit_data(self, commit_hash):
         pass
 
-    def parseResourceURL(self, commit_link):
+    def parse_resource_url(self, resource_url):
         pass
 
-    def getFileProviderUrl(self):
+    def get_file_provider_url(self):
         pass
 
-    def getRefFileProviderUrl(self):
+    def get_ref_file_provider_url(self):
         pass
 
-    def getFileUrl(self):
+    def get_file_url(self):
         pass
 
-    def getTreeUrl(self):
+    def get_tree_url(self):
         pass
 
-    def _CreateData(self, git_tree, patched_files, commit_metadata):
+    @staticmethod
+    def _create_data(git_tree, patched_files, commit_metadata):
         files = []
 
         commit_data = {

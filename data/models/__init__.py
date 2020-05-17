@@ -13,8 +13,21 @@
 # limitations under the License.
 
 from data.utils import populate_models
-from data.models.user import *
-from data.models.vulnerability import *
-from data.models.nvd import *
+from data.models.user import (
+    User,
+)
+from data.models.vulnerability import (
+    RepositoryFileComments,
+    RepositoryFileMarkers,
+    RepositoryFiles,
+    RepositoryFilesSchema,
+    Vulnerability,
+    VulnerabilityGitCommits,
+)
+from data.models.nvd import (
+    Cpe,
+    Description,
+    Nvd,
+)
 
 __all__ = populate_models(__name__)

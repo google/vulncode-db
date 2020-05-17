@@ -24,6 +24,13 @@ from lib.vcs_handler.vcs_handler import (
 from app.exceptions import InvalidIdentifierException
 
 
+__all__ = [
+    'VULN_ID_PLACEHOLDER',
+    'HASH_PLACEHOLDER',
+    'PATH_PLACEHOLDER',
+]
+
+
 def get_inheritor_clases(klass):
     """
     Returns a list of all defined and valid vcs handlers.
@@ -62,11 +69,15 @@ def get_vcs_handler(app, resource_url):
         try:
             new_handler = vcs_handler(app, resource_url)
             logging.debug(
-                f"Parsing {resource_url} with {vcs_handler.__name__} succeeded"
+                "Parsing %s with %s succeeded",
+                resource_url,
+                vcs_handler.__name__,
             )
-        except InvalidIdentifierException as e:
+        except InvalidIdentifierException as ex:
             logging.debug(
-                f"Parsing {resource_url} with {vcs_handler.__name__} failed: {e}"
+                "Parsing %s with %s failed: %s",
+                resource_url,
+                vcs_handler.__name__,
+                ex
             )
-            pass
     return new_handler

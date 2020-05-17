@@ -96,14 +96,14 @@ def main_api():
     # try:
     # Return a specific file's content if requested instead.
     if item_hash:
-        content = vcs_handler.getFileContent(item_hash, item_path)
+        content = vcs_handler.get_file_content(item_hash, item_path)
         if not content:
             err = f"Could not retrieve object with hash {item_hash}."
             logging.error(err)
             return create_json_response(str(err), 400)
         logging.info(f"Retrieved {item_hash}: {len(content)} bytes")
         return content
-    return vcs_handler.fetchCommitData(commit_hash)
+    return vcs_handler.fetch_commit_data(commit_hash)
     # except Exception as err:
     #  if DEBUG:
     #    return create_json_response(str(err), 400, tb=traceback.format_exc())

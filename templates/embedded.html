@@ -63,7 +63,7 @@
 
 <script>
   const EMBED_SETTINGS = {{ embed_settings|tojson }};
-  const EDITOR_SETTINGS = {{ vulnerability_details.getSettings()|tojson }};
+  const EDITOR_SETTINGS = {{ vulnerability_details.get_settings()|tojson }};
   window.EDITOR_SETTINGS = EDITOR_SETTINGS;
 </script>
 <script src="{{ url_for('frontend.serve_static', path='js/embed_internal.js') }}" type="module"></script>

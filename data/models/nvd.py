@@ -14,15 +14,16 @@
 
 import re
 
+from sqlalchemy import Column, String, ForeignKey, Index, TIMESTAMP
+from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy.orm import relationship, joinedload
+
 import cfg
-from . import nvd_template
+from data.models import nvd_template
 from data.models.vulnerability import Vulnerability
 from data.models.cwe import CweData
 from data.models.base import NvdBase
 from data.utils import populate_models
-from sqlalchemy import Column, String, ForeignKey, Index, TIMESTAMP
-from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.orm import relationship, joinedload
 
 
 class Affect(nvd_template.Affect, NvdBase):
@@ -289,10 +290,10 @@ class Nvd(nvd_template.NvdJson, NvdBase):
     published_date = Column(TIMESTAMP, index=True)
 
     def get_products(self):
-        return sorted(set([(cpe.vendor, cpe.product) for cpe in self.cpes]))
+        return sorted({(cpe.vendor, cpe.product) for cpe in self.cpes})
 
     def get_languages(self):
-        return sorted(set([cpe.language for cpe in self.cpes]))
+        return sorted({cpe.language for cpe in self.cpes})
 
     def get_links(self):
         return [ref.link for ref in self.references]
@@ -389,6 +390,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
 
 Index("idx_nvd_jsons_cveid", Nvd.cve_id)
 
+# pylint: disable=invalid-name
 load_only_cpe_product = joinedload(Nvd.cpes).load_only(Cpe.vendor, Cpe.product)
 load_only_cwe_subset = joinedload(Nvd.cwes).load_only(Cwe.cwe_id)
 load_only_cwe_subset = load_only_cwe_subset.joinedload(Cwe.cwe_data).load_only(
@@ -402,6 +404,7 @@ default_nvd_view_options = [
     load_only_base_score,
     load_only_description_value,
 ]
+# pylint: enable=invalid-name
 
 # must be set after all definitions
 __all__ = populate_models(__name__)
