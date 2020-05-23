@@ -35,9 +35,7 @@ class User(MainBase):
     def to_json(self):
         """Serialize object properties as dict."""
         # TODO: Refactor how we will surface this.
-        return {
-            'username': 'anonymous'
-        }
+        return {'username': 'anonymous'}
 
 
 # must be set after all definitions
