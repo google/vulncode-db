@@ -45,7 +45,6 @@ from lib.vcs_handler.vcs_handler import (
 
 from app.exceptions import InvalidIdentifierException
 
-
 REPO_PATH = "vulnerable_code/"
 
 # [SCHEMA]://[HOST]/[PATH].git#[COMMIT_HASH]
@@ -108,8 +107,7 @@ class GitRepoHandler(VcsHandler):
         if not matches:
             raise InvalidIdentifierException(
                 "Please provide a valid "
-                "([SCHEMA]://[HOST]/[PATH].git#[COMMIT_HASH]) Git Repo link."
-            )
+                "([SCHEMA]://[HOST]/[PATH].git#[COMMIT_HASH]) Git Repo link.")
         self.repo_name = matches.group("name")
         self.repo_name = os.path.basename(self.repo_name)
         self.repo_url = matches.group("url")
@@ -152,10 +150,8 @@ class GitRepoHandler(VcsHandler):
         )
         repo_path = os.path.normpath(repo_path)
         if not repo_path.startswith(REPO_PATH + repo_hostname):
-            self._log_error(
-                "Invalid path: %s + %s => %s",
-                self.repo_url, self.repo_name, repo_path
-            )
+            self._log_error("Invalid path: %s + %s => %s", self.repo_url,
+                            self.repo_name, repo_path)
             raise Exception("Can't clone repo. Invalid repository.")
 
         if not os.path.isdir(repo_path):
@@ -248,15 +244,13 @@ class GitRepoHandler(VcsHandler):
         if commit_hash not in self.repo:
             self._log_error(
                 f"Can't find commit_hash {commit_hash} in given repo. "
-                "Fetching updates and retry."
-            )
+                "Fetching updates and retry.")
             self._fetch_remote()
 
         if commit_hash not in self.repo:
             self._log_error(
                 f"Can't find commit_hash {commit_hash} in given repo. "
-                "Cancelling request."
-            )
+                "Cancelling request.")
             raise Exception("Can't find commit_hash in given repo.")
 
         commit = self.repo[commit_hash]
@@ -309,7 +303,8 @@ class GitRepoHandler(VcsHandler):
 
         # Fetch by item path and target environment.
         if item_path:
-            git_tree = _file_list_dulwich(self.repo, self.repo[item_hash], True)
+            git_tree = _file_list_dulwich(self.repo, self.repo[item_hash],
+                                          True)
             for file in git_tree:
                 if file.path == item_path:
                     target_sha = file.sha

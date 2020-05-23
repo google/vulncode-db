@@ -11,22 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from data.utils import populate_models
-from data.models.user import (
-    User, )
-from data.models.vulnerability import (
-    RepositoryFileComments,
-    RepositoryFileMarkers,
-    RepositoryFiles,
-    RepositoryFilesSchema,
-    Vulnerability,
-    VulnerabilityGitCommits,
-)
-from data.models.nvd import (
-    Cpe,
-    Description,
-    Nvd,
-)
-
-__all__ = populate_models(__name__)

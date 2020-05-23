@@ -36,13 +36,14 @@ def update_google_token(token):
 
 
 oauth = OAuth()  # pylint: disable=invalid-name
-oauth.register(name='google',  # nosec
-               api_base_url='https://www.googleapis.com/',
-               access_token_url='https://accounts.google.com/o/oauth2/token',
-               authorize_url='https://accounts.google.com/o/oauth2/auth',
-               fetch_token=fetch_google_token,
-               update_token=update_google_token,
-               client_kwargs={'scope': 'email profile'})
+oauth.register(
+    name='google',  # nosec
+    api_base_url='https://www.googleapis.com/',
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    fetch_token=fetch_google_token,
+    update_token=update_google_token,
+    client_kwargs={'scope': 'email profile'})
 
 
 @bp.route("/login", methods=["GET"])
@@ -174,8 +175,7 @@ def admin_required(do_redirect=False):
                 if current_app.config["IS_LOCAL"]:
                     flash(
                         "Admin access was granted without login for local dev "
-                        "environment.",
-                        "success")
+                        "environment.", "success")
                 elif do_redirect:
                     session["redirect_path"] = request.full_path
                     return oauth.google.authorize_redirect(

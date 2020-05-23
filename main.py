@@ -33,7 +33,6 @@ from data.database import DEFAULT_DATABASE
 from lib.app_factory import create_app  # pylint: disable=ungrouped-imports
 # pylint: enable=wrong-import-position
 
-
 app = create_app()
 db = DEFAULT_DATABASE.db
 

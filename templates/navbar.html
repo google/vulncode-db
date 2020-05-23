@@ -21,6 +21,11 @@
             {% endif %}
             <span class="navbar-brand">{{ g.user.full_name }}</span>
           </li>
+          {% if is_admin() %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('review.list') }}">Review</a>
+          </li>
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('profile.view_proposals') }}">Proposals</a>
           </li>

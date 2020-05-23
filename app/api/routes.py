@@ -26,7 +26,6 @@ from data.models import (
 )
 from lib.utils import create_json_response
 
-
 bp = Blueprint("api", __name__, url_prefix="/api")
 db = DEFAULT_DATABASE.db
 
@@ -38,10 +37,8 @@ def calculate_revision_updates(wrapper, old, new, attrs):
     new_keys = frozenset(list(new_dict.keys()))
 
     intersection = old_keys & new_keys
-    current_app.logger.debug(
-        f"{len(old_keys)} old, {len(new_keys)} new, "
-        f"{len(intersection)} intersecting"
-    )
+    current_app.logger.debug(f"{len(old_keys)} old, {len(new_keys)} new, "
+                             f"{len(intersection)} intersecting")
 
     # archive removed comments
     for k in old_keys - new_keys:

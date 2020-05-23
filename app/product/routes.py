@@ -18,8 +18,7 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm import joinedload, Load
 
 from app.vulnerability.views.vulncode_db import (
-    VulnViewTypesetPaginationObjectWrapper,
-)
+    VulnViewTypesetPaginationObjectWrapper, )
 from data.models.nvd import default_nvd_view_options, Cpe, Nvd
 from data.models.vulnerability import Vulnerability
 from data.database import DEFAULT_DATABASE
@@ -93,7 +92,7 @@ def product_view(vendor: str = None, product: str = None):
     entries_commits = get_entries_commits(entries)
     repo_urls = get_unique_repo_urls(entries_commits)
 
-    return render_template("product_view.html",
+    return render_template("product/view.html",
                            vendor=vendor,
                            product=product,
                            product_vulns=product_vulns,

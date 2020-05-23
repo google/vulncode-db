@@ -32,6 +32,13 @@ class User(MainBase):
     def name(self):
         return self.email.split("@", 1)[0]
 
+    def to_json(self):
+        """Serialize object properties as dict."""
+        # TODO: Refactor how we will surface this.
+        return {
+            'username': 'anonymous'
+        }
+
 
 # must be set after all definitions
 __all__ = populate_models(__name__)

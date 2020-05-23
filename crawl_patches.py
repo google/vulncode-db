@@ -37,7 +37,6 @@ from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits, 
 from data.models.nvd import default_nvd_view_options
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
-
 sys.path.append("third_party/")
 pd.set_option("display.max_colwidth", -1)
 

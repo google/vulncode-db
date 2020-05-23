@@ -43,17 +43,17 @@ class ModelFieldList(FieldList):
 
 
 class CommitLinksForm(FlaskForm):
-    commit_link = StringField(
-        "Commit Link",
-        validators=[validators.DataRequired(),
-                    validators.URL()])
-    repo_name = StringField("Repository Name",
-                            validators=[validators.DataRequired()])
-
     repo_url = StringField(
         "Git Repo URL", validators=[validators.Optional(),
                                     validators.URL()])
     commit_hash = StringField("Commit Hash", validators=[])
+
+    commit_link = StringField(
+        "Main comit link",
+        validators=[validators.DataRequired(),
+                    validators.URL()])
+    repo_name = StringField("Repository Name",
+                            validators=[validators.DataRequired()])
 
     class Meta:
         csrf = False

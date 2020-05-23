@@ -26,4 +26,5 @@ pytest -vv \
   --cov=templates \
   --log-level=DEBUG \
   --color=yes \
+  -k "${TEST_FILTER}" \
   tests

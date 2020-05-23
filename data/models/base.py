@@ -31,8 +31,8 @@ class SQLAlchemy(SQLAlchemyBase):
 db = SQLAlchemy()
 ma = Marshmallow()  # pylint: disable=invalid-name
 
-
 BaseModel: DefaultMeta = db.Model
+
 
 class MainBase(BaseModel):
     # N.B. We leave the schema out on purpose as alembic gets confused
@@ -68,9 +68,10 @@ class NvdBase(BaseModel):
             # Disable Index
             attribute.index = None
             # Create a custom index here.
-            indices.append(Index(
-                idx_format.format(tbl_name=cls.__tablename__, col_name=key),
-                key))
+            indices.append(
+                Index(
+                    idx_format.format(tbl_name=cls.__tablename__,
+                                      col_name=key), key))
         indices.append({"schema": "cve"})
         return tuple(indices)
 

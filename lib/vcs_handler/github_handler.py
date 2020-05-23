@@ -69,8 +69,7 @@ class GithubHandler(VcsHandler):
             raise InvalidIdentifierException(
                 "Please provide a valid "
                 "(https://github.com/{owner}/{repo}/commit/{hash})"
-                " commit link."
-            )
+                " commit link.")
         self.repo_owner, self.repo_name, self.commit_hash = matches.groups()
         self.commit_link = resource_url
 

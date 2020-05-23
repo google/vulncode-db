@@ -122,18 +122,22 @@ function build_service() {
 }
 
 function format_code() {
-  USE_SERVICE=$1
   dock-comp run --rm utils './format.sh'
 }
 
 function lint_code() {
-  USE_SERVICE=$1
   dock-comp run --rm utils './lint.sh'
 }
 
 function run_tests() {
+  TEST_FILTER=""
   info "Starting tests."
-  dock-comp run --rm tests || exit 1
+  if [ "$#" -eq 1 ]
+  then
+    TEST_FILTER=$1
+    error "Filtering tests against: ${TEST_FILTER}"
+  fi
+  dock-comp run -e TEST_FILTER="${TEST_FILTER}" --rm tests  || exit 1
 }
 
 function run_production_tests() {
@@ -256,7 +260,7 @@ case "$1" in
     lint_code
     ;;
   test)
-    run_tests
+    run_tests $2
     ;;
   stop_testdb)
     stop_test_database
@@ -284,7 +288,7 @@ case "$1" in
 
   echo "Code maintenance and testing:"
   show_usage_string "format/lint" "Format/Lint the Python and JS code."
-  show_usage_string "test" "Execute the application tests."
+  show_usage_string "test ([expr])" "Execute the application tests (or filter accordingly)."
   show_usage_string "stop_testdb" "Stop the test database and remove any remaining test data."
 
   echo "--- Available services ---"

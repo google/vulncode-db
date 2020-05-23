@@ -2,7 +2,7 @@
 {% block main_content %}
 <div class="row">
     <div class="col-md-4 offset-md-4">
-        <h2 class="text-center">My proposals</h2>
+        <h2 class="text-center">Review</h2>
     </div>
 </div>
 <div class="row my-3">
@@ -10,13 +10,13 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">
-                    <p class="text-info d-inline"><b>Proposals</b></p>
+                    <p class="text-info d-inline"><b>Open proposals</b></p>
                 </h5>
                 {% from 'macros/generate_vuln_table.html' import display_vuln_table %}
                 {% from 'macros/pagination.html' import display_nvd_pagination %}
                 <div id="vulnEntries">
-                    {{ display_vuln_table(proposal_vulns.rows, 'proposal', '') }}
-                    {{ display_nvd_pagination(proposal_vulns, 'proposal', '') }}
+                    {{ display_vuln_table(review_vulns.rows, 'review', '') }}
+                    {{ display_nvd_pagination(review_vulns, 'review', '') }}
                 </div>
             </div>
         </div>

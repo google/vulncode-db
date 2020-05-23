@@ -20,7 +20,7 @@ from data.database import DEFAULT_DATABASE
 from flask_migrate import upgrade as alembic_upgrade
 from lib.app_factory import create_app
 from data.models.user import User
-from data.models.vulnerability import Vulnerability
+from data.models.vulnerability import Vulnerability, VulnerabilityState
 from data.models.vulnerability import VulnerabilityGitCommits
 from data.models.nvd import Cpe
 from data.models.nvd import Nvd
@@ -139,10 +139,22 @@ def _db(app):
         alembic_upgrade()
 
         # create data
+        session = db.session
+        users = [
+            User(
+                email='admin@vulncode-db.com',
+                full_name='Admin McAdmin',
+            ),
+            User(
+                email='user@vulncode-db.com',
+                full_name='User McUser',
+            )
+        ]
+        session.add_all(users)
+
         vuln_cves = list('CVE-1970-{}'.format(1000 + i) for i in range(10))
         new_cves = list('CVE-1970-{}'.format(2000 + i) for i in range(10))
         cves = vuln_cves + new_cves
-        session = db.session
 
         nvds = []
         for i, cve in enumerate(cves, 1):
@@ -181,6 +193,8 @@ def _db(app):
                 Vulnerability(
                     cve_id=cve,
                     date_created=datetime.date.today(),
+                    creator=users[1],
+                    state=VulnerabilityState.PUBLISHED,
                     comment='Vulnerability {} comment'.format(i),
                     commits=[
                         VulnerabilityGitCommits(
@@ -200,18 +214,6 @@ def _db(app):
                 comment='Vulnerability {} comment'.format(len(vuln_cves) + 1),
                 commits=[]))
         session.add_all(vulns)
-
-        users = [
-            User(
-                email='admin@vulncode-db.com',
-                full_name='Admin McAdmin',
-            ),
-            User(
-                email='user@vulncode-db.com',
-                full_name='User McUser',
-            )
-        ]
-        session.add_all(users)
 
         session.commit()
     return db

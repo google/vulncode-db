@@ -23,7 +23,6 @@ from lib.vcs_handler.vcs_handler import (
 )
 from app.exceptions import InvalidIdentifierException
 
-
 __all__ = [
     'VULN_ID_PLACEHOLDER',
     'HASH_PLACEHOLDER',
@@ -74,10 +73,6 @@ def get_vcs_handler(app, resource_url):
                 vcs_handler.__name__,
             )
         except InvalidIdentifierException as ex:
-            logging.debug(
-                "Parsing %s with %s failed: %s",
-                resource_url,
-                vcs_handler.__name__,
-                ex
-            )
+            logging.debug("Parsing %s with %s failed: %s", resource_url,
+                          vcs_handler.__name__, ex)
     return new_handler

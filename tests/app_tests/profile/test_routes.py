@@ -11,22 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pytest
 
-from data.utils import populate_models
-from data.models.user import (
-    User, )
-from data.models.vulnerability import (
-    RepositoryFileComments,
-    RepositoryFileMarkers,
-    RepositoryFiles,
-    RepositoryFilesSchema,
-    Vulnerability,
-    VulnerabilityGitCommits,
-)
-from data.models.nvd import (
-    Cpe,
-    Description,
-    Nvd,
-)
+from app.auth.routes import oauth
+from tests.conftest import as_user
+from tests.conftest import regular_user_info
 
-__all__ = populate_models(__name__)
+
+@pytest.mark.integration
+def test_show_proposals(client):
+    # TODO: Add proper tests here.
+    pass

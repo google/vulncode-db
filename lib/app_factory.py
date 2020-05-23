@@ -29,6 +29,7 @@ from app.product.routes import bp as product_bp
 from app.vcs_proxy.routes import bp as vcs_proxy_bp
 from app.vulnerability.routes import bp as vuln_bp
 from app.profile.routes import bp as profile_bp
+from app.review.routes import bp as review_bp
 import cfg
 from data.database import init_app as init_db
 
@@ -58,6 +59,7 @@ def register_custom_helpers(app):
         return url_for(request.endpoint, **dict(request.view_args, **args))
 
     app.jinja_env.globals['url_for_self'] = url_for_self
+    app.jinja_env.globals['is_admin'] = is_admin
 
 
 def register_route_checks(app):
@@ -112,3 +114,4 @@ def register_blueprints(app):
     app.register_blueprint(vcs_proxy_bp)
     app.register_blueprint(vuln_bp)
     app.register_blueprint(profile_bp)
+    app.register_blueprint(review_bp)
