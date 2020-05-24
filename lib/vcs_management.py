@@ -17,14 +17,14 @@ import logging
 from lib.vcs_handler import *
 from lib.vcs_handler.vcs_handler import (
     VcsHandler,
-    VULN_ID_PLACEHOLDER,
+    VCDB_ID_PLACEHOLDER,
     HASH_PLACEHOLDER,
     PATH_PLACEHOLDER,
 )
 from app.exceptions import InvalidIdentifierException
 
 __all__ = [
-    'VULN_ID_PLACEHOLDER',
+    'VCDB_ID_PLACEHOLDER',
     'HASH_PLACEHOLDER',
     'PATH_PLACEHOLDER',
 ]

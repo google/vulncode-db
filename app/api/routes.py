@@ -130,7 +130,7 @@ def update_file_markers(file_obj, new_markers):
 def bug_save_editor_data():
     try:
         vulnerability_details = VulnerabilityDetails()
-        vulnerability_details.validate()
+        vulnerability_details.validate_and_simplify_id()
     except InvalidIdentifierException as ex:
         return create_json_response(str(ex), 400)
     vuln_view = vulnerability_details.vulnerability_view

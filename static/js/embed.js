@@ -79,7 +79,7 @@ function appendIframe() {
   const vars = params.split('&');
   for (let i = 0; i < vars.length; i++) {
     const pair = vars[i].split('=');
-    if (decodeURIComponent(pair[0]) === 'vuln_id') {
+    if (decodeURIComponent(pair[0]) === 'vcdb_id') {
       embedUrl += pair[1] + '/embed?';
     } else {
       embedParams += pair[0] + '=' + pair[1] + '&';

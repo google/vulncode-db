@@ -32,6 +32,7 @@ from app.profile.routes import bp as profile_bp
 from app.review.routes import bp as review_bp
 import cfg
 from data.database import init_app as init_db
+from urllib.parse import urljoin, urlparse
 
 
 def create_app(test_config=None):
@@ -58,8 +59,13 @@ def register_custom_helpers(app):
     def url_for_self(**args):
         return url_for(request.endpoint, **dict(request.view_args, **args))
 
+    def url_for_no_querystring(endpoint, **args):
+        full_url = url_for(endpoint, **args)
+        return urljoin(full_url, urlparse(full_url).path)
+
     app.jinja_env.globals['url_for_self'] = url_for_self
     app.jinja_env.globals['is_admin'] = is_admin
+    app.jinja_env.globals['url_for_no_querystring'] = url_for_no_querystring
 
 
 def register_route_checks(app):

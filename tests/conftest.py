@@ -35,7 +35,7 @@ TEST_CONFIG = {
     'DEBUG': True,
     'SQLALCHEMY_DATABASE_URI': DOCKER_DB_URI,
     'SQLALCHEMY_ENGINE_OPTIONS': {
-        'echo': True,  # log queries
+        'echo': False,  # log queries
         # 'echo_pool': True,  # log connections
     },
     'APPLICATION_ADMINS': ['admin@vulncode-db.com'],
@@ -191,6 +191,7 @@ def _db(app):
             commit = '{:07x}'.format(0x1234567 + i)
             vulns.append(
                 Vulnerability(
+                    vcdb_id=i,
                     cve_id=cve,
                     date_created=datetime.date.today(),
                     creator=users[1],
@@ -209,6 +210,7 @@ def _db(app):
                     ]))
         vulns.append(
             Vulnerability(
+                vcdb_id=len(vulns) + 1,
                 cve_id='CVE-1970-1500',
                 date_created=datetime.date.today(),
                 comment='Vulnerability {} comment'.format(len(vuln_cves) + 1),

@@ -18,8 +18,10 @@ import time
 import sys
 from functools import wraps
 
-from flask import jsonify, request
+from flask import jsonify, request, redirect
 from sqlakeyset import unserialize_bookmark  # type: ignore
+from werkzeug.exceptions import HTTPException
+from werkzeug.routing import RoutingException
 
 TRACING_PATH = "traces/"
 TRACING_ACTIVE = False
@@ -161,3 +163,15 @@ def enable_tracing(enabled=True):
         TRACING_FILE_HANDLE.close()
         TRACING_FILE_HANDLE = None
         TRACING_ACTIVE = False
+
+
+class RequestRedirect(HTTPException, RoutingException):
+    """Used for redirection from within nested calls.
+    Note: We avoid using 308 to avoid permanent
+    """
+    def __init__(self, new_url):
+        RoutingException.__init__(self, new_url)
+        self.new_url = new_url
+
+    def get_response(self, environ):
+        return redirect(self.new_url)

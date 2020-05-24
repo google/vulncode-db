@@ -1,11 +1,12 @@
-{% from 'macros/generate_vuln_table.html' import display_vuln_table %}
+{% from 'macros/generate_vuln_table.html' import display_vuln_table, default_vuln_columns_full %}
 {% from 'macros/pagination.html' import display_vuln_pagination, display_nvd_pagination %}
 <div id="vulnEntries">
+  {% set columns = ['date', 'id', 'summary', 'products', 'score', 'patch'] %}
   Main entries <b>~{{vcdb.vcdb_pagination.total}} </b>:
-  {{ display_vuln_table(vcdb.vcdb_pagination.rows, 'vcdb', vcdb.keyword) }}
+  {{ display_vuln_table(vcdb.vcdb_pagination.rows, 'vcdb', default_vuln_columns_full ) }}
   {{ display_nvd_pagination(vcdb.vcdb_pagination, 'vcdb', vcdb.keyword) }}
   Remaining NVD entries (unprocessed / no code available): <b>~{{vcdb.nvd_pagination.total}} </b>:
-  {{ display_vuln_table(vcdb.nvd_pagination.rows, 'nvd', vcdb.keyword) }}
+  {{ display_vuln_table(vcdb.nvd_pagination.rows, 'nvd') }}
   {{ display_nvd_pagination(vcdb.nvd_pagination, 'nvd', vcdb.keyword) }}
 </div>
 

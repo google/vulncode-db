@@ -12,10 +12,12 @@
                 <h5 class="card-title">
                     <p class="text-info d-inline"><b>Proposals</b></p>
                 </h5>
+                {% set vuln_columns = ['date', 'id', 'summary', 'products', 'state'] %}
+
                 {% from 'macros/generate_vuln_table.html' import display_vuln_table %}
                 {% from 'macros/pagination.html' import display_nvd_pagination %}
                 <div id="vulnEntries">
-                    {{ display_vuln_table(proposal_vulns.rows, 'proposal', '') }}
+                    {{ display_vuln_table(proposal_vulns.rows, 'proposal', vuln_columns, 'vuln.vuln_review') }}
                     {{ display_nvd_pagination(proposal_vulns, 'proposal', '') }}
                 </div>
             </div>

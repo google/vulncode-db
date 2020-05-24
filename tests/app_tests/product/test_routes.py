@@ -29,7 +29,7 @@ def test_existing_product_without_vulns(client):
     assert b'Vendor 11' in resp.data
     assert b'Product 1' in resp.data
     assert b'No results found' not in resp.data
-    assert b'Annotated' not in resp.data
+    assert b'Annotated' in resp.data
 
 
 @pytest.mark.integration

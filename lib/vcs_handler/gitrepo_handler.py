@@ -35,7 +35,7 @@ except ImportError:
 
 from lib.vcs_handler.vcs_handler import (
     VcsHandler,
-    VULN_ID_PLACEHOLDER,
+    VCDB_ID_PLACEHOLDER,
     PATH_PLACEHOLDER,
     HASH_PLACEHOLDER,
     CommitStats,
@@ -170,7 +170,7 @@ class GitRepoHandler(VcsHandler):
         return url_for(
             "vuln.file_provider",
             item_hash=HASH_PLACEHOLDER,
-            vuln_id=VULN_ID_PLACEHOLDER,
+            vcdb_id=VCDB_ID_PLACEHOLDER,
         )
 
     def get_ref_file_provider_url(self):
@@ -178,7 +178,7 @@ class GitRepoHandler(VcsHandler):
             "vuln.file_provider",
             item_path=PATH_PLACEHOLDER,
             item_hash=HASH_PLACEHOLDER,
-            vuln_id=VULN_ID_PLACEHOLDER,
+            vcdb_id=VCDB_ID_PLACEHOLDER,
         )
 
     def get_file_url(self):

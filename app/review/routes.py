@@ -47,5 +47,4 @@ def list(vendor: str = None, profile: str = None):
     entries_full = entries.options(default_nvd_view_options)
     review_vulns = get_page(entries_full, per_page, page=bookmarked_page)
     review_vulns = VulnViewTypesetPaginationObjectWrapper(review_vulns.paging)
-    return render_template("review/review_list.html",
-                           review_vulns=review_vulns)
+    return render_template("review/list.html", review_vulns=review_vulns)

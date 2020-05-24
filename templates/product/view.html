@@ -35,11 +35,11 @@
                         </tr>
                     </table>
                 </div>
-
-                {% from 'macros/generate_vuln_table.html' import display_vuln_table %}
+                {% set columns = ['date', 'id', 'summary', 'products', 'score', 'patch', 'annotated'] %}
+                {% from 'macros/generate_vuln_table.html' import display_vuln_table, default_vuln_columns_full %}
                 {% from 'macros/pagination.html' import display_nvd_pagination %}
                 <div id="vulnEntries">
-                    {{ display_vuln_table(product_vulns.rows, 'product', '') }}
+                    {{ display_vuln_table(product_vulns.rows, 'product', default_vuln_columns_full) }}
                     {{ display_nvd_pagination(product_vulns, 'product', '') }}
                 </div>
 
