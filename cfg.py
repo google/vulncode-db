@@ -129,8 +129,10 @@ if IS_PROD or IS_QA:
     assert len(GOOGLE_CLIENT_SECRET) > 0
 
 # Emails (checked with OAuth) of admins who are allowed to make admin changes.
-APPLICATION_ADMINS = os.getenv("APPLICATION_ADMINS", "").replace(" ", "")
-APPLICATION_ADMINS: List[str] = APPLICATION_ADMINS.split(",")
+suggested_admins = os.getenv("APPLICATION_ADMINS", "").replace(" ", "")
+APPLICATION_ADMINS: List[str] = []
+if suggested_admins != '':
+    APPLICATION_ADMINS = suggested_admins.split(",")
 
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 

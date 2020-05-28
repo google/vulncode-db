@@ -15,7 +15,7 @@
 from functools import wraps
 
 from flask import (session, request, url_for, abort, redirect, Blueprint, g,
-                   current_app, flash)
+                   current_app, flash, render_template)
 from authlib.integrations.flask_client import OAuth  # type: ignore
 from authlib.common.errors import AuthlibBaseError  # type: ignore
 
@@ -50,6 +50,20 @@ oauth.register(
 def login():
     if is_authenticated():
         return redirect("/")
+
+    # Allow OAuth bypass on local dev environment.
+    as_user = request.args.get("as_user", None, type=str)
+    if current_app.config["IS_LOCAL"] and as_user != "OAuth":
+        if as_user in current_app.config["APPLICATION_ADMINS"]:
+            session["user_info"] = {
+               'email': as_user,
+               'name': 'Admin ' + as_user.split("@", 1)[0],
+               'picture': 'https://google.com/',
+            }
+            session['google_token'] = "1337"
+            flash("Bypassed OAuth on local dev environment.")
+            return redirect("/")
+        return render_template("local_login.html", users=current_app.config["APPLICATION_ADMINS"])
 
     return oauth.google.authorize_redirect(
         redirect_uri=url_for("auth.authorized", _external=True))
@@ -134,6 +148,10 @@ def is_authenticated():
 
     if 'google_token' not in session:
         return False
+
+    # Allow OAuth bypass on local dev environment.
+    if current_app.config["IS_LOCAL"] and session['google_token'] == '1337':
+        return True
 
     try:
         resp = oauth.google.get(

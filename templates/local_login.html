@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block main_content %}
+  <div class="row">
+    <div class="col-sm-8 offset-md-2">
+      <div class="card my-3">
+        <div class="card-body">
+          Please choose the admin for login (specified as APPLICATION_ADMINS in app.yaml):<br />
+          {% if users|length == 0 %}
+            <b>Please add APPLICATION_ADMINS to your app.yaml and restart the application.</b>
+          {% else %}
+            {% for user in users %}
+              - <a href="{{ url_for('auth.login', as_user=user) }}">{{user}}</a><br />
+            {% endfor %}<br />
+            - <a href="{{ url_for('auth.login', as_user='OAuth') }}">Normal OAuth</a> (make sure to set <b>OAUTH_CONSUMER_KEY</b> and <b>OAUTH_CONSUMER_SECRET</b> in app.yaml)<br />
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
