@@ -254,7 +254,7 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
                 except Exception:
                     raise TransitionDenied(trans.name, self.current_state,
                                            next_state, 'exception occured')
-                if res is not None:
+                if res is not None and res is not True:
                     raise TransitionDenied(trans.name, self.current_state,
                                            next_state, res)
             self._change_state(next_state)
