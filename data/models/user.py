@@ -22,11 +22,6 @@ class User(MainBase):
     email = Column(String(256), unique=True)
     full_name = Column(String(256))
     profile_picture = Column(String(256))
-    # TODO: Find a fix to import the relationship below. Otherwise, SQL will
-    #  complain when create_all is invoked due to problems resolving foreign
-    #  keys.
-    # vulns = relationship('Vulnerability')
-    # vulnerabilities = relationship('Vulnerability', back_populates='creator')
 
     @property
     def name(self):

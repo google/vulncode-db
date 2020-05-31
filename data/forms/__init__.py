@@ -95,6 +95,24 @@ class VulnerabilityDetailsForm(FlaskForm):
     submit = SubmitField("Propose change")
 
 
+class VulnerabilityProposalReject(FlaskForm):
+    review_feedback = TextAreaField("Feedback what should be changed",
+                                    validators=[validators.DataRequired()])
+    submit_reject = SubmitField("Reject proposal")
+
+
+class VulnerabilityProposalApprove(FlaskForm):
+    submit_approve = SubmitField("Approve proposal")
+
+
+class VulnerabilityProposalAssign(FlaskForm):
+    submit_assign = SubmitField("Take review")
+
+
+class VulnerabilityProposalPublish(FlaskForm):
+    submit_publish = SubmitField("Publish entry")
+
+
 class VulnerabilityDeleteForm(FlaskForm):
     delete_entry = IntegerField("Delete entry", [validators.required()])
     submit = SubmitField()

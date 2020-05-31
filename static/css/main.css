@@ -81,6 +81,13 @@ pre {
   box-sizing: border-box;
 }
 
+.navbar-btn {
+  margin: 0px !important;
+  padding: 0px !important;
+  text-transform: none !important;
+  font-size: 1rem !important;
+}
+
 #editor {
   width:100%;
   min-height:800px;

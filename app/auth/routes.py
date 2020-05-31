@@ -56,14 +56,15 @@ def login():
     if current_app.config["IS_LOCAL"] and as_user != "OAuth":
         if as_user in current_app.config["APPLICATION_ADMINS"]:
             session["user_info"] = {
-               'email': as_user,
-               'name': 'Admin ' + as_user.split("@", 1)[0],
-               'picture': 'https://google.com/',
+                'email': as_user,
+                'name': 'Admin ' + as_user.split("@", 1)[0],
+                'picture': 'https://google.com/',
             }
             session['google_token'] = "1337"
             flash("Bypassed OAuth on local dev environment.")
             return redirect("/")
-        return render_template("local_login.html", users=current_app.config["APPLICATION_ADMINS"])
+        return render_template("local_login.html",
+                               users=current_app.config["APPLICATION_ADMINS"])
 
     return oauth.google.authorize_redirect(
         redirect_uri=url_for("auth.authorized", _external=True))

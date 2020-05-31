@@ -196,6 +196,7 @@ def _db(app):
                     date_created=datetime.date.today(),
                     creator=users[1],
                     state=VulnerabilityState.PUBLISHED,
+                    version=0,
                     comment='Vulnerability {} comment'.format(i),
                     commits=[
                         VulnerabilityGitCommits(
@@ -210,6 +211,8 @@ def _db(app):
                     ]))
         vulns.append(
             Vulnerability(
+                state=VulnerabilityState.PUBLISHED,
+                version=0,
                 vcdb_id=len(vulns) + 1,
                 cve_id='CVE-1970-1500',
                 date_created=datetime.date.today(),

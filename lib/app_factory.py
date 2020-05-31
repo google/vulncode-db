@@ -33,6 +33,7 @@ from app.review.routes import bp as review_bp
 import cfg
 from data.database import init_app as init_db
 from urllib.parse import urljoin, urlparse
+from data.models import Vulnerability
 
 
 def create_app(test_config=None):
@@ -66,6 +67,7 @@ def register_custom_helpers(app):
     app.jinja_env.globals['url_for_self'] = url_for_self
     app.jinja_env.globals['is_admin'] = is_admin
     app.jinja_env.globals['url_for_no_querystring'] = url_for_no_querystring
+    app.jinja_env.globals['vuln_helper'] = Vulnerability
 
 
 def register_route_checks(app):
