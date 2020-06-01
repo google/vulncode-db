@@ -6,9 +6,7 @@ Flask==1.1.1
 Flask-Bootstrap==3.3.7.1
 flask-marshmallow==0.10.1
 Flask-Migrate>=2.2.1
-Authlib==0.13
-# Pin this until https://github.com/lepture/flask-oauthlib/pull/388 is released
-requests-oauthlib>=0.6.2,<1.2.0
+Authlib==0.14.3
 Flask-Script>=2.0.6
 Flask-SQLAlchemy>=2.4.0
 # Not in use due to a problem when matching against multiple fulltext columns with a joined table.

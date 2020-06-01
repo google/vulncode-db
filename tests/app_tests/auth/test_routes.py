@@ -33,7 +33,7 @@ def test_unauthenticated_users_get_redirected_to_oauth_consent_screen(
     resp = client.get('/auth/login')
     assert resp.status_code == 302
     assert resp.headers.get('Location').startswith(
-        'https://accounts.google.com/o/oauth2/auth')
+        'https://accounts.google.com/o/oauth2/v2/auth')
 
 
 def test_logout_clears_the_session(client_without_db):
