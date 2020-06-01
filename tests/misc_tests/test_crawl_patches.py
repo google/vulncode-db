@@ -14,11 +14,7 @@
 import pytest
 import os
 
-from crawl_patches import start_crawling
-
-
 @pytest.mark.integration
 def test_crawl_patches(client):
     # TODO: Add a rudimentary crawl_patches.py test here.
     pass
-    #start_crawling()
