@@ -15,18 +15,12 @@
 from data.utils import populate_models
 from data.models.user import (
     User, )
-from data.models.vulnerability import (
-    RepositoryFileComments,
-    RepositoryFileMarkers,
-    RepositoryFiles,
-    RepositoryFilesSchema,
-    Vulnerability,
-    VulnerabilityGitCommits,
-)
-from data.models.nvd import (
-    Cpe,
-    Description,
-    Nvd,
-)
+from data.models.vulnerability import (RepositoryFileComments,
+                                       RepositoryFileMarkers, RepositoryFiles,
+                                       RepositoryFilesSchema, Vulnerability,
+                                       VulnerabilityGitCommits,
+                                       VulnerabilityState, OpenSourceProducts)
+from data.models.nvd import (Cpe, Description, Nvd, Reference,
+                             default_nvd_view_options)
 
 __all__ = populate_models(__name__)

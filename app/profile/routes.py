@@ -34,33 +34,34 @@ db = DEFAULT_DATABASE
 @bp.route("/proposals")
 def view_proposals(vendor: str = None, profile: str = None):
     entries = db.session.query(Vulnerability, Nvd)
-    entries = entries.filter(
-        Vulnerability.creator == g.user,
-        Vulnerability.state != VulnerabilityState.PUBLISHED)
+    entries = entries.filter(Vulnerability.creator == g.user)
     entries = entries.outerjoin(Vulnerability,
                                 Nvd.cve_id == Vulnerability.cve_id)
     entries = entries.order_by(desc(Nvd.id))
 
     bookmarked_page = parse_pagination_param("proposal_p")
     per_page = 10
-    entries_non_archived = entries.filter(Vulnerability.state != VulnerabilityState.ARCHIVED)
-    entries_full = entries_non_archived.options(default_nvd_view_options)
+    entries_non_processed = entries.filter(~Vulnerability.state.in_(
+        [VulnerabilityState.ARCHIVED, VulnerabilityState.PUBLISHED]))
+    entries_full = entries_non_processed.options(default_nvd_view_options)
     proposal_vulns = get_page(entries_full, per_page, page=bookmarked_page)
     proposal_vulns = VulnViewTypesetPaginationObjectWrapper(
         proposal_vulns.paging)
 
-    entries_archived = entries.filter(
-        Vulnerability.state == VulnerabilityState.ARCHIVED)
-    bookmarked_page_archived = parse_pagination_param("proposal_archived_p")
-    entries_archived_full = entries_archived.options(default_nvd_view_options)
-    proposal_vulns_archived = get_page(entries_archived_full,
-                                       per_page,
-                                       page=bookmarked_page_archived)
-    proposal_vulns_archived = VulnViewTypesetPaginationObjectWrapper(
-        proposal_vulns_archived.paging)
+    entries_processed = entries.filter(
+        Vulnerability.state.in_(
+            [VulnerabilityState.ARCHIVED, VulnerabilityState.PUBLISHED]))
+    bookmarked_page_processed = parse_pagination_param("proposal_processed_p")
+    entries_processed_full = entries_processed.options(
+        default_nvd_view_options)
+    proposal_vulns_processed = get_page(entries_processed_full,
+                                        per_page,
+                                        page=bookmarked_page_processed)
+    proposal_vulns_processed = VulnViewTypesetPaginationObjectWrapper(
+        proposal_vulns_processed.paging)
 
     return render_template(
         "profile/proposals_view.html",
         proposal_vulns=proposal_vulns,
-        proposal_vulns_archived=proposal_vulns_archived,
+        proposal_vulns_processed=proposal_vulns_processed,
     )

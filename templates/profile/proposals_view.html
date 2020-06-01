@@ -21,12 +21,12 @@
                 </div>
 
                 <h5 class="card-title">
-                    <p class="text-info d-inline"><b>Archived proposals</b></p>
+                    <p class="text-info d-inline"><b>Processed proposals</b></p>
                 </h5>
                 {% set vuln_columns = ['date', 'id', 'summary', 'products', 'state'] %}
                 <div>
-                    {{ display_vuln_table(proposal_vulns_archived.rows, 'proposal_archived', vuln_columns, 'vuln.vuln_review') }}
-                    {{ display_nvd_pagination(proposal_vulns_archived, 'proposal_archived', '') }}
+                    {{ display_vuln_table(proposal_vulns_processed.rows, 'proposal_processed', vuln_columns, 'vuln.vuln_review') }}
+                    {{ display_nvd_pagination(proposal_vulns_processed, 'proposal_processed', '') }}
                 </div>
             </div>
         </div>

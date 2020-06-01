@@ -33,8 +33,8 @@ from pygments.lexers import SqlLexer
 
 from lib.vcs_management import get_vcs_handler
 from lib.utils import measure_execution_time
-from data.models import Nvd, Reference, Vulnerability, VulnerabilityGitCommits, Cpe, OpenSourceProducts
-from data.models.nvd import default_nvd_view_options
+from data.models import Nvd, Vulnerability, VulnerabilityGitCommits, Cpe, OpenSourceProducts, Reference, \
+    VulnerabilityState
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
 sys.path.append("third_party/")
@@ -130,11 +130,11 @@ def create_vcdb_entry(cve_id, commit_link=None):
         )
         vuln_commits.append(vuln_commit)
 
-    vulnerability = Vulnerability(
-        cve_id=cve_id,
-        commits=vuln_commits,
-        comment="",
-    )
+    vulnerability = Vulnerability(cve_id=cve_id,
+                                  commits=vuln_commits,
+                                  comment="",
+                                  version=0,
+                                  state=VulnerabilityState.PUBLISHED)
     return vulnerability
 
 

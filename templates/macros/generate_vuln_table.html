@@ -12,7 +12,21 @@
   {% endif %}
 
   {% if column == "state" %}
-    {{ vuln_view.state.name }}
+    {% if vuln_view.state.name == 'NEW' %}
+      <span class="badge badge-primary">New</span>
+    {% elif vuln_view.state.name == 'READY' %}
+      <span class="badge badge-warning">Ready</span>
+    {% elif vuln_view.state.name == 'IN_REVIEW' %}
+      <span class="badge badge-info">Being reviewed</span>
+    {% elif vuln_view.state.name == 'REVIEWED' %}
+      <span class="badge badge-success">Reviewed</span>
+    {% elif vuln_view.state.name == 'PUBLISHED' %}
+      <span class="badge badge-light">Published</span>
+    {% elif vuln_view.state.name == 'ARCHIVED' %}
+      <span class="badge badge-dark">Archived</span>
+    {% else %}
+      Unknown
+    {% endif %}
   {% endif %}
 
   {% if column == "creator" %}

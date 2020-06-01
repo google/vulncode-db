@@ -30,9 +30,20 @@
             <a class="nav-link" href="{{ url_for('review.list') }}">
               <button type="button" class="btn btn-dark navbar-btn">
                 Review
-                {% set num_review_required = vuln_helper.get_num_review_required() %}
-                {% if num_review_required > 0 %}
-                  <span class="badge badge-danger">{{ num_review_required }}</span>
+
+                {% set num_publishing_pending = vuln_helper.get_num_proposals_publishing_pending() %}
+                {% if num_publishing_pending > 0 %}
+                  <span class="badge badge-success">{{ num_publishing_pending }}</span>
+                {% endif %}
+
+                {% set num_unassigned = vuln_helper.get_num_proposals_unassigned() %}
+                {% if num_unassigned > 0 %}
+                  <span class="badge badge-warning">{{ num_unassigned }}</span>
+                {% endif %}
+
+                {% set num_assigned = vuln_helper.get_num_proposals_assigned() %}
+                {% if num_assigned > 0 %}
+                  <span class="badge badge-info">{{ num_assigned }}</span>
                 {% endif %}
               </button>
             </a>
@@ -45,6 +56,11 @@
                 {% set num_proposals_action_required = vuln_helper.get_num_proposals_action_required(g.user) %}
                 {% if num_proposals_action_required > 0 %}
                   <span class="badge badge-danger">{{ num_proposals_action_required }}</span>
+                {% endif %}
+
+                {% set num_proposals_pending = vuln_helper.get_num_proposals_pending(g.user) %}
+                {% if num_proposals_pending > 0 %}
+                <span class="badge badge-warning">{{ num_proposals_pending }}</span>
                 {% endif %}
               </button>
             </a>

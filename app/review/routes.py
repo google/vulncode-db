@@ -11,10 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from enum import Enum
 
 from flask import (Blueprint, render_template, g)
 from sqlakeyset import get_page
-from sqlalchemy import desc
+from sqlakeyset.results import s as sqlakeysetserial
+
+from sqlalchemy import desc, asc, case
 
 from app.auth.routes import admin_required
 from app.vulnerability.views.vulncode_db import (
@@ -31,6 +34,20 @@ bp = Blueprint("review", __name__, url_prefix="/review")
 db = DEFAULT_DATABASE
 
 
+def serialize_enum(val):
+    return 's', val.name
+
+
+def unserialize_enum(val):
+    return val
+
+
+sqlakeysetserial.custom_serializations = {VulnerabilityState: serialize_enum}
+sqlakeysetserial.custom_unserializations = {
+    VulnerabilityState: unserialize_enum
+}
+
+
 # Create a catch all route for profile identifiers.
 @bp.route("/list")
 @admin_required()
@@ -40,7 +57,7 @@ def list(vendor: str = None, profile: str = None):
         Vulnerability.state != VulnerabilityState.PUBLISHED)
     entries = entries.outerjoin(Vulnerability,
                                 Nvd.cve_id == Vulnerability.cve_id)
-    entries = entries.order_by(desc(Nvd.id))
+    entries = entries.order_by(asc(Vulnerability.state), desc(Nvd.id))
 
     bookmarked_page = parse_pagination_param("review_p")
     per_page = 10
