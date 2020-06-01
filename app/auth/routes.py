@@ -16,8 +16,7 @@ from functools import wraps
 
 from flask import (session, request, url_for, abort, redirect, Blueprint, g,
                    current_app, flash, render_template)
-from authlib.integrations.flask_client import OAuth  # type: ignore
-from authlib.common.errors import AuthlibBaseError  # type: ignore
+from authlib.integrations.flask_client import OAuth, OAuthError  # type: ignore
 
 from data.database import DEFAULT_DATABASE
 from data.models import User
@@ -39,11 +38,10 @@ oauth = OAuth()  # pylint: disable=invalid-name
 oauth.register(
     name='google',  # nosec
     api_base_url='https://www.googleapis.com/',
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     fetch_token=fetch_google_token,
     update_token=update_google_token,
-    client_kwargs={'scope': 'email profile'})
+    client_kwargs={'scope': 'openid email profile'})
 
 
 @bp.route("/login", methods=["GET"])
@@ -78,24 +76,15 @@ def logout():
 
 @bp.route("/authorized")
 def authorized():
-    oauth.google.authorize_access_token()
-    try:
-        resp = oauth.google.get(
-            'https://www.googleapis.com/oauth2/v3/userinfo')
-        data = resp.json()
-    except AuthlibBaseError as ex:
-        current_app.logger.exception(
-            f"Error during handling the oauth response: {ex.error}")
-        del session['google_token']
-        return False
-
     if "error_reason" in request.args:
         error_message = "Access denied"
         error_message += f": reason={request.args['error_reason']}"
         error_message += f" error={request.args['error_description']}"
         return error_message
 
-    session["user_info"] = data
+    token = oauth.google.authorize_access_token()
+    user = oauth.google.parse_id_token(token)
+    session["user_info"] = user
 
     do_redirect = session.pop("redirect_path", None)
     if do_redirect:
@@ -158,7 +147,7 @@ def is_authenticated():
         resp = oauth.google.get(
             'https://www.googleapis.com/oauth2/v2/userinfo')
         data = resp.json()
-    except AuthlibBaseError as ex:
+    except OAuthError as ex:
         current_app.logger.exception(
             f"Error during handling the oauth response: {ex.error}")
         del session['google_token']
