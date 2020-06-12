@@ -10,7 +10,6 @@ RUN apt-get -y install default-libmysqlclient-dev
 # Install dependencies.
 RUN pip3 install -r /app_setup/requirements.txt
 RUN pip3 install -r /app_setup/dev_requirements.txt
-RUN pip3 install mysqlclient==1.4.1
 
 # Used as a bind-mount by docker-compose.
 WORKDIR /app

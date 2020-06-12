@@ -1,0 +1,18 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{# TODO: Consider using "custom_bootstrap_form.html" for customizations here. #}
+
+{% extends "base.html" %}
+{% block main_content %}
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        {% set vuln_view = vulnerability_details.vulnerability_view %}
+        <h2 class="text-center">Edit proposal</h2>
+    </div>
+</div>
+<div class="row my-3">
+    <div class="col-sm-8 offset-md-2">
+        {% set edit_mode = true %}
+        {% include 'vulnerability/info.html' %}
+    </div>
+</div>
+{% endblock %}

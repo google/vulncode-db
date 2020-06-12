@@ -12,14 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import (Blueprint, render_template, g)
+from flask import (Blueprint, render_template, g, abort)
 from sqlakeyset import get_page
 from sqlalchemy import desc
 
+from app.exceptions import InvalidIdentifierException
+from app.vulnerability.views.details import VulnerabilityDetails
 from app.vulnerability.views.vulncode_db import (
     VulnViewTypesetPaginationObjectWrapper, )
 
 from app import flash_error
+from data.forms import VulnerabilityDetailsForm
 from data.models import Vulnerability, Nvd
 from data.models.nvd import default_nvd_view_options
 from data.models.vulnerability import VulnerabilityState
@@ -28,6 +31,32 @@ from lib.utils import parse_pagination_param
 
 bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
+
+def _get_vulnerability_details(vcdb_id, vuln_id=None,
+                               simplify_id: bool = True):
+    try:
+        vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
+        if simplify_id:
+            vulnerability_details.validate_and_simplify_id()
+        # Drop everything else.
+        if not vulnerability_details.vulnerability_view:
+            abort(404)
+        return vulnerability_details
+    except InvalidIdentifierException:
+        abort(404)
+
+# Create a catch all route for profile identifiers.
+@bp.route("/<vuln_id>/edit", methods=["GET", "POST"])
+def edit_proposal(vuln_id: str = None):
+    vulnerability_details = _get_vulnerability_details(None, vuln_id,
+                                                       simplify_id=False)
+    view = vulnerability_details.vulnerability_view
+    vuln = vulnerability_details.get_or_create_vulnerability()
+    form = VulnerabilityDetailsForm(obj=vuln)
+
+    return render_template("profile/edit_proposal.html",
+                           vulnerability_details=vulnerability_details,
+                           form=form)
 
 
 # Create a catch all route for profile identifiers.

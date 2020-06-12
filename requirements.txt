@@ -1,6 +1,6 @@
 -r vcs_requirements.txt
 # 'MySQLdb' dependency.
-mysqlclient>=1.4.2
+mysqlclient>=1.4.6
 # Main Flask related dependencies.
 Flask==1.1.1
 Flask-Bootstrap==3.3.7.1

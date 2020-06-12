@@ -20,4 +20,9 @@ then
   exit 1
 fi
 
-PYTHONPATH="third_party" FLASK_APP=main flask "$@"
+THIRD_PARTY_DIR="third_party"
+# If this is run from Docker all dependencies should be available system wide in the container already.
+if [[ "${BASEDIR}" == "/app/" ]]; then
+  THIRD_PARTY_DIR=""
+fi
+PYTHONPATH="${THIRD_PARTY_DIR}" FLASK_APP=main flask "$@"

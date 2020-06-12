@@ -37,7 +37,9 @@ from data.models import Nvd, Vulnerability, VulnerabilityGitCommits, Cpe, OpenSo
     VulnerabilityState
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
-sys.path.append("third_party/")
+# Only include third_party directory for non-docker runs as Docker should have them available system-wide.
+if not os.path.dirname(os.path.realpath(__file__)).startswith("/app/"):
+    sys.path.append("third_party/")
 pd.set_option("display.max_colwidth", -1)
 
 app = Flask(__name__, static_url_path="", template_folder="templates")
