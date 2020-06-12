@@ -32,6 +32,7 @@ from lib.utils import parse_pagination_param
 bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
 
+
 def _get_vulnerability_details(vcdb_id, vuln_id=None,
                                simplify_id: bool = True):
     try:
@@ -45,10 +46,12 @@ def _get_vulnerability_details(vcdb_id, vuln_id=None,
     except InvalidIdentifierException:
         abort(404)
 
+
 # Create a catch all route for profile identifiers.
 @bp.route("/<vuln_id>/edit", methods=["GET", "POST"])
 def edit_proposal(vuln_id: str = None):
-    vulnerability_details = _get_vulnerability_details(None, vuln_id,
+    vulnerability_details = _get_vulnerability_details(None,
+                                                       vuln_id,
                                                        simplify_id=False)
     view = vulnerability_details.vulnerability_view
     vuln = vulnerability_details.get_or_create_vulnerability()

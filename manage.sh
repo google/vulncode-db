@@ -20,6 +20,7 @@ then
   exit 1
 fi
 
+BASEDIR="$( cd "$( dirname "$0" )" && pwd )"
 THIRD_PARTY_DIR="third_party"
 # If this is run from Docker all dependencies should be available system wide in the container already.
 if [[ "${BASEDIR}" == "/app/" ]]; then
