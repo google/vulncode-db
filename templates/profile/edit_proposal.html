@@ -12,6 +12,12 @@
 <div class="row my-3">
     <div class="col-sm-8 offset-md-2">
         {% set edit_mode = true %}
+        <div class="card my-3">
+            <div class="card-body">
+                {% include 'review/feedback_card.html' %}
+                <i class="fas fa-hand-point-right fa-lg"></i> Please address the feedback and resubmit the proposal.
+            </div>
+        </div>
         {% include 'vulnerability/info.html' %}
     </div>
 </div>

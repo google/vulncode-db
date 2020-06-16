@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import (Blueprint, render_template, g, abort)
+from flask import (Blueprint, render_template, g, abort, flash)
 from sqlakeyset import get_page
 from sqlalchemy import desc
 
@@ -47,8 +47,16 @@ def _get_vulnerability_details(vcdb_id, vuln_id=None,
         abort(404)
 
 
+def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
+    vuln.make_reviewable()
+    db.session.add(vuln)
+    db.session.commit()
+
+    flash("Your proposal was sent for review. You can monitor progress in your Proposals Section.",
+          "success")
+
 # Create a catch all route for profile identifiers.
-@bp.route("/<vuln_id>/edit", methods=["GET", "POST"])
+@bp.route("/proposal/<vuln_id>/edit", methods=["GET", "POST"])
 def edit_proposal(vuln_id: str = None):
     vulnerability_details = _get_vulnerability_details(None,
                                                        vuln_id,
@@ -56,6 +64,14 @@ def edit_proposal(vuln_id: str = None):
     view = vulnerability_details.vulnerability_view
     vuln = vulnerability_details.get_or_create_vulnerability()
     form = VulnerabilityDetailsForm(obj=vuln)
+
+    # Populate the form data from the vulnerability view if necessary.
+    if form.comment.data == "":
+        form.comment.data = view.comment
+
+    form_submitted = form.validate_on_submit()
+    if form_submitted and view.is_creator():
+        update_proposal(vuln, form)
 
     return render_template("profile/edit_proposal.html",
                            vulnerability_details=vulnerability_details,
