@@ -36,15 +36,14 @@ then
   info 'Formatting *.js files.'
   npx eslint "**/*.js" --fix --quiet --ignore-path .gitignore --debug 2>&1 > /dev/null | grep "Processing" | sed 's/^.*Processing\(.*\)$/Reformatting\1/'
 else
-  fatal 'Please install eslint. Install node.js and run: npm install'
+  error 'Please install eslint. Install node.js and run: npm install'
 fi
 
 if which yapf &>/dev/null
 then
   info 'Formatting python files with yapf'
-  YAPF_STYLE='{based_on_style: pep8, indent_width: 4}'
-  find . -maxdepth 1 -name "*.py" -print -exec yapf -i --style="${YAPF_STYLE}" {} \; | awk '{print "Reformatting "$1}'
-  yapf -p -vv -i --recursive app lib data tests --style="${YAPF_STYLE}" || fatal 'Error during formatting python files'
+  find . -maxdepth 1 -name "*.py" -print -exec yapf -i {} \; | awk '{print "Reformatting "$1}'
+  yapf -p -vv -i --recursive app lib data tests || fatal 'Error during formatting python files'
 else
   fatal 'Please install yapf: pip3 install yapf'
 fi
