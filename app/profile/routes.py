@@ -15,7 +15,9 @@
 from flask import (Blueprint, render_template, g, abort, flash)
 from sqlakeyset import get_page
 from sqlalchemy import desc
+from bouncer.constants import READ, EDIT
 
+from app.auth.acls import skip_authorization, requires
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability.views.details import VulnerabilityDetails
 from app.vulnerability.views.vulncode_db import (
@@ -33,7 +35,8 @@ bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
 
 
-def _get_vulnerability_details(vcdb_id, vuln_id=None,
+def _get_vulnerability_details(vcdb_id,
+                               vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
@@ -52,11 +55,14 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     db.session.add(vuln)
     db.session.commit()
 
-    flash("Your proposal was sent for review. You can monitor progress in your Proposals Section.",
-          "success")
+    flash(
+        "Your proposal was sent for review. You can monitor progress in your Proposals Section.",
+        "success")
+
 
 # Create a catch all route for profile identifiers.
 @bp.route("/proposal/<vuln_id>/edit", methods=["GET", "POST"])
+@requires(EDIT, Vulnerability)
 def edit_proposal(vuln_id: str = None):
     vulnerability_details = _get_vulnerability_details(None,
                                                        vuln_id,
@@ -80,6 +86,7 @@ def edit_proposal(vuln_id: str = None):
 
 # Create a catch all route for profile identifiers.
 @bp.route("/proposals")
+@requires(READ, 'Proposal')
 def view_proposals(vendor: str = None, profile: str = None):
     entries = db.session.query(Vulnerability, Nvd)
     entries = entries.filter(Vulnerability.creator == g.user)

@@ -15,33 +15,37 @@
 from sqlalchemy import or_, and_
 from flask import jsonify, make_response, Blueprint, request, abort
 
+from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE as db
 from data.models import Vulnerability, Nvd, Description, Cpe
 
 bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
 
 
-@bp.app_errorhandler(404)
+@bp.errorhandler(403)
+def api_403(ex=None):
+    """Return a 403 in JSON format."""
+    return make_response(jsonify({'error': 'Forbidden', 'code': 403}), 403)
+
+
+@bp.errorhandler(404)
 def api_404(ex=None):
     """Return a 404 in JSON format."""
-    if request.path.startswith('/api'):
-        return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
-    return ex
+    return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
 
 
-@bp.app_errorhandler(500)
+@bp.errorhandler(500)
 def api_500(ex=None):
     """Return a 500 in JSON format."""
-    if request.path.startswith('/api'):
-        return make_response(
-            jsonify({
-                'error': 'Internal server error',
-                'code': 500
-            }), 500)
-    return ex
+    return make_response(
+        jsonify({
+            'error': 'Internal server error',
+            'code': 500
+        }), 500)
 
 
 @bp.route("/product/<vendor_id>/<product_id>")
+@skip_authorization
 def vulns_by_product(vendor_id=None, product_id=None):
     """View vulns associated to product."""
     if product_id is None or product_id is None:
@@ -67,6 +71,7 @@ def _cpes_to_json(products):
 
 
 @bp.route("/search/product:<name>")
+@skip_authorization
 def search_product(name=None):
     """Return list of products matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
@@ -75,6 +80,7 @@ def search_product(name=None):
 
 
 @bp.route("/search/vendor:<name>")
+@skip_authorization
 def search_vendor(name=None):
     """Return list of vendors matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
@@ -84,6 +90,7 @@ def search_vendor(name=None):
 
 @bp.route("/search/vendor_or_product:<name>")
 @bp.route("/search/product_or_vendor:<name>")
+@skip_authorization
 def search_product_or_vendor(name=None):
     """Return list of products and vendor matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
@@ -94,6 +101,7 @@ def search_product_or_vendor(name=None):
 
 @bp.route("/search/vendor:<vendor>/product:<product>")
 @bp.route("/search/product:<product>/vendor:<vendor>")
+@skip_authorization
 def search_product_vendor(vendor=None, product=None):
     """Return list of products matching product and vendors matching vendor."""
     if product is None or vendor is None:
@@ -105,6 +113,7 @@ def search_product_vendor(vendor=None, product=None):
 
 
 @bp.route("/search/description:<description>")
+@skip_authorization
 def vulns_for_description(description=None):
     """View vulns associated to description."""
     if description is None:
@@ -117,6 +126,7 @@ def vulns_for_description(description=None):
 
 
 @bp.route("/<cve_id>")
+@skip_authorization
 def vuln_view(cve_id=None):
     if cve_id is None:
         return abort(404)
@@ -129,6 +139,7 @@ def vuln_view(cve_id=None):
 
 
 @bp.route("/details/<cve_id>")
+@skip_authorization
 def vuln_view_detailed(cve_id=None):
     if cve_id is None:
         return abort(404)

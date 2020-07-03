@@ -15,6 +15,7 @@ from flask import Flask
 from flask import redirect
 from flask import request
 from flask import url_for
+from flask import g
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
 from flask_wtf.csrf import CSRFProtect  # type: ignore
@@ -24,6 +25,7 @@ from app.api.v1.routes import bp as api_v1_bp
 from app.auth.routes import bp as auth_bp
 from app.auth.routes import is_admin
 from app.auth.routes import oauth
+from app.auth.acls import bouncer
 from app.frontend.routes import bp as frontend_bp
 from app.product.routes import bp as product_bp
 from app.vcs_proxy.routes import bp as vcs_proxy_bp
@@ -67,8 +69,16 @@ def register_custom_helpers(app):
         full_url = url_for(endpoint, **args)
         return urljoin(full_url, urlparse(full_url).path)
 
+    def is_admin_user():
+        return bool(getattr(g, 'user') and g.user.is_admin())
+
+    def is_reviewer():
+        print(str(g.user.is_reviewer()))
+        return getattr(g, 'user') and g.user.is_reviewer()
+
     app.jinja_env.globals['url_for_self'] = url_for_self
-    app.jinja_env.globals['is_admin'] = is_admin
+    app.jinja_env.globals['is_admin'] = is_admin_user
+    app.jinja_env.globals['is_reviewer'] = is_reviewer
     app.jinja_env.globals['url_for_no_querystring'] = url_for_no_querystring
     app.jinja_env.globals['vuln_helper'] = Vulnerability
 
@@ -100,6 +110,8 @@ def register_extensions(app, test_config=None):
     # Note: no JS/CSS or other resources are used from this package though.
     Bootstrap(app)
 
+    public_paths = ['/favicon.ico']
+
     # Setup CSRF protection.
     csrf = CSRFProtect()
     csrf.init_app(app)
@@ -113,6 +125,24 @@ def register_extensions(app, test_config=None):
         # more.
         # See: https://flask-debugtoolbar.readthedocs.io/en/latest/
         DebugToolbarExtension(app)
+        public_paths.append('/_debug_toolbar/')
+
+    def always_authorize():
+        for path in public_paths:
+            if request.path.startswith(path):
+                request._authorized = True
+                return
+
+    # Setup Acls
+    app.before_request(always_authorize)
+    bouncer.init_app(app)
+
+    def check_or_404(response):
+        if response.status_code == 404:
+            return response
+        return bouncer.check_authorization(response)
+
+    app.after_request(check_or_404)
 
 
 def register_blueprints(app):

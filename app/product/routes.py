@@ -17,6 +17,7 @@ from sqlakeyset import get_page  # type: ignore
 from sqlalchemy import and_, desc
 from sqlalchemy.orm import joinedload, Load
 
+from app.auth.acls import skip_authorization
 from app.vulnerability.views.vulncode_db import (
     VulnViewTypesetPaginationObjectWrapper, )
 from data.models.nvd import default_nvd_view_options, Cpe, Nvd
@@ -70,6 +71,7 @@ def get_entries_commits(full_base_query):
 
 # Create a catch all route for product identifiers.
 @bp.route("/<vendor>/<product>")
+@skip_authorization
 def product_view(vendor: str = None, product: str = None):
     sub_query = db.session.query(Cpe.nvd_json_id).filter(
         and_(Cpe.vendor == vendor, Cpe.product == product)).distinct()

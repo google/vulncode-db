@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Blueprint, request, current_app, g
+from flask import Blueprint, request, current_app, g, make_response, jsonify
 
-from app.auth.routes import admin_required
+from app.auth.acls import admin_required
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability.views.details import VulnerabilityDetails
 
@@ -28,6 +28,30 @@ from lib.utils import create_json_response
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 db = DEFAULT_DATABASE.db
+
+
+@bp.errorhandler(403)
+def api_403(ex=None):
+    """Return a 403 in JSON format."""
+    return make_response(jsonify({'error': 'Forbidden', 'code': 403}), 403)
+
+
+@bp.app_errorhandler(404)
+def api_404(ex=None):
+    """Return a 404 in JSON format."""
+    if request.path.startswith(bp.url_prefix):
+        return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
+    return ex
+
+
+@bp.errorhandler(500)
+def api_500(ex=None):
+    """Return a 500 in JSON format."""
+    return make_response(
+        jsonify({
+            'error': 'Internal server error',
+            'code': 500
+        }), 500)
 
 
 def calculate_revision_updates(wrapper, old, new, attrs):

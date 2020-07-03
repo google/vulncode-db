@@ -19,7 +19,7 @@ import requests
 from data.database import DEFAULT_DATABASE
 from flask_migrate import upgrade as alembic_upgrade
 from lib.app_factory import create_app
-from data.models.user import User
+from data.models.user import User, Role, PredefinedRoles
 from data.models.vulnerability import Vulnerability, VulnerabilityState
 from data.models.vulnerability import VulnerabilityGitCommits
 from data.models.nvd import Cpe
@@ -140,15 +140,22 @@ def _db(app):
 
         # create data
         session = db.session
+        roles = [
+            Role(name=role)
+            for role in (PredefinedRoles.ADMIN, PredefinedRoles.USER)
+        ]
+        session.add_all(roles)
         users = [
             User(
                 email='admin@vulncode-db.com',
                 full_name='Admin McAdmin',
+                roles=roles,
             ),
             User(
                 email='user@vulncode-db.com',
                 full_name='User McUser',
-            )
+                roles=[roles[1]],
+            ),
         ]
         session.add_all(users)
 
@@ -245,8 +252,10 @@ def admin_user_info():
 def as_admin(client):
     with client.session_transaction() as session:
         session['user_info'] = admin_user_info()
+        session['google_token'] = 'testing-admin'
 
 
 def as_user(client):
     with client.session_transaction() as session:
         session['user_info'] = regular_user_info()
+        session['google_token'] = 'testing-user'

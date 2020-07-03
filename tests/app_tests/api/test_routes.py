@@ -71,9 +71,9 @@ def test_save_editor_data(client, query, data, expected_code,
                           expected_response):
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
-    assert resp.status_code == 401
-    assert 'text/html' in resp.headers['Content-Type']
-    assert b'Unauthorized' in resp.data
+    assert resp.status_code == 403
+    assert 'application/json' in resp.headers['Content-Type']
+    assert b'Forbidden' in resp.data
 
 
 @pytest.mark.integration
@@ -97,6 +97,6 @@ def test_save_editor_data_as_user(client, query, data, expected_code,
     as_user(client)
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
 
-    assert resp.status_code == 401
-    assert 'text/html' in resp.headers['Content-Type']
-    assert b'Unauthorized' in resp.data
+    assert resp.status_code == 403
+    assert 'application/json' in resp.headers['Content-Type']
+    assert b'Forbidden' in resp.data

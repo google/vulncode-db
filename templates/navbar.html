@@ -18,67 +18,66 @@
     <ul class="navbar-nav mt-2 mt-md-0">
       <li class="nav-item">
         {% if g.user %}
-          <li>
-            {% if g.user.profile_picture %}
-              <img src="{{ g.user.profile_picture|replace("/photo", "/s30-cc-rw/photo") }}" width="30"
-                   height="30">
-            {% endif %}
-            <span class="navbar-brand">{{ g.user.full_name }}</span>
-          </li>
-          {% if is_admin() %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('review.list') }}">
-              <button type="button" class="btn btn-dark navbar-btn">
-                Review
-
-                {% set num_publishing_pending = vuln_helper.get_num_proposals_publishing_pending() %}
-                {% if num_publishing_pending > 0 %}
-                  <span class="badge badge-success">{{ num_publishing_pending }}</span>
-                {% endif %}
-
-                {% set num_unassigned = vuln_helper.get_num_proposals_unassigned() %}
-                {% if num_unassigned > 0 %}
-                  <span class="badge badge-warning">{{ num_unassigned }}</span>
-                {% endif %}
-
-                {% set num_assigned = vuln_helper.get_num_proposals_assigned() %}
-                {% if num_assigned > 0 %}
-                  <span class="badge badge-info">{{ num_assigned }}</span>
-                {% endif %}
-              </button>
-            </a>
-          </li>
-          {% endif %}
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('profile.view_proposals') }}">
-              <button type="button" class="btn btn-dark navbar-btn">
-                Proposals
-                {% set num_proposals_action_required = vuln_helper.get_num_proposals_action_required(g.user) %}
-                {% if num_proposals_action_required > 0 %}
-                  <span class="badge badge-danger">{{ num_proposals_action_required }}</span>
-                {% endif %}
-
-                {% set num_proposals_pending = vuln_helper.get_num_proposals_pending(g.user) %}
-                {% if num_proposals_pending > 0 %}
-                <span class="badge badge-warning">{{ num_proposals_pending }}</span>
-                {% endif %}
-              </button>
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout') }}">
-              <button type="button" class="btn btn-dark navbar-btn">
-                Logout
-              </button>
-            </a>
-          </li>
-        {% else %}
-          <a class="nav-link" href="{{ url_for('auth.login') }}">
-            <button type="button" class="btn btn-dark navbar-btn">
-              Login
-            </button>
-          </a>
+      <li>
+        {% if g.user.profile_picture %}
+        <img src="{{ g.user.profile_picture|replace("/photo", "/s30-cc-rw/photo") }}" width="30" height="30">
         {% endif %}
+        <span class="navbar-brand">{{ g.user.full_name }}</span>
+      </li>
+      {% if is_reviewer() %}
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('review.list') }}">
+          <button type="button" class="btn btn-dark navbar-btn">
+            Review
+
+            {% set num_publishing_pending = vuln_helper.get_num_proposals_publishing_pending() %}
+            {% if num_publishing_pending > 0 %}
+            <span class="badge badge-success">{{ num_publishing_pending }}</span>
+            {% endif %}
+
+            {% set num_unassigned = vuln_helper.get_num_proposals_unassigned() %}
+            {% if num_unassigned > 0 %}
+            <span class="badge badge-warning">{{ num_unassigned }}</span>
+            {% endif %}
+
+            {% set num_assigned = vuln_helper.get_num_proposals_assigned() %}
+            {% if num_assigned > 0 %}
+            <span class="badge badge-info">{{ num_assigned }}</span>
+            {% endif %}
+          </button>
+        </a>
+      </li>
+      {% endif %}
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('profile.view_proposals') }}">
+          <button type="button" class="btn btn-dark navbar-btn">
+            Proposals
+            {% set num_proposals_action_required = vuln_helper.get_num_proposals_action_required(g.user) %}
+            {% if num_proposals_action_required > 0 %}
+            <span class="badge badge-danger">{{ num_proposals_action_required }}</span>
+            {% endif %}
+
+            {% set num_proposals_pending = vuln_helper.get_num_proposals_pending(g.user) %}
+            {% if num_proposals_pending > 0 %}
+            <span class="badge badge-warning">{{ num_proposals_pending }}</span>
+            {% endif %}
+          </button>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('auth.logout') }}">
+          <button type="button" class="btn btn-dark navbar-btn">
+            Logout
+          </button>
+        </a>
+      </li>
+      {% else %}
+      <a class="nav-link" href="{{ url_for('auth.login') }}">
+        <button type="button" class="btn btn-dark navbar-btn">
+          Login
+        </button>
+      </a>
+      {% endif %}
       </li>
     </ul>
     <!--
