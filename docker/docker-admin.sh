@@ -161,7 +161,7 @@ function start_application() {
   then
     info "Starting individual service."
     USE_SERVICE=$1
-    dock-comp start $USE_SERVICE
+    dock-comp up $USE_SERVICE
     return
   fi
   info "Available resources when deployed:"
