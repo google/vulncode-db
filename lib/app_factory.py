@@ -46,6 +46,9 @@ def create_app(test_config=None):
     if test_config:
         app.config.update(test_config)
 
+    if app.debug:
+        app.logger.propagate = True
+
     register_blueprints(app)
     register_extensions(app, test_config=test_config)
     register_route_checks(app)

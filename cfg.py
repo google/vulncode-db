@@ -14,6 +14,8 @@
 # limitations under the License.
 
 import os
+import logging
+import logging.handlers
 from typing import List
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -142,6 +144,75 @@ DEBUG_TB_INTERCEPT_REDIRECTS = False
 # We use certificate pinning to ensure correct communication between
 # components.
 APP_CERT_FILE = "cert/cert.pem"
+
+
+class clsproperty(property):
+    def __get__(self, cls, owner):
+        return self.fget.__get__(None, owner)()
+
+
+class __lazy:
+    @clsproperty
+    @classmethod
+    def root_level(cls):
+        return logging.DEBUG if DEBUG else logging.INFO
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'basic',
+            'level': logging.NOTSET,
+            'stream': 'ext://sys.stdout',
+        },
+        'console_mini': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'minimalistic',
+            'level': logging.NOTSET,
+            'stream': 'ext://sys.stdout',
+        },
+        'info_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'full',
+            'filename': os.path.join(BASE_DIR, 'info.log'),
+            'maxBytes': 100000,
+            'backupCount': 1,
+        },
+        'error_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'full',
+            'filename': os.path.join(BASE_DIR, 'error.log'),
+            'maxBytes': 100000,
+            'backupCount': 1,
+            'level': logging.WARNING,
+        },
+    },
+    'formatters': {
+        'minimalistic': {
+            'format': '%(message)s',
+        },
+        'basic': {
+            'format': '%(levelname)-4.4s [%(name)s] %(message)s',
+        },
+        'full': {
+            'format':
+            '%(asctime)s - %(levelname)-4.4s [%(name)s,%(filename)s:%(lineno)d] %(message)s',
+        },
+    },
+    'loggers': {
+        '': {
+            'level': 'ext://cfg.__lazy.root_level',
+            'handlers': ['console', 'error_file', 'info_file'],
+        },
+        'werkzeug': {
+            'handlers': ['console_mini'],
+            'propagate': False,
+        }
+    }
+}
 
 # local overrides
 try:

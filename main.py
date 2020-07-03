@@ -15,8 +15,7 @@
 
 import os
 import sys
-import logging
-from logging.handlers import RotatingFileHandler
+import logging.config
 
 import alembic.script
 import alembic.runtime.environment
@@ -72,21 +71,7 @@ def main():
     if not cfg.IS_PROD:
         check_db_state()
 
-    root_dir = os.path.dirname(os.path.realpath(__file__))
-    error_file = os.path.join(root_dir, "error.log")
-
-    handler = RotatingFileHandler(error_file, maxBytes=100000, backupCount=1)
-    handler.setLevel(logging.WARNING)
-
-    # app.logger = logging.getLogger('tdm')
-    logger: logging.Logger = app.logger
-    logger.addHandler(handler)
-    logger.addHandler(logging.StreamHandler(stream=sys.stdout))
-    if cfg.DEBUG:
-        logger.setLevel(logging.DEBUG)
-        logging.getLogger("root").setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+    logging.config.dictConfig(cfg.LOGGING)
 
     # cert_dir = os.path.join(root_dir, 'cert')
     # cert_file = os.path.join(cert_dir, 'cert.pem')
