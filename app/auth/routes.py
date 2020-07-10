@@ -146,8 +146,15 @@ def get_or_create_role(name) -> Role:
 def load_user():
     user = None
 
+    log.debug('Loading user')
+
     # Ignore all non-admin users during maintenance mode.
     if not is_admin() and current_app.config["MAINTENANCE_MODE"]:
+        return
+
+    # don't override existing user
+    if getattr(g, 'user', None) is not None:
+        log.debug('Reusing existing user %s', g.user)
         return
 
     if is_authenticated():
@@ -178,6 +185,7 @@ def load_user():
         db.session.commit()
 
     g.user = user
+    log.debug('Loaded user %s', g.user)
 
 
 def is_authenticated():

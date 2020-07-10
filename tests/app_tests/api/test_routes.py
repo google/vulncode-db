@@ -14,6 +14,7 @@
 import pytest
 from tests.conftest import as_admin
 from tests.conftest import as_user
+from tests.conftest import set_user
 
 SAVE_VARIANTS = [
     ({}, {}, 400, {
@@ -79,7 +80,7 @@ def test_save_editor_data(client, query, data, expected_code,
 @pytest.mark.integration
 @pytest.mark.parametrize('query, data, expected_code, expected_response',
                          SAVE_VARIANTS)
-def test_save_editor_data_as_admin(client, query, data, expected_code,
+def test_save_editor_data_as_admin(app, client, query, data, expected_code,
                                    expected_response):
     as_admin(client)
     resp = client.post('/api/save_editor_data', json=data, query_string=query)
@@ -92,11 +93,13 @@ def test_save_editor_data_as_admin(client, query, data, expected_code,
 @pytest.mark.integration
 @pytest.mark.parametrize('query, data, expected_code, expected_response',
                          SAVE_VARIANTS)
-def test_save_editor_data_as_user(client, query, data, expected_code,
+def test_save_editor_data_as_user(app, client, query, data, expected_code,
                                   expected_response):
-    as_user(client)
-    resp = client.post('/api/save_editor_data', json=data, query_string=query)
+    with set_user(app, as_user(client)):
+        resp = client.post('/api/save_editor_data',
+                           json=data,
+                           query_string=query)
 
-    assert resp.status_code == 403
-    assert 'application/json' in resp.headers['Content-Type']
-    assert b'Forbidden' in resp.data
+        assert resp.status_code == 403
+        assert 'application/json' in resp.headers['Content-Type']
+        assert b'Forbidden' in resp.data

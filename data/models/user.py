@@ -61,9 +61,10 @@ class User(MainBase):
         return {'username': 'anonymous'}
 
     def _has_role(self, role):
-        return bool(
-            self.query.join(UserRole).join(Role).filter(
-                UserRole.user_id == self.id, Role.name == str(role)).first())
+        for r in self.roles:
+            if r.name == str(role):
+                return True
+        return False
 
     def is_admin(self):
         return self._has_role(PredefinedRoles.ADMIN)

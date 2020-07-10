@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+
 from flask import Flask
 from flask import redirect
 from flask import request
@@ -19,6 +21,8 @@ from flask import g
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
 from flask_wtf.csrf import CSRFProtect  # type: ignore
+from werkzeug import Response
+from werkzeug.exceptions import Forbidden
 
 from app.api.routes import bp as api_bp
 from app.api.v1.routes import bp as api_v1_bp
@@ -73,7 +77,6 @@ def register_custom_helpers(app):
         return bool(getattr(g, 'user') and g.user.is_admin())
 
     def is_reviewer():
-        print(str(g.user.is_reviewer()))
         return getattr(g, 'user') and g.user.is_reviewer()
 
     app.jinja_env.globals['url_for_self'] = url_for_self
@@ -137,10 +140,15 @@ def register_extensions(app, test_config=None):
     app.before_request(always_authorize)
     bouncer.init_app(app)
 
-    def check_or_404(response):
+    def check_or_404(response: Response):
         if response.status_code == 404:
             return response
-        return bouncer.check_authorization(response)
+        try:
+            return bouncer.check_authorization(response)
+        except Forbidden:
+            logging.warning('Automatically denied access to response of %s',
+                            request.path)
+            raise
 
     app.after_request(check_or_404)
 

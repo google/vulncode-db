@@ -11,20 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
-
 from app.auth.routes import oauth
 from tests.conftest import as_user
 from tests.conftest import regular_user_info
+from tests.conftest import set_user
 
 
-def test_authenticated_users_get_redirected_to_home(client_without_db):
+def test_authenticated_users_get_redirected_to_home(app, client_without_db):
     client = client_without_db
-    as_user(client)
-
-    resp = client.get('/auth/login')
-    assert resp.status_code == 302
-    assert resp.headers.get('Location') == 'http://localhost/'
+    with set_user(app, as_user(client)):
+        with app.app_context():
+            resp = client.get('/auth/login')
+            assert resp.status_code == 302
+            assert resp.headers.get('Location') == 'http://localhost/'
 
 
 def test_unauthenticated_users_get_redirected_to_oauth_consent_screen(
@@ -36,18 +35,26 @@ def test_unauthenticated_users_get_redirected_to_oauth_consent_screen(
         'https://accounts.google.com/o/oauth2/v2/auth')
 
 
-def test_logout_clears_the_session(client_without_db):
+def test_logout_clears_the_session(app, client_without_db):
     client = client_without_db
-    as_user(client)
 
-    with client.session_transaction() as session:
-        session['something_else'] = True
-    resp = client.get('/auth/logout')
-    assert resp.status_code == 302
-    assert resp.headers.get('Location') == 'http://localhost/'
-    with client.session_transaction() as session:
-        assert 'user_info' not in session
-        assert 'something_else' not in session
+    with set_user(app, as_user(client)):
+        with app.app_context():
+            with client.session_transaction() as session:
+                session['something_else'] = True
+            # request /maintenance as it doesn't use the database
+            resp = client.get('/maintenance')
+            assert resp.status_code == 200
+            with client.session_transaction() as session:
+                assert 'user_info' in session
+                assert 'something_else' in session
+
+            resp = client.get('/auth/logout')
+            assert resp.status_code == 302
+            assert resp.headers.get('Location') == 'http://localhost/'
+            with client.session_transaction() as session:
+                assert 'user_info' not in session
+                assert 'something_else' not in session
 
 
 def test_authorization_callback_success(mocker, client_without_db):

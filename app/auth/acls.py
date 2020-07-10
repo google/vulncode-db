@@ -18,6 +18,7 @@ from functools import wraps
 from flask_bouncer import Bouncer, requires, skip_authorization, ensure
 from bouncer import Rule
 from bouncer.constants import ALL, MANAGE, READ
+from werkzeug.exceptions import Forbidden
 
 from data.models.user import User
 
@@ -74,4 +75,8 @@ def login_required(do_redirect=True):
 
 
 def admin_required(do_redirect=False):
-    return requires(MANAGE, ALL)
+    try:
+        return requires(MANAGE, ALL)
+    except Forbidden as ex:
+        log.warning('Denied admin access: %s', ex.description)
+        raise
