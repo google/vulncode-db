@@ -130,14 +130,28 @@ function lint_code() {
 }
 
 function run_tests() {
-  TEST_FILTER=""
+  local TEST_FILTER=""
+  local TEST_ARGS=""
   info "Starting tests."
   if [ "$#" -eq 1 ]
   then
     TEST_FILTER=$1
     error "Filtering tests against: ${TEST_FILTER}"
+  elif [ "$#" -gt 1 ]
+  then
+    local tmp=()
+    while [ "$#" -gt 0 ]
+    do
+      if [ "$1" != "--" ]
+      then
+        tmp+=("$1")
+      fi
+      shift
+    done
+    TEST_ARGS="${tmp[@]}"
+    error "Runing tests with: ${TEST_ARGS}"
   fi
-  dock-comp run -e TEST_FILTER="${TEST_FILTER}" --rm tests  || exit 1
+  dock-comp run -e TEST_FILTER="${TEST_FILTER}" -e TEST_ARGS="${TEST_ARGS}" --rm tests  || exit 1
 }
 
 function run_production_tests() {
@@ -260,7 +274,8 @@ case "$1" in
     lint_code
     ;;
   test)
-    run_tests $2
+    shift
+    run_tests "$@"
     ;;
   stop_testdb)
     stop_test_database
