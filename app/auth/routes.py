@@ -36,6 +36,9 @@ def update_google_token(token):
     return session['google_token']
 
 
+MINIMAL_SCOPES = 'openid email'
+FULL_SCOPES = MINIMAL_SCOPES + ' profile'
+
 oauth = OAuth()  # pylint: disable=invalid-name
 oauth.register(
     name='google',  # nosec
@@ -44,10 +47,10 @@ oauth.register(
     'https://accounts.google.com/.well-known/openid-configuration',
     fetch_token=fetch_google_token,
     update_token=update_google_token,
-    client_kwargs={'scope': 'openid email profile'})
+    client_kwargs={'scope': MINIMAL_SCOPES})
 
 
-@bp.route("/login", methods=["GET"])
+@bp.route("/login", methods=["GET", "POST"])
 @skip_authorization
 def login():
     if is_authenticated():
@@ -94,9 +97,15 @@ def login():
             return redirect("/")
         return render_template("local_login.html",
                                users=current_app.config["APPLICATION_ADMINS"])
+    elif as_user == 'OAuth':
+        if request.form.get('fetch_profile') != 'true':
+            return oauth.google.authorize_redirect(
+                redirect_uri=url_for("auth.authorized", _external=True))
 
-    return oauth.google.authorize_redirect(
-        redirect_uri=url_for("auth.authorized", _external=True))
+        return oauth.google.authorize_redirect(redirect_uri=url_for(
+            "auth.authorized", _external=True),
+                                               scope=FULL_SCOPES)
+    return render_template('login.html')
 
 
 @bp.route("/logout", methods=["GET"])
@@ -166,12 +175,14 @@ def load_user():
             name, host = email.rsplit('@', 1)
             log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
             user = User(email=email,
-                        full_name=data["name"],
-                        profile_picture=data["picture"])
+                        full_name=data.get("name", name),
+                        profile_picture=data.get("picture"))
         else:
             log.info('Updating user %s', user)
-            user.full_name = data["name"]
-            user.profile_picture = data["picture"]
+            if 'name' in data:
+                user.full_name = data["name"]
+            if 'picture' in data:
+                user.profile_picture = data["picture"]
 
         # update automatic roles
         user.roles.append(get_or_create_role(PredefinedRoles.USER))
