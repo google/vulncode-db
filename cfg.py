@@ -136,6 +136,9 @@ APPLICATION_ADMINS: List[str] = []
 if suggested_admins != '':
     APPLICATION_ADMINS = suggested_admins.split(",")
 
+# restrict the login to administrators only
+RESTRICT_LOGIN = True
+
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 
 # Disable link intercepts for the Flask toolbar.

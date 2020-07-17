@@ -93,7 +93,7 @@ def login():
             }
             session['google_token'] = '1337'
         if session.get('google_token') == '1337':
-            flash("Bypassed OAuth on local dev environment.")
+            flash("Bypassed OAuth on local dev environment.", 'info')
             return redirect("/")
         return render_template("local_login.html",
                                users=current_app.config["APPLICATION_ADMINS"])
@@ -153,12 +153,18 @@ def get_or_create_role(name) -> Role:
 
 @bp.before_app_request
 def load_user():
-    user = None
+    if not is_authenticated():
+        g.user = None
+        return
 
     log.debug('Loading user')
 
-    # Ignore all non-admin users during maintenance mode.
-    if not is_admin() and current_app.config["MAINTENANCE_MODE"]:
+    # Ignore all non-admin users during maintenance or restricted mode.
+    if (current_app.config["MAINTENANCE_MODE"]
+            or current_app.config['RESTRICT_LOGIN']
+            and not current_app.config['IS_LOCAL']) and not is_admin():
+        logout()
+        flash('Login restricted.', 'danger')
         return
 
     # don't override existing user
@@ -166,34 +172,33 @@ def load_user():
         log.debug('Reusing existing user %s', g.user)
         return
 
-    if is_authenticated():
-        data = session["user_info"]
-        email = data["email"]
+    data = session["user_info"]
+    email = data["email"]
 
-        user = User.query.filter_by(email=email).one_or_none()
-        if not user:
-            name, host = email.rsplit('@', 1)
-            log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
-            user = User(email=email,
-                        full_name=data.get("name", name),
-                        profile_picture=data.get("picture"))
-        else:
-            log.info('Updating user %s', user)
-            if 'name' in data:
-                user.full_name = data["name"]
-            if 'picture' in data:
-                user.profile_picture = data["picture"]
+    user = User.query.filter_by(email=email).one_or_none()
+    if not user:
+        name, host = email.rsplit('@', 1)
+        log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
+        user = User(email=email,
+                    full_name=data.get("name", name),
+                    profile_picture=data.get("picture"))
+    else:
+        log.info('Updating user %s', user)
+        if 'name' in data:
+            user.full_name = data["name"]
+        if 'picture' in data:
+            user.profile_picture = data["picture"]
 
-        # update automatic roles
-        user.roles.append(get_or_create_role(PredefinedRoles.USER))
-        email = session["user_info"]["email"]
-        if email in current_app.config["APPLICATION_ADMINS"]:
-            user.roles.append(get_or_create_role(PredefinedRoles.ADMIN))
-            user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
-        elif email == 'reviewer@vulncode-db.com':
-            user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
-        db.session.add(user)
-        db.session.commit()
+    # update automatic roles
+    user.roles.append(get_or_create_role(PredefinedRoles.USER))
+    email = session["user_info"]["email"]
+    if email in current_app.config["APPLICATION_ADMINS"]:
+        user.roles.append(get_or_create_role(PredefinedRoles.ADMIN))
+        user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
+    elif email == 'reviewer@vulncode-db.com':
+        user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
+    db.session.add(user)
+    db.session.commit()
 
     g.user = user
     log.debug('Loaded user %s', g.user)
