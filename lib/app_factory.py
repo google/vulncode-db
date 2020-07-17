@@ -24,6 +24,7 @@ from flask_wtf.csrf import CSRFProtect  # type: ignore
 from werkzeug import Response
 from werkzeug.exceptions import Forbidden
 
+from app.admin.routes import bp as admin_bp
 from app.api.routes import bp as api_bp
 from app.api.v1.routes import bp as api_v1_bp
 from app.auth.routes import bp as auth_bp
@@ -155,6 +156,7 @@ def register_extensions(app, test_config=None):
 
 def register_blueprints(app):
     """Register Flask blueprints."""
+    app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp)
     app.register_blueprint(api_v1_bp)

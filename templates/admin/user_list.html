@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block main_content %}
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2 class="text-center">Users ({{ users.total }} total)</h2>
+    </div>
+</div>
+<div class="row my-3">
+    <div class="col-sm-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+              {% if users.pages > 1 %}
+              <nav aria-label="Pagination">
+                <ul class="pagination pg-dark">
+                  <li class="page-item {% if not users.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ url_for('admin.users', page=users.prev_num, per_page=users.per_page) }}">Previous</a></li>
+                  {%- for page in users.iter_pages(left_edge=1, left_current=2, right_current=3, right_edge=1) %}
+                    {% if page %}
+                    <li class="page-item {% if page == users.page %}active{% endif%}">
+                      <a class="page-link" href="{{ url_for('admin.users', page=page, per_page=users.per_page) }}">{{ page }}</a>
+                      {# else %}
+                      <span class=ellipsis>…</span>
+                      {%- endif #}
+                    </li>
+                    {% else %}
+                    <li class="page-item">...</li>
+                    {% endif %}
+                  {%- endfor %}
+                  <li class="page-item {% if not users.has_next %}disabled{% endif %}"><a class="page-link" href="{{ url_for('admin.users', page=users.next_num, per_page=users.per_page) }}">Next</a></li>
+                </ul>
+              </nav>
+              {% endif %}
+              <form method="post" class="form-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <select class="form-control" id="action" name="action">
+                  <option>---</option>
+                  <option value="assign">Assign role</option>
+                  <option value="unassign">Unassign role</option>
+                </select>
+                <select class="form-control" id="roles" name="role" style="display: none">
+                  <option>---</option>
+                  {% for role in roles %}
+                  <option value="{{role.id}}">{{role}}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-primary btn-sm" id="save" style="display: none">Save</button>
+                <table id="users-table" class="table table-striped">
+                  <thead class="thead-dark">
+                    <tr>
+                      <th scope="col"><input id="global-checkbox" type="checkbox"></th>
+                      <th scope="col">ID</th>
+                      <th scope="col">Username</th>
+                      <th scope="col">Roles</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for user in users.items %}
+                    <tr>
+                      <td scope="row"><input type="checkbox" name="user" value="{{ user.id }}"></td>
+                      <td>{{ user.id }}</td>
+                      <td>{{ user.name }}</td>
+                      <td>{{ user.roles|join(', ') }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+  (function() {
+    const globalBox = document.getElementById('global-checkbox');
+    const actionSelect = document.getElementById('action');
+    const rolesSelect = document.getElementById('roles');
+    const saveBtn = document.getElementById('save');
+    const boxes = document.getElementById('users-table').querySelectorAll('td > [type=checkbox]');
+
+    globalBox.addEventListener('change', function() {
+      const state = this.checked;
+      for (const box of boxes) {
+        box.checked = state;
+      }
+    });
+
+    actionSelect.addEventListener('change', function() {
+      if (this.value === 'assign' || this.value === 'unassign') {
+        roles.style.display = null;
+      } else {
+        roles.style.display = 'none';
+        roles.value = '---';
+        saveBtn.style.display = 'none';
+      }
+    });
+
+    rolesSelect.addEventListener('change', function() {
+      if (this.value === '---') {
+        saveBtn.style.display = 'none';
+        return;
+      }
+      saveBtn.style.display = null;
+    });
+  })();
+</script>
+{% endblock %}

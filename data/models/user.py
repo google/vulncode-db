@@ -44,6 +44,9 @@ class Role(MainBase):
     name = Column(String(256), nullable=False, unique=True)
     users = relationship('User', secondary='user_role', back_populates='roles')
 
+    def __str__(self):
+        return self.name
+
 
 class User(MainBase):
     email = Column(String(256), unique=True, nullable=False)
