@@ -51,6 +51,8 @@ TEST_CONFIG = {
     'APPLICATION_ADMINS': ['admin@vulncode-db.com'],
     'IS_LOCAL':
     False,
+    'RESTRICT_LOGIN':
+    False,
 }
 # Used for integration tests against the production environment.
 PROD_SERVER_URL = 'https://www.vulncode-db.com'
