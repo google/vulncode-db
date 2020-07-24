@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from flask import Blueprint, render_template, request, flash
+from sqlalchemy import or_
 
 from app.auth.acls import admin_required
 from data.database import DEFAULT_DATABASE
@@ -27,27 +28,46 @@ db = DEFAULT_DATABASE
 def users():
     if request.method == 'POST':
         user_ids = request.form.getlist('user', type=int)
-        action = request.form.get('action')
+        action = [
+            action for action in request.form.getlist('action') if action
+        ][0]
         role_id = request.form.get('role')
-        role = Role.query.get_or_404(role_id)
         changed_users = []
         if action == 'assign':
+            role = Role.query.get_or_404(role_id)
             for user_id in user_ids:
                 user = User.query.get_or_404(user_id)
                 user.roles.append(role)
                 changed_users.append(user)
         elif action == 'unassign':
+            role = Role.query.get_or_404(role_id)
             for user_id in user_ids:
                 user = User.query.get_or_404(user_id)
                 user.roles.remove(role)
                 changed_users.append(user)
+        elif action == 'delete':
+            for user_id in user_ids:
+                user = User.query.get_or_404(user_id)
+                db.session.delete(user)
+            db.session.commit()
         else:
             flash('Invalid action', 'danger')
 
         if changed_users:
             db.session.add_all(changed_users)
             db.session.commit()
-    users = User.query.paginate()
+
+    name = request.args.get('name', default='')
+    if name:
+        query = f'%{name}%'
+        users = User.query.filter(
+            or_(User.email.like(query),
+                User.full_name.like(query))).paginate()
+    else:
+        users = User.query.paginate()
     roles = Role.query.all()
 
-    return render_template('admin/user_list.html', users=users, roles=roles)
+    return render_template('admin/user_list.html',
+                           users=users,
+                           roles=roles,
+                           filter=name)

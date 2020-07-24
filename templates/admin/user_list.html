@@ -9,7 +9,16 @@
     <div class="col-sm-8 offset-md-2">
         <div class="card">
             <div class="card-body">
-              {% if users.pages > 1 %}
+              <!-- Search box -->
+              <form class="form">
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" name="name" placeholder="Name/E-Mail/..." value="{{ filter }}">
+                  <div class="input-group-append">
+                    <button class="btn btn-md btn-outline-primary m-0 px-3 py-2 waves-effect" type="submit">Search</button>
+                 </div>
+                </div>
+              </form>
+              <!-- Pagination -->
               <nav aria-label="Pagination">
                 <ul class="pagination pg-dark">
                   <li class="page-item {% if not users.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ url_for('admin.users', page=users.prev_num, per_page=users.per_page) }}">Previous</a></li>
@@ -28,21 +37,26 @@
                   <li class="page-item {% if not users.has_next %}disabled{% endif %}"><a class="page-link" href="{{ url_for('admin.users', page=users.next_num, per_page=users.per_page) }}">Next</a></li>
                 </ul>
               </nav>
-              {% endif %}
-              <form method="post" class="form-inline">
+              <form method="post" class="form-inline" id="users-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <select class="form-control" id="action" name="action">
-                  <option>---</option>
-                  <option value="assign">Assign role</option>
-                  <option value="unassign">Unassign role</option>
-                </select>
-                <select class="form-control" id="roles" name="role" style="display: none">
-                  <option>---</option>
-                  {% for role in roles %}
-                  <option value="{{role.id}}">{{role}}</option>
-                  {% endfor %}
-                </select>
-                <button class="btn btn-primary btn-sm" id="save" style="display: none">Save</button>
+                <!-- batch actions -->
+                <div class="mb-3">
+                  <select class="form-control" id="action" name="action">
+                    <option value="">---</option>
+                    <option value="assign">Assign role</option>
+                    <option value="unassign">Unassign role</option>
+                    <option value="delete">Delete</option>
+                  </select>
+                  <select class="form-control" id="roles" name="role" style="display: none">
+                    <option>---</option>
+                    {% for role in roles %}
+                    <option value="{{role.id}}">{{role}}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-danger btn-sm" id="delete-btn" style="display: none" type="button" data-toggle="modal" data-target="#confirmDelete">Delete</button>
+                  <button class="btn btn-primary btn-sm" id="save-btn" style="display: none">Save</button>
+                </div>
+                <!-- User table -->
                 <table id="users-table" class="table table-striped">
                   <thead class="thead-dark">
                     <tr>
@@ -50,6 +64,7 @@
                       <th scope="col">ID</th>
                       <th scope="col">Username</th>
                       <th scope="col">Roles</th>
+                      <th scope="col">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -59,10 +74,33 @@
                       <td>{{ user.id }}</td>
                       <td>{{ user.name }}</td>
                       <td>{{ user.roles|join(', ') }}</td>
+                      <td>
+                        <button class="btn btn-danger" type="button" data-action="delete" data-user="{{ user.id }}">Delete</button>
+                      </td>
                     </tr>
                     {% endfor %}
                   </tbody>
                 </table>
+                <!-- Delete confirmation modal -->
+                <div class="modal fade" id="confirmDelete" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Confirm</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        Please confirm the deletion.
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button class="btn btn-danger">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </form>
             </div>
         </div>
@@ -71,9 +109,11 @@
 <script>
   (function() {
     const globalBox = document.getElementById('global-checkbox');
+    const usersForm = document.getElementById('users-form');
     const actionSelect = document.getElementById('action');
     const rolesSelect = document.getElementById('roles');
-    const saveBtn = document.getElementById('save');
+    const saveBtn = document.getElementById('save-btn');
+    const deleteBtn = document.getElementById('delete-btn');
     const boxes = document.getElementById('users-table').querySelectorAll('td > [type=checkbox]');
 
     globalBox.addEventListener('change', function() {
@@ -84,22 +124,48 @@
     });
 
     actionSelect.addEventListener('change', function() {
+      roles.style.display = 'none';
+      saveBtn.style.display = 'none';
+      deleteBtn.style.display = 'none';
       if (this.value === 'assign' || this.value === 'unassign') {
         roles.style.display = null;
+      } else if (this.value === 'delete') {
+        deleteBtn.style.display = null;
       } else {
-        roles.style.display = 'none';
         roles.value = '---';
-        saveBtn.style.display = 'none';
       }
     });
 
     rolesSelect.addEventListener('change', function() {
-      if (this.value === '---') {
-        saveBtn.style.display = 'none';
-        return;
+      deleteBtn.style.display = 'none';
+      if (this.value !== '---') {
+        saveBtn.style.display = null;
       }
-      saveBtn.style.display = null;
     });
+
+    const deleteButtons = document.querySelectorAll('[data-action="delete"]');
+    for(const btn of deleteButtons) {
+      btn.addEventListener('click', (ev) => {
+        const btn = ev.target;
+        const userId = btn.dataset.user;
+        const user = document.createElement('input');
+        user.type = 'hidden';
+        user.name = 'user';
+        user.value = userId;
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = 'delete';
+        usersForm.appendChild(user);
+        usersForm.appendChild(action);
+
+        $('#confirmDelete').on('hidden.bs.modal', function handler() {
+          usersForm.removeChild(user);
+          usersForm.removeChild(action);
+          $('#confirmDelete').off('hidden.bs.modal', handler);
+        }).modal('show');
+      });
+    }
   })();
 </script>
 {% endblock %}
