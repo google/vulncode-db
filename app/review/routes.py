@@ -11,19 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from enum import Enum
 
 from flask import (Blueprint, render_template, g)
 from sqlakeyset import get_page
 from sqlakeyset.results import s as sqlakeysetserial
-
 from sqlalchemy import desc, asc, case
+from bouncer.constants import READ
 
-from app.auth.routes import admin_required
+from app.auth.acls import requires
 from app.vulnerability.views.vulncode_db import (
     VulnViewTypesetPaginationObjectWrapper, )
 
-from app import flash_error
 from data.models import Vulnerability, Nvd
 from data.models.nvd import default_nvd_view_options
 from data.models.vulnerability import VulnerabilityState
@@ -50,7 +48,7 @@ sqlakeysetserial.custom_unserializations = {
 
 # Create a catch all route for profile identifiers.
 @bp.route("/list")
-@admin_required()
+@requires(READ, 'Proposal')
 def list(vendor: str = None, profile: str = None):
     entries = db.session.query(Vulnerability, Nvd)
     entries = entries.filter(

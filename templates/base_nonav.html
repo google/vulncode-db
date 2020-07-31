@@ -9,10 +9,6 @@
 </head>
 
 <body>
-  {% if not config.MAINTENANCE_MODE %}
-  {% include 'navbar.html' %}
-  {% endif %}
-
   <div class="container-fluid">
     {% with messages = get_flashed_messages(with_categories=true) %}
 

@@ -13,52 +13,67 @@
 # limitations under the License.
 import datetime
 import os
+import logging
+import contextlib
+
+from flask import testing, appcontext_pushed, g
+from flask_migrate import upgrade as alembic_upgrade
+
+import requests
+import pytest
 
 import cfg
-import requests
+
 from data.database import DEFAULT_DATABASE
-from flask_migrate import upgrade as alembic_upgrade
-from lib.app_factory import create_app
-from data.models.user import User
+from data.models.user import User, Role, PredefinedRoles
 from data.models.vulnerability import Vulnerability, VulnerabilityState
 from data.models.vulnerability import VulnerabilityGitCommits
 from data.models.nvd import Cpe
 from data.models.nvd import Nvd
 from data.models.nvd import Reference
 from data.models.nvd import Description
-import pytest
+from lib.app_factory import create_app
 
 DOCKER_DB_URI = 'mysql+mysqldb://root:test_db_pass@tests-db:3306/main'
 TEST_CONFIG = {
-    'TESTING': True,
-    'WTF_CSRF_ENABLED': False,
-    'DEBUG': True,
-    'SQLALCHEMY_DATABASE_URI': DOCKER_DB_URI,
+    'TESTING':
+    True,
+    'WTF_CSRF_ENABLED':
+    False,
+    'DEBUG':
+    True,
+    'SQLALCHEMY_DATABASE_URI':
+    os.environ.get('SQLALCHEMY_DATABASE_URI', DOCKER_DB_URI),
     'SQLALCHEMY_ENGINE_OPTIONS': {
         'echo': False,  # log queries
         # 'echo_pool': True,  # log connections
     },
     'APPLICATION_ADMINS': ['admin@vulncode-db.com'],
-    'IS_LOCAL': False,
+    'IS_LOCAL':
+    False,
+    'RESTRICT_LOGIN':
+    False,
 }
 # Used for integration tests against the production environment.
 PROD_SERVER_URL = 'https://www.vulncode-db.com'
+
+log = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope='session')
 def app():
     app = create_app(TEST_CONFIG)
     # Establish an application context before running the tests.
-    ctx = app.app_context()
-    ctx.push()
-    yield app
-    ctx.pop()
+    with app.app_context():
+        yield app
 
 
 @pytest.fixture
-def client_without_db(app, request):
-    with app.test_client() as c:
-        yield c
+def client_without_db(app):
+    # create a new app context to clear flask.g after requests finished
+    with app.app_context():
+        with app.test_client() as client:
+            yield client
 
 
 class ResponseWrapper:
@@ -108,7 +123,7 @@ class RequestsClient(requests.Session):
 #      Pytest doesn't seem to correctly load db_session when appending it to
 #      fixturenames. This is mostly a performance issue for production tests.
 @pytest.fixture
-def client(app, request, db_session):
+def client(request, db_session, client_without_db):
     #request.fixturenames.append('db_session')
     if request.config.getoption("-m") == 'production':
         # Run production tests against the production service.
@@ -116,14 +131,13 @@ def client(app, request, db_session):
         yield requests_client
     else:
         #request.fixturenames.append('db_session')
-        with app.test_client() as c:
-            yield c
+        yield client_without_db
 
 
 @pytest.fixture(scope="session")
 def _db(app):
     """Returns session-wide initialised database."""
-    db = DEFAULT_DATABASE.db
+    db = app.extensions['sqlalchemy'].db
 
     # setup databases and tables
     with open(os.path.join(cfg.BASE_DIR, 'docker/db_schema.sql'), 'rb') as f:
@@ -140,15 +154,22 @@ def _db(app):
 
         # create data
         session = db.session
+        roles = [
+            Role(name=role)
+            for role in (PredefinedRoles.ADMIN, PredefinedRoles.USER)
+        ]
+        session.add_all(roles)
         users = [
             User(
                 email='admin@vulncode-db.com',
                 full_name='Admin McAdmin',
+                roles=roles,
             ),
             User(
                 email='user@vulncode-db.com',
                 full_name='User McUser',
-            )
+                roles=[roles[1]],
+            ),
         ]
         session.add_all(users)
 
@@ -242,11 +263,43 @@ def admin_user_info():
     return user_info
 
 
-def as_admin(client):
+def as_admin(client: testing.FlaskClient):
+    ui = admin_user_info()
     with client.session_transaction() as session:
-        session['user_info'] = admin_user_info()
+        session['user_info'] = ui
+        session['google_token'] = 'testing-admin'
+
+    user = User(full_name=ui['name'],
+                email=ui['email'],
+                profile_picture=ui['picture'])
+    user.roles = [
+        Role(name=PredefinedRoles.ADMIN),
+        Role(name=PredefinedRoles.REVIEWER),
+        Role(name=PredefinedRoles.USER),
+    ]
+    return user
 
 
-def as_user(client):
+def as_user(client: testing.FlaskClient):
+    ui = regular_user_info()
     with client.session_transaction() as session:
-        session['user_info'] = regular_user_info()
+        session['user_info'] = ui
+        session['google_token'] = 'testing-user'
+
+    user = User(full_name=ui['name'],
+                email=ui['email'],
+                profile_picture=ui['picture'])
+    user.roles = [
+        Role(name=PredefinedRoles.USER),
+    ]
+    return user
+
+
+@contextlib.contextmanager
+def set_user(app, user):
+    def handler(sender, **kwargs):
+        g.user = user
+        log.debug('Setting user %s', g.user)
+
+    with appcontext_pushed.connected_to(handler, app):
+        yield

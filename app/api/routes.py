@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Blueprint, request, current_app, g
+from flask import Blueprint, request, current_app, g, make_response, jsonify
 
-from app.auth.routes import admin_required
+from app.auth.acls import admin_required
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability.views.details import VulnerabilityDetails
 
@@ -28,6 +28,30 @@ from lib.utils import create_json_response
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 db = DEFAULT_DATABASE.db
+
+
+@bp.errorhandler(403)
+def api_403(ex=None):
+    """Return a 403 in JSON format."""
+    return make_response(jsonify({'error': 'Forbidden', 'code': 403}), 403)
+
+
+@bp.app_errorhandler(404)
+def api_404(ex=None):
+    """Return a 404 in JSON format."""
+    if request.path.startswith(bp.url_prefix):
+        return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
+    return ex
+
+
+@bp.errorhandler(500)
+def api_500(ex=None):
+    """Return a 500 in JSON format."""
+    return make_response(
+        jsonify({
+            'error': 'Internal server error',
+            'code': 500
+        }), 500)
 
 
 def calculate_revision_updates(wrapper, old, new, attrs):
@@ -128,6 +152,9 @@ def update_file_markers(file_obj, new_markers):
 @bp.route("/save_editor_data", methods=["POST"])
 @admin_required()
 def bug_save_editor_data():
+    if request.method != "POST":
+        return create_json_response("Accepting only POST requests.", 400)
+
     try:
         vulnerability_details = VulnerabilityDetails()
         vulnerability_details.validate_and_simplify_id()
@@ -135,72 +162,69 @@ def bug_save_editor_data():
         return create_json_response(str(ex), 400)
     vuln_view = vulnerability_details.vulnerability_view
 
-    if request.method == "POST":
-        if not vuln_view:
-            return create_json_response("Please create an entry first", 404)
+    if not vuln_view:
+        return create_json_response("Please create an entry first", 404)
 
-        if not vuln_view.master_commit:
-            current_app.logger.error(
-                f"Vuln (id: {vuln_view.id}) has no linked Git commits!")
-            return create_json_response("Entry has no linked Git link!", 404)
+    if not vuln_view.master_commit:
+        current_app.logger.error(
+            f"Vuln (id: {vuln_view.id}) has no linked Git commits!")
+        return create_json_response("Entry has no linked Git link!", 404)
 
-        master_commit = vulnerability_details.get_master_commit()
+    master_commit = vulnerability_details.get_master_commit()
 
-        # print("DATA: {request.json}"
-        old_files = master_commit.repository_files
-        current_app.logger.debug("%d old files", len(old_files))
-        # Flush any old custom content of this vulnerability first.
-        new_files = []
-        for file in request.get_json():
-            for old_file in old_files:
-                if old_file.file_path == file["path"] or \
-                   old_file.file_hash == file["hash"]:
-                    current_app.logger.debug(
-                        "Found old file: %s",
-                        (file["path"], file["hash"], file["name"]))
-                    file_obj = old_file
-                    break
-            else:
+    old_files = master_commit.repository_files
+    current_app.logger.debug("%d old files", len(old_files))
+    # Flush any old custom content of this vulnerability first.
+    new_files = []
+    for file in request.get_json():
+        for old_file in old_files:
+            if old_file.file_path == file["path"] or \
+                old_file.file_hash == file["hash"]:
                 current_app.logger.debug(
-                    "Creating new file: %s",
+                    "Found old file: %s",
                     (file["path"], file["hash"], file["name"]))
-                file_obj = RepositoryFiles(
-                    file_name=file["name"],
-                    file_path=file["path"],
-                    file_patch="DEPRECATED",
-                    file_hash=file["hash"],
-                )
-            # Create comment objects.
-            new_comments = []
-            for comment in file["comments"]:
-                comment_obj = RepositoryFileComments(
-                    row_from=comment["row_from"],
-                    row_to=comment["row_to"],
-                    text=comment["text"],
-                    sort_pos=comment["sort_pos"],
-                    creator=g.user,
-                )
-                new_comments.append(comment_obj)
-            update_file_comments(file_obj, new_comments)
-            # Create marker objects.
-            new_markers = []
-            for marker in file["markers"]:
-                marker_obj = RepositoryFileMarkers(
-                    row_from=marker["row_from"],
-                    row_to=marker["row_to"],
-                    column_from=marker["column_from"],
-                    column_to=marker["column_to"],
-                    marker_class=marker["class"],
-                    creator=g.user,
-                )
-                new_markers.append(marker_obj)
-            update_file_markers(file_obj, new_markers)
-            new_files.append(file_obj)
+                file_obj = old_file
+                break
+        else:
+            current_app.logger.debug(
+                "Creating new file: %s",
+                (file["path"], file["hash"], file["name"]))
+            file_obj = RepositoryFiles(
+                file_name=file["name"],
+                file_path=file["path"],
+                file_patch="DEPRECATED",
+                file_hash=file["hash"],
+            )
+        # Create comment objects.
+        new_comments = []
+        for comment in file["comments"]:
+            comment_obj = RepositoryFileComments(
+                row_from=comment["row_from"],
+                row_to=comment["row_to"],
+                text=comment["text"],
+                sort_pos=comment["sort_pos"],
+                creator=g.user,
+            )
+            new_comments.append(comment_obj)
+        update_file_comments(file_obj, new_comments)
+        # Create marker objects.
+        new_markers = []
+        for marker in file["markers"]:
+            marker_obj = RepositoryFileMarkers(
+                row_from=marker["row_from"],
+                row_to=marker["row_to"],
+                column_from=marker["column_from"],
+                column_to=marker["column_to"],
+                marker_class=marker["class"],
+                creator=g.user,
+            )
+            new_markers.append(marker_obj)
+        update_file_markers(file_obj, new_markers)
+        new_files.append(file_obj)
 
-        current_app.logger.debug("Setting %d files", len(new_files))
-        master_commit.repository_files = new_files
+    current_app.logger.debug("Setting %d files", len(new_files))
+    master_commit.repository_files = new_files
 
-        # Update / Insert entries into the database.
-        db.session.commit()
-        return create_json_response("Update successful.")
-    return create_json_response("Accepting only POST requests.", 400)
+    # Update / Insert entries into the database.
+    db.session.commit()
+    return create_json_response("Update successful.")

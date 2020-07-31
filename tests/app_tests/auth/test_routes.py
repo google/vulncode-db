@@ -11,43 +11,83 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
-
 from app.auth.routes import oauth
 from tests.conftest import as_user
 from tests.conftest import regular_user_info
+from tests.conftest import set_user
 
 
-def test_authenticated_users_get_redirected_to_home(client_without_db):
+def test_authenticated_users_get_redirected_to_home(app, client_without_db):
     client = client_without_db
-    as_user(client)
+    with set_user(app, as_user(client)):
+        with app.app_context():
+            resp = client.get('/auth/login')
+            assert resp.status_code == 302
+            assert resp.headers.get('Location') == 'http://localhost/'
 
+
+def test_unauthenticated_users_can_choose_login(client_without_db):
+    client = client_without_db
     resp = client.get('/auth/login')
-    assert resp.status_code == 302
-    assert resp.headers.get('Location') == 'http://localhost/'
+    assert resp.status_code == 200
+    assert b'fetch_profile' in resp.data
+    assert b'Sign in with Google' in resp.data
 
 
-def test_unauthenticated_users_get_redirected_to_oauth_consent_screen(
-        client_without_db):
+def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
+    client_without_db):
     client = client_without_db
-    resp = client.get('/auth/login')
+    resp = client.get('/auth/login?as_user=OAuth')
     assert resp.status_code == 302
-    assert resp.headers.get('Location').startswith(
-        'https://accounts.google.com/o/oauth2/v2/auth')
+    target = resp.headers.get('Location')
+    assert target.startswith('https://accounts.google.com/o/oauth2/v2/auth')
+    assert 'profile' not in target
+
+    resp = client.post('/auth/login?as_user=OAuth')
+    assert resp.status_code == 302
+    target = resp.headers.get('Location')
+    assert target.startswith('https://accounts.google.com/o/oauth2/v2/auth')
+    assert 'profile' not in target
+
+    resp = client.post('/auth/login?as_user=OAuth',
+                       data={'fetch_profile': 'false'})
+    assert resp.status_code == 302
+    target = resp.headers.get('Location')
+    assert target.startswith('https://accounts.google.com/o/oauth2/v2/auth')
+    assert 'profile' not in target
 
 
-def test_logout_clears_the_session(client_without_db):
+def test_users_get_redirected_to_full_oauth_consent_screen_with_optin(
+    client_without_db):
     client = client_without_db
-    as_user(client)
-
-    with client.session_transaction() as session:
-        session['something_else'] = True
-    resp = client.get('/auth/logout')
+    resp = client.post('/auth/login?as_user=OAuth',
+                       data={'fetch_profile': 'true'})
     assert resp.status_code == 302
-    assert resp.headers.get('Location') == 'http://localhost/'
-    with client.session_transaction() as session:
-        assert 'user_info' not in session
-        assert 'something_else' not in session
+    target = resp.headers.get('Location')
+    assert target.startswith('https://accounts.google.com/o/oauth2/v2/auth')
+    assert 'profile' in target
+
+
+def test_logout_clears_the_session(app, client_without_db):
+    client = client_without_db
+
+    with set_user(app, as_user(client)):
+        with app.app_context():
+            with client.session_transaction() as session:
+                session['something_else'] = True
+            # request /maintenance as it doesn't use the database
+            resp = client.get('/maintenance')
+            assert resp.status_code == 200
+            with client.session_transaction() as session:
+                assert 'user_info' in session
+                assert 'something_else' in session
+
+            resp = client.get('/auth/logout')
+            assert resp.status_code == 302
+            assert resp.headers.get('Location') == 'http://localhost/'
+            with client.session_transaction() as session:
+                assert 'user_info' not in session
+                assert 'something_else' not in session
 
 
 def test_authorization_callback_success(mocker, client_without_db):
@@ -94,7 +134,7 @@ def test_authorization_callback_success(mocker, client_without_db):
 
 
 def test_authorization_callback_access_denied_with_reason(
-        mocker, client_without_db):
+    mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
     mocker.patch('app.auth.routes.oauth.google.get')

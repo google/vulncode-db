@@ -13,3 +13,5 @@ mypy==0.770
 sqlalchemy-stubs==0.3
 # Used for crawl_patches.
 pandas==0.25.1
+# usability for flask shell
+flask-shell-ipython==0.4.1

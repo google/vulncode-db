@@ -34,6 +34,8 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: test_db_pass
+    ports:
+      - "127.0.0.1:3309:3306"
     expose:
       - "3306"
 

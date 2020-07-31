@@ -14,6 +14,8 @@ Flask-SQLAlchemy>=2.4.0
 Flask-WTF>=0.14.2
 marshmallow-sqlalchemy==0.17.0
 google-auth==1.6.1
+flask-bouncer==0.3.0
+bouncer==0.1.12
 # Flask-debugtoolbar requirements -------
 flask-debugtoolbar>=0.10.1
 setuptools>=40.6.3

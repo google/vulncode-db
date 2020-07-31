@@ -11,18 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
 from functools import wraps
 
 from flask import (session, request, url_for, abort, redirect, Blueprint, g,
                    current_app, flash, render_template)
 from authlib.integrations.flask_client import OAuth, OAuthError  # type: ignore
 
+from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE
-from data.models import User
+from data.models.user import User, Role, PredefinedRoles
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 db = DEFAULT_DATABASE.db
+log = logging.getLogger(__name__)
 
 
 def fetch_google_token():
@@ -34,6 +36,9 @@ def update_google_token(token):
     return session['google_token']
 
 
+MINIMAL_SCOPES = 'openid email'
+FULL_SCOPES = MINIMAL_SCOPES + ' profile'
+
 oauth = OAuth()  # pylint: disable=invalid-name
 oauth.register(
     name='google',  # nosec
@@ -42,10 +47,11 @@ oauth.register(
     'https://accounts.google.com/.well-known/openid-configuration',
     fetch_token=fetch_google_token,
     update_token=update_google_token,
-    client_kwargs={'scope': 'openid email profile'})
+    client_kwargs={'scope': MINIMAL_SCOPES})
 
 
-@bp.route("/login", methods=["GET"])
+@bp.route("/login", methods=["GET", "POST"])
+@skip_authorization
 def login():
     if is_authenticated():
         return redirect("/")
@@ -55,27 +61,62 @@ def login():
     if current_app.config["IS_LOCAL"] and as_user != "OAuth":
         if as_user in current_app.config["APPLICATION_ADMINS"]:
             session["user_info"] = {
-                'email': as_user,
-                'name': 'Admin ' + as_user.split("@", 1)[0],
-                'picture': 'https://google.com/',
+                'email':
+                as_user,
+                'name':
+                'Admin ' + as_user.split("@", 1)[0],
+                # https://de.wikipedia.org/wiki/Datei:User-admin.svg
+                'picture':
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/User-admin.svg/170px-User-admin.svg.png',
             }
-            session['google_token'] = "1337"
-            flash("Bypassed OAuth on local dev environment.")
+            session['google_token'] = '1337'
+        elif as_user == 'reviewer@vulncode-db.com':
+            session["user_info"] = {
+                'email':
+                as_user,
+                'name':
+                'Reviewer',
+                # https://de.wikipedia.org/wiki/Datei:Magnifying_glass_icon.svg
+                'picture':
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Magnifying_glass_icon.svg/240px-Magnifying_glass_icon.svg.png',
+            }
+            session['google_token'] = '1337'
+        elif as_user == 'user@vulncode-db.com':
+            session["user_info"] = {
+                'email':
+                as_user,
+                'name':
+                'User 1',
+                # https://de.wikipedia.org/wiki/Datei:User_font_awesome.svg
+                'picture':
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/User_font_awesome.svg/240px-User_font_awesome.svg.png',
+            }
+            session['google_token'] = '1337'
+        if session.get('google_token') == '1337':
+            flash("Bypassed OAuth on local dev environment.", 'info')
             return redirect("/")
         return render_template("local_login.html",
                                users=current_app.config["APPLICATION_ADMINS"])
+    elif as_user == 'OAuth':
+        if request.form.get('fetch_profile') != 'true':
+            return oauth.google.authorize_redirect(
+                redirect_uri=url_for("auth.authorized", _external=True))
 
-    return oauth.google.authorize_redirect(
-        redirect_uri=url_for("auth.authorized", _external=True))
+        return oauth.google.authorize_redirect(redirect_uri=url_for(
+            "auth.authorized", _external=True),
+                                               scope=FULL_SCOPES)
+    return render_template('login.html')
 
 
 @bp.route("/logout", methods=["GET"])
+@skip_authorization
 def logout():
     session.clear()
     return redirect("/")
 
 
 @bp.route("/authorized")
+@skip_authorization
 def authorized():
     if "error_reason" in request.args:
         error_message = "Access denied"
@@ -102,35 +143,65 @@ def is_admin():
     return False
 
 
+def get_or_create_role(name) -> Role:
+    role = Role.query.filter_by(name=name).first()
+    if not role:
+        role = Role(name=name)
+        db.session.add(role)
+    return role
+
+
 @bp.before_app_request
 def load_user():
-    user = None
-
-    # Ignore all non-admin users for now.
-    if not is_admin():
+    if not is_authenticated():
         g.user = None
         return
 
-    # Ignore all non-admin users during maintenance mode.
-    if current_app.config["MAINTENANCE_MODE"]:
+    log.debug('Loading user')
+
+    # Ignore all non-admin users during maintenance or restricted mode.
+    if (current_app.config["MAINTENANCE_MODE"]
+            or current_app.config['RESTRICT_LOGIN']
+            and not current_app.config['IS_LOCAL']) and not is_admin():
+        logout()
+        flash('Login restricted.', 'danger')
         return
 
-    if is_authenticated():
-        data = session["user_info"]
-        email = data["email"]
+    # don't override existing user
+    if getattr(g, 'user', None) is not None:
+        log.debug('Reusing existing user %s', g.user)
+        return
 
-        user = User.query.filter_by(email=email).one_or_none()
-        if not user:
-            user = User(email=email,
-                        full_name=data["name"],
-                        profile_picture=data["picture"])
-        else:
+    data = session["user_info"]
+    email = data["email"]
+
+    user = User.query.filter_by(email=email).one_or_none()
+    if not user:
+        name, host = email.rsplit('@', 1)
+        log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
+        user = User(email=email,
+                    full_name=data.get("name", name),
+                    profile_picture=data.get("picture"))
+    else:
+        log.info('Updating user %s', user)
+        if 'name' in data:
             user.full_name = data["name"]
+        if 'picture' in data:
             user.profile_picture = data["picture"]
-        db.session.add(user)
-        db.session.commit()
+
+    # update automatic roles
+    user.roles.append(get_or_create_role(PredefinedRoles.USER))
+    email = session["user_info"]["email"]
+    if email in current_app.config["APPLICATION_ADMINS"]:
+        user.roles.append(get_or_create_role(PredefinedRoles.ADMIN))
+        user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
+    elif email == 'reviewer@vulncode-db.com':
+        user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
+    db.session.add(user)
+    db.session.commit()
 
     g.user = user
+    log.debug('Loaded user %s', g.user)
 
 
 def is_authenticated():
@@ -141,7 +212,7 @@ def is_authenticated():
         return False
 
     # Allow OAuth bypass on local dev environment.
-    if current_app.config["IS_LOCAL"] and session['google_token'] == '1337':
+    if current_app.config['IS_LOCAL'] and session['google_token'] == '1337':
         return True
 
     try:
@@ -156,43 +227,3 @@ def is_authenticated():
 
     session['user_info'] = data
     return True
-
-
-def login_required(do_redirect=False):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if not is_authenticated():
-                if do_redirect:
-                    session["redirect_path"] = request.full_path
-                    return oauth.google.authorize_redirect(
-                        redirect_uri=url_for("auth.authorized",
-                                             _external=True))
-                return abort(401)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
-
-
-def admin_required(do_redirect=False):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if not is_admin():
-                if current_app.config["IS_LOCAL"]:
-                    flash(
-                        "Admin access was granted without login for local dev "
-                        "environment.", "success")
-                elif do_redirect:
-                    session["redirect_path"] = request.full_path
-                    return oauth.google.authorize_redirect(
-                        redirect_uri=url_for("auth.authorized",
-                                             _external=True))
-                return abort(401)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
