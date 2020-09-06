@@ -35,8 +35,7 @@ bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
 
 
-def _get_vulnerability_details(vcdb_id,
-                               vuln_id=None,
+def _get_vulnerability_details(vcdb_id, vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
@@ -51,12 +50,13 @@ def _get_vulnerability_details(vcdb_id,
 
 
 def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
+    form.populate_obj(vuln)
     vuln.make_reviewable()
     db.session.add(vuln)
     db.session.commit()
 
     flash(
-        "Your proposal was sent for review. You can monitor progress in your Proposals Section.",
+        "Your proposal is in the review queue. You can monitor progress in your Proposals Section.",
         "success")
 
 

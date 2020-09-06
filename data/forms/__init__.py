@@ -48,12 +48,12 @@ class CommitLinksForm(FlaskForm):
                                     validators.URL()])
     commit_hash = StringField("Commit Hash", validators=[])
 
+    # Commit data is optional -> otherwise use: validators.DataRequired(),
     commit_link = StringField(
         "Main comit link",
-        validators=[validators.DataRequired(),
+        validators=[validators.Optional(),
                     validators.URL()])
-    repo_name = StringField("Repository Name",
-                            validators=[validators.DataRequired()])
+    repo_name = StringField("Repository Name", validators=[])
 
     class Meta:
         csrf = False
