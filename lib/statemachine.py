@@ -232,9 +232,11 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
         obj.__init__ = lambda self: None
         return obj
 
-    def __init__(self):
-        cls = type(self)
-        self._change_state(cls.__new__(cls, 0))
+    def __init__(self, state=None):
+        if state is None:
+            cls = type(self)
+            state = cls.__new__(cls, 0)
+        self._change_state(state)
 
     def _change_state(self, state):
         self.current_state = state
@@ -245,6 +247,9 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
     def next_state(self, next_state):
         """Try to transition to the given state."""
 
+        if hasattr(self, '_value_'):
+            sm = type(self)(self)
+            return sm.next_state(next_state)
         try:
             transitions = self.__change_listeners__[(self.current_state.value,
                                                      next_state.value)]
@@ -258,6 +263,7 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
                     raise TransitionDenied(trans.name, self.current_state,
                                            next_state, res)
             self._change_state(next_state)
+            return self.current_state
         except KeyError:
             raise NoTransition(self.current_state, next_state) from None
 

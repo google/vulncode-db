@@ -50,6 +50,18 @@ def users():
                 user = User.query.get_or_404(user_id)
                 db.session.delete(user)
             db.session.commit()
+        elif action == 'enable':
+            for user_id in user_ids:
+                user = User.query.get_or_404(user_id)
+                user.enable()
+                changed_users.append(user)
+            db.session.commit()
+        elif action == 'block':
+            for user_id in user_ids:
+                user = User.query.get_or_404(user_id)
+                user.block()
+                changed_users.append(user)
+            db.session.commit()
         else:
             flash('Invalid action', 'danger')
 

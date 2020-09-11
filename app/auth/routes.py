@@ -20,21 +20,11 @@ from authlib.integrations.flask_client import OAuth, OAuthError  # type: ignore
 
 from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE
-from data.models.user import User, Role, PredefinedRoles
+from data.models.user import User, Role, PredefinedRoles, UserState
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 db = DEFAULT_DATABASE.db
 log = logging.getLogger(__name__)
-
-
-def fetch_google_token():
-    return session.get('google_token')
-
-
-def update_google_token(token):
-    session['google_token'] = token
-    return session['google_token']
-
 
 MINIMAL_SCOPES = 'openid email'
 FULL_SCOPES = MINIMAL_SCOPES + ' profile'
@@ -45,8 +35,6 @@ oauth.register(
     api_base_url='https://www.googleapis.com/',
     server_metadata_url=
     'https://accounts.google.com/.well-known/openid-configuration',
-    fetch_token=fetch_google_token,
-    update_token=update_google_token,
     client_kwargs={'scope': MINIMAL_SCOPES})
 
 
@@ -69,7 +57,6 @@ def login():
                 'picture':
                 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/User-admin.svg/170px-User-admin.svg.png',
             }
-            session['google_token'] = '1337'
         elif as_user == 'reviewer@vulncode-db.com':
             session["user_info"] = {
                 'email':
@@ -80,7 +67,6 @@ def login():
                 'picture':
                 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Magnifying_glass_icon.svg/240px-Magnifying_glass_icon.svg.png',
             }
-            session['google_token'] = '1337'
         elif as_user == 'user@vulncode-db.com':
             session["user_info"] = {
                 'email':
@@ -91,12 +77,13 @@ def login():
                 'picture':
                 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/User_font_awesome.svg/240px-User_font_awesome.svg.png',
             }
-            session['google_token'] = '1337'
-        if session.get('google_token') == '1337':
-            flash("Bypassed OAuth on local dev environment.", 'info')
-            return redirect("/")
-        return render_template("local_login.html",
-                               users=current_app.config["APPLICATION_ADMINS"])
+        else:
+            return render_template(
+                "local_login.html",
+                users=current_app.config["APPLICATION_ADMINS"])
+
+        flash("Bypassed OAuth on local dev environment.", 'info')
+        return redirect("/")
     elif as_user == 'OAuth':
         if request.form.get('fetch_profile') != 'true':
             return oauth.google.authorize_redirect(
@@ -112,6 +99,7 @@ def login():
 @skip_authorization
 def logout():
     session.clear()
+    g.user = None
     return redirect("/")
 
 
@@ -153,6 +141,14 @@ def get_or_create_role(name) -> Role:
 
 @bp.before_app_request
 def load_user():
+    # continue for assets
+    if request.path.startswith('/static'):
+        return
+
+    # continue for logout page
+    if request.path == url_for('auth.logout'):
+        return
+
     if not is_authenticated():
         g.user = None
         return
@@ -176,54 +172,53 @@ def load_user():
     email = data["email"]
 
     user = User.query.filter_by(email=email).one_or_none()
+    is_new = False
+    is_changed = False
     if not user:
         name, host = email.rsplit('@', 1)
         log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
         user = User(email=email,
                     full_name=data.get("name", name),
                     profile_picture=data.get("picture"))
+        is_new = True
     else:
         log.info('Updating user %s', user)
-        if 'name' in data:
+        if 'name' in data and user.full_name != data['name']:
             user.full_name = data["name"]
-        if 'picture' in data:
+            is_changed = True
+        if 'picture' in data and user.profile_picture != data['picture']:
             user.profile_picture = data["picture"]
+            is_changed = True
 
     # update automatic roles
-    user.roles.append(get_or_create_role(PredefinedRoles.USER))
-    email = session["user_info"]["email"]
+    if is_new:
+        user.roles.append(get_or_create_role(PredefinedRoles.USER))
+
     if email in current_app.config["APPLICATION_ADMINS"]:
         user.roles.append(get_or_create_role(PredefinedRoles.ADMIN))
         user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
+        if is_new:
+            user.state = UserState.ACTIVE
+        is_changed = True
     elif email == 'reviewer@vulncode-db.com':
         user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
-    db.session.add(user)
-    db.session.commit()
+        is_changed = True
 
-    g.user = user
-    log.debug('Loaded user %s', g.user)
+    if is_changed or is_new:
+        log.info('Saving user %s', user)
+        db.session.add(user)
+        db.session.commit()
+
+    if user.is_blocked():
+        logout()
+        flash('Account blocked', 'danger')
+    elif user.is_enabled():
+        g.user = user
+        log.debug('Loaded user %s', g.user)
+    else:
+        logout()
+        flash('Account not yet activated', 'danger')
 
 
 def is_authenticated():
-    if 'user_info' in session:
-        return True
-
-    if 'google_token' not in session:
-        return False
-
-    # Allow OAuth bypass on local dev environment.
-    if current_app.config['IS_LOCAL'] and session['google_token'] == '1337':
-        return True
-
-    try:
-        resp = oauth.google.get(
-            'https://www.googleapis.com/oauth2/v2/userinfo')
-        data = resp.json()
-    except OAuthError as ex:
-        current_app.logger.exception(
-            f"Error during handling the oauth response: {ex.error}")
-        del session['google_token']
-        return False
-
-    session['user_info'] = data
-    return True
+    return 'user_info' in session

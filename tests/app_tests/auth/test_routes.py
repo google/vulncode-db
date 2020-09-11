@@ -13,8 +13,9 @@
 # limitations under the License.
 from app.auth.routes import oauth
 from tests.conftest import as_user
-from tests.conftest import regular_user_info
+from tests.conftest import regular_user_info, blocked_user_info
 from tests.conftest import set_user
+from authlib.oidc.core import UserInfo
 
 
 def test_authenticated_users_get_redirected_to_home(app, client_without_db):
@@ -93,25 +94,22 @@ def test_logout_clears_the_session(app, client_without_db):
 def test_authorization_callback_success(mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
-    mocker.patch('app.auth.routes.oauth.google.get')
+    mocker.patch('app.auth.routes.oauth.google.parse_id_token')
 
     oauth.google.authorize_access_token.return_value = {
         'access_token': 'TOKEN'
     }
 
-    class Resp:
-        def json(self):
-            return regular_user_info()
-
-    oauth.google.get.return_value = Resp()
+    oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
 
     resp = client.get('/auth/authorized')
 
     assert resp.status_code == 302
     assert resp.headers.get('Location') == 'http://localhost/'
 
-    assert oauth.google.authorize_access_token.called_once()
-    assert oauth.google.get.called_once_with("getuserinfo", token='TOKEN')
+    oauth.google.authorize_access_token.assert_called_once()
+    oauth.google.parse_id_token.assert_called_once_with(
+        {'access_token': 'TOKEN'})
     with client.session_transaction() as session:
         assert 'user_info' in session
 
@@ -128,7 +126,7 @@ def test_authorization_callback_success(mocker, client_without_db):
 #     #assert resp.status_code == 200
 #     #assert b'Access denied' in resp.data
 #
-#     assert oauth.google.authorize_access_token.called_once()
+#     oauth.google.authorize_access_token.assert_called_once()
 #     with client.session_transaction() as session:
 #         assert 'user_info' not in session
 
@@ -149,7 +147,7 @@ def test_authorization_callback_access_denied_with_reason(
     assert b'testing_unauthenticated' in resp.data
     assert b'just testing' in resp.data
 
-    assert oauth.google.authorize_access_token.called_once()
+    assert not oauth.google.authorize_access_token.called
     with client.session_transaction() as session:
         assert 'user_info' not in session
 
@@ -157,17 +155,13 @@ def test_authorization_callback_access_denied_with_reason(
 def test_authorization_callback_redirect(mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
-    mocker.patch('app.auth.routes.oauth.google.get')
+    mocker.patch('app.auth.routes.oauth.google.parse_id_token')
 
     oauth.google.authorize_access_token.return_value = {
         'access_token': 'TOKEN'
     }
 
-    class Resp:
-        def json(self):
-            return regular_user_info()
-
-    oauth.google.get.return_value = Resp()
+    oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
 
     with client.session_transaction() as session:
         session['redirect_path'] = '/FOO'
@@ -177,8 +171,38 @@ def test_authorization_callback_redirect(mocker, client_without_db):
     assert resp.status_code == 302
     assert resp.headers.get('Location') == 'http://localhost/FOO'
 
-    assert oauth.google.authorize_access_token.called_once()
-    assert oauth.google.get.called_once_with("getuserinfo", token='TOKEN')
+    oauth.google.authorize_access_token.assert_called_once()
+    oauth.google.parse_id_token.assert_called_once_with(
+        {'access_token': 'TOKEN'})
     with client.session_transaction() as session:
         assert 'user_info' in session
         assert 'redirect_path' not in session
+
+
+def test_blocked_user(mocker, client):
+    mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
+    mocker.patch('app.auth.routes.oauth.google.parse_id_token')
+
+    oauth.google.authorize_access_token.return_value = {
+        'access_token': 'TOKEN'
+    }
+
+    oauth.google.parse_id_token.return_value = UserInfo(blocked_user_info())
+
+    resp = client.get('/auth/authorized')
+
+    assert resp.status_code == 302
+    assert resp.headers.get('Location') == 'http://localhost/'
+
+    oauth.google.authorize_access_token.assert_called_once()
+    oauth.google.parse_id_token.assert_called_once_with(
+        {'access_token': 'TOKEN'})
+    with client.session_transaction() as session:
+        assert 'user_info' in session
+
+    resp = client.get('/')
+
+    assert resp.status_code == 200
+
+    with client.session_transaction() as session:
+        assert 'user_info' not in session

@@ -114,7 +114,7 @@ def register_extensions(app, test_config=None):
     # Note: no JS/CSS or other resources are used from this package though.
     Bootstrap(app)
 
-    public_paths = ['/favicon.ico']
+    public_paths = ['/favicon.ico', '/static/']
 
     # Setup CSRF protection.
     csrf = CSRFProtect()

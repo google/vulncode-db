@@ -46,6 +46,8 @@
                     <option value="assign">Assign role</option>
                     <option value="unassign">Unassign role</option>
                     <option value="delete">Delete</option>
+                    <option value="block">Block</option>
+                    <option value="enable">Enable</option>
                   </select>
                   <select class="form-control" id="roles" name="role" style="display: none">
                     <option>---</option>
@@ -54,6 +56,8 @@
                     {% endfor %}
                   </select>
                   <button class="btn btn-danger btn-sm" id="delete-btn" style="display: none" type="button" data-toggle="modal" data-target="#confirmDelete">Delete</button>
+                  <button class="btn btn-danger btn-sm" id="block-btn" style="display: none">Block</button>
+                  <button class="btn btn-success btn-sm" id="enable-btn" style="display: none">Enable</button>
                   <button class="btn btn-primary btn-sm" id="save-btn" style="display: none">Save</button>
                 </div>
                 <!-- User table -->
@@ -63,6 +67,7 @@
                       <th scope="col"><input id="global-checkbox" type="checkbox"></th>
                       <th scope="col">ID</th>
                       <th scope="col">Username</th>
+                      <th scope="col">State</th>
                       <th scope="col">Roles</th>
                       <th scope="col">Actions</th>
                     </tr>
@@ -73,9 +78,15 @@
                       <td scope="row"><input type="checkbox" name="user" value="{{ user.id }}"></td>
                       <td>{{ user.id }}</td>
                       <td>{{ user.name }}</td>
+                      <td>{{ user.state.name }}</td>
                       <td>{{ user.roles|join(', ') }}</td>
                       <td>
                         <button class="btn btn-danger" type="button" data-action="delete" data-user="{{ user.id }}">Delete</button>
+                        {% if user.is_enabled() %}
+                        <button class="btn btn-danger" type="button" data-action="block" data-user="{{ user.id }}">Block</button>
+                        {% else %}
+                        <button class="btn btn-success" type="button" data-action="enable" data-user="{{ user.id }}">Enable</button>
+                        {% endif %}
                       </td>
                     </tr>
                     {% endfor %}
@@ -114,7 +125,10 @@
     const rolesSelect = document.getElementById('roles');
     const saveBtn = document.getElementById('save-btn');
     const deleteBtn = document.getElementById('delete-btn');
+    const blockBtn = document.getElementById('block-btn');
+    const enableBtn = document.getElementById('enable-btn');
     const boxes = document.getElementById('users-table').querySelectorAll('td > [type=checkbox]');
+    const btns = [saveBtn, deleteBtn, enableBtn, blockBtn];
 
     globalBox.addEventListener('change', function() {
       const state = this.checked;
@@ -125,19 +139,26 @@
 
     actionSelect.addEventListener('change', function() {
       roles.style.display = 'none';
-      saveBtn.style.display = 'none';
-      deleteBtn.style.display = 'none';
+      for (const btn of btns) {
+        btn.style.display = 'none';
+      }
       if (this.value === 'assign' || this.value === 'unassign') {
         roles.style.display = null;
       } else if (this.value === 'delete') {
         deleteBtn.style.display = null;
+      } else if (this.value === 'enable') {
+        enableBtn.style.display = null;
+      } else if (this.value === 'block') {
+        blockBtn.style.display = null;
       } else {
         roles.value = '---';
       }
     });
 
     rolesSelect.addEventListener('change', function() {
-      deleteBtn.style.display = 'none';
+      for (const btn of btns) {
+        btn.style.display = 'none';
+      }
       if (this.value !== '---') {
         saveBtn.style.display = null;
       }
@@ -164,6 +185,25 @@
           usersForm.removeChild(action);
           $('#confirmDelete').off('hidden.bs.modal', handler);
         }).modal('show');
+      });
+    }
+
+    const userButtons = document.querySelectorAll('[data-action="block"],[data-action="enable"]');
+    for(const btn of userButtons) {
+      btn.addEventListener('click', (ev) => {
+        const btn = ev.target;
+        const userId = btn.dataset.user;
+        const user = document.createElement('input');
+        user.type = 'hidden';
+        user.name = 'user';
+        user.value = userId;
+        const action = document.createElement('input');
+        action.type = 'hidden';
+        action.name = 'action';
+        action.value = btn.dataset.action;
+        usersForm.appendChild(user);
+        usersForm.appendChild(action);
+        usersForm.submit();
       });
     }
   })();

@@ -13,11 +13,12 @@
 # limitations under the License.
 import enum
 
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 
 from data.utils import populate_models
 from data.models.base import MainBase, BaseModel
+from lib.statemachine import StateMachine, transition
 
 
 class PredefinedRoles(enum.Enum):
@@ -48,11 +49,23 @@ class Role(MainBase):
         return self.name
 
 
+class UserState(StateMachine):
+    REGISTERED = 0
+    ACTIVE = 1
+    BLOCKED = 2
+
+    enable = transition(REGISTERED, ACTIVE)()
+    disable = transition(ACTIVE, BLOCKED)()
+
+
 class User(MainBase):
     email = Column(String(256), unique=True, nullable=False)
     full_name = Column(String(256), nullable=True)
     profile_picture = Column(String(256), nullable=True)
     roles = relationship(Role, secondary='user_role', back_populates='users')
+    state = Column(Enum(UserState),
+                   default=UserState.REGISTERED,
+                   nullable=False)
 
     @property
     def name(self):
@@ -74,6 +87,18 @@ class User(MainBase):
 
     def is_reviewer(self):
         return self._has_role(PredefinedRoles.REVIEWER)
+
+    def is_enabled(self):
+        return self.state == UserState.ACTIVE
+
+    def is_blocked(self):
+        return self.state == UserState.BLOCKED
+
+    def block(self):
+        self.state.next_state(UserState.BLOCKED)
+
+    def enable(self):
+        self.state = self.state.next_state(UserState.ACTIVE)
 
 
 # must be set after all definitions

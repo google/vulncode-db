@@ -25,7 +25,7 @@ import pytest
 import cfg
 
 from data.database import DEFAULT_DATABASE
-from data.models.user import User, Role, PredefinedRoles
+from data.models.user import User, Role, PredefinedRoles, UserState
 from data.models.vulnerability import Vulnerability, VulnerabilityState
 from data.models.vulnerability import VulnerabilityGitCommits
 from data.models.nvd import Cpe
@@ -164,11 +164,19 @@ def _db(app):
                 email='admin@vulncode-db.com',
                 full_name='Admin McAdmin',
                 roles=roles,
+                state=UserState.ACTIVE,
             ),
             User(
                 email='user@vulncode-db.com',
                 full_name='User McUser',
                 roles=[roles[1]],
+                state=UserState.ACTIVE,
+            ),
+            User(
+                email='blocked@vulncode-db.com',
+                full_name='Blocked User',
+                roles=[roles[1]],
+                state=UserState.BLOCKED,
             ),
         ]
         session.add_all(users)
@@ -263,11 +271,19 @@ def admin_user_info():
     return user_info
 
 
+def blocked_user_info():
+    user_info = {
+        'email': 'blocked@vulncode-db.com',
+        'name': 'Blocked User',
+        'picture': 'https://google.com/',
+    }
+    return user_info
+
+
 def as_admin(client: testing.FlaskClient):
     ui = admin_user_info()
     with client.session_transaction() as session:
         session['user_info'] = ui
-        session['google_token'] = 'testing-admin'
 
     user = User(full_name=ui['name'],
                 email=ui['email'],
@@ -284,7 +300,6 @@ def as_user(client: testing.FlaskClient):
     ui = regular_user_info()
     with client.session_transaction() as session:
         session['user_info'] = ui
-        session['google_token'] = 'testing-user'
 
     user = User(full_name=ui['name'],
                 email=ui['email'],
