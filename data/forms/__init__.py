@@ -15,12 +15,20 @@
 from flask_wtf import FlaskForm  # type: ignore
 from wtforms import (  # type: ignore
     StringField, TextAreaField, SubmitField, FieldList, FormField,
-    IntegerField,
-)
+    IntegerField, HiddenField, BooleanField)
 from wtforms import validators
 
 from data.models import VulnerabilityGitCommits
 from data.models.base import db
+
+
+class BaseForm(FlaskForm):
+    @property
+    def non_hidden_fields(self):
+        for field in self:
+            if isinstance(field, HiddenField):
+                continue
+            yield field
 
 
 class ModelFieldList(FieldList):
@@ -116,3 +124,10 @@ class VulnerabilityProposalPublish(FlaskForm):
 class VulnerabilityDeleteForm(FlaskForm):
     delete_entry = IntegerField("Delete entry", [validators.required()])
     submit = SubmitField()
+
+
+class UserProfileForm(BaseForm):
+    full_name = StringField("Full Name")
+    profile_picture = StringField("Profile URL", validators=[validators.URL()])
+    hide_name = BooleanField("Hide Name")
+    hide_picture = BooleanField("Hide Picture")

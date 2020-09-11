@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import (Blueprint, render_template, g, abort, flash)
+from flask import (Blueprint, render_template, g, abort, flash, request)
 from sqlakeyset import get_page
 from sqlalchemy import desc
 from bouncer.constants import READ, EDIT
 
-from app.auth.acls import skip_authorization, requires
+from app.auth.acls import skip_authorization, requires, ensure
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability.views.details import VulnerabilityDetails
 from app.vulnerability.views.vulncode_db import (
     VulnViewTypesetPaginationObjectWrapper, )
 
 from app import flash_error
-from data.forms import VulnerabilityDetailsForm
-from data.models import Vulnerability, Nvd
+from data.forms import VulnerabilityDetailsForm, UserProfileForm
+from data.models import Vulnerability, Nvd, User
 from data.models.nvd import default_nvd_view_options
 from data.models.vulnerability import VulnerabilityState
 from data.database import DEFAULT_DATABASE
@@ -35,7 +35,8 @@ bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
 
 
-def _get_vulnerability_details(vcdb_id, vuln_id=None,
+def _get_vulnerability_details(vcdb_id,
+                               vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
@@ -120,3 +121,25 @@ def view_proposals(vendor: str = None, profile: str = None):
         proposal_vulns=proposal_vulns,
         proposal_vulns_processed=proposal_vulns_processed,
     )
+
+
+import flask_wtf.csrf
+
+
+@bp.route("/", methods=["GET", "POST"])
+@bp.route("/<int:user_id>", methods=["GET", "POST"])
+def index(user_id=None):
+    if user_id is None:
+        user = g.user
+    else:
+        user: User = User.query.get_or_404(user_id)
+    if request.method == "GET":
+        ensure(READ, user)
+    else:
+        ensure(EDIT, user)
+    form = UserProfileForm(obj=user)
+    if form.validate_on_submit():
+        form.populate_obj(user)
+        db.session.add(user)
+        db.session.commit()
+    return render_template("profile/index.html", form=form, user=user)

@@ -142,13 +142,13 @@ def register_extensions(app, test_config=None):
     bouncer.init_app(app)
 
     def check_or_404(response: Response):
-        if response.status_code == 404:
+        if response.status_code // 100 != 2:
             return response
         try:
             return bouncer.check_authorization(response)
         except Forbidden:
-            logging.warning('Automatically denied access to response of %s',
-                            request.path)
+            logging.warning('Automatically denied access to response %d of %s',
+                            response.status_code, request.path)
             raise
 
     app.after_request(check_or_404)

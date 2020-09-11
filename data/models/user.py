@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import enum
+import re
 
-from sqlalchemy import Column, String, Integer, ForeignKey, Enum
+from sqlalchemy import Column, String, Integer, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import relationship
 
 from data.utils import populate_models
@@ -66,10 +67,37 @@ class User(MainBase):
     state = Column(Enum(UserState),
                    default=UserState.REGISTERED,
                    nullable=False)
+    hide_name = Column(Boolean, nullable=False, default=True)
+    hide_picture = Column(Boolean, nullable=False, default=True)
 
     @property
     def name(self):
+        if self.hide_name:
+            return f'User {self.id}'
+        elif self.full_name:
+            return self.full_name
         return self.email.split("@", 1)[0]
+
+    @property
+    def avatar(self):
+        if self.hide_picture or not self.profile_picture:
+            return ''
+        return self.profile_picture
+
+    def profile_picture_resized(self, px):
+        pic = None
+        if self.profile_picture:
+            pic = self._resize(self.profile_picture, px)
+        return pic
+
+    def avatar_resized(self, px):
+        return self._resize(self.avatar, px)
+
+    def _resize(self, pic, px):
+        if 'googleusercontent.com' in pic:
+            pic = re.sub(r'/photo', f'/s{px}-cc-rw/photo', pic)
+            pic = re.sub(r'([=/])s\d+-', fr'\1s{px}-', pic)
+        return pic
 
     def to_json(self):
         """Serialize object properties as dict."""

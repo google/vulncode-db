@@ -16,7 +16,7 @@ import logging
 from functools import wraps
 
 from flask_bouncer import Bouncer, requires, skip_authorization, ensure
-from bouncer import Rule
+from bouncer.models import RuleList
 from bouncer.constants import ALL, MANAGE, READ
 from werkzeug.exceptions import Forbidden
 
@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 
 @bouncer.authorization_method
-def authorize(user: User, they: Rule):
+def authorize(user: User, they: RuleList):
     def per_role(cls):
         """Reads _permissions from the given class and creates rules from it."""
         perms = getattr(cls, '_permissions')
@@ -53,6 +53,7 @@ def authorize(user: User, they: Rule):
                     they.can(action, cls, check)
 
     if user is not None:
+        they.can(MANAGE, User, id=user.id)
         if user.is_reviewer():
             # reviewers can see the list of proposals
             they.can(READ, 'Proposal')

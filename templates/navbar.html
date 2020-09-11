@@ -19,11 +19,23 @@
       <li class="nav-item">
         {% if g.user %}
       <li>
+        <span class="navbar-brand">
         {% if g.user.profile_picture %}
-        <img src="{{ g.user.profile_picture|replace("/photo", "/s30-cc-rw/photo") }}" width="30" height="30">
+          <img src="{{ g.user.profile_picture_resized(30) }}" class="avatar_small d-inline-block align-top">
         {% endif %}
-        <span class="navbar-brand">{{ g.user.full_name }}</span>
+          <a href="{{ url_for("profile.index") }}">{{ g.user.full_name }}</a>
+        </span>
       </li>
+      {% if is_admin() %}
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Admin
+        </a>
+        <div class="dropdown-menu" aria-labelledby="adminDropdown">
+          <a class="dropdown-item" href="{{ url_for("admin.users") }}">Users</a>
+        </div>
+      </li>
+      {% endif %}
       {% if is_reviewer() %}
       <li class="nav-item">
         <a class="nav-link" href="{{ url_for('review.list') }}">

@@ -362,3 +362,15 @@ iframe.terms {
   width: 100%;
   height: 50em;
 }
+
+
+img.avatar_profile {
+  width: 96px;
+  max-height: 96px;
+}
+
+
+img.avatar_small {
+  width: 30px;
+  max-height: 30px;
+}

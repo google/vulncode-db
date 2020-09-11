@@ -1,0 +1,36 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% extends "base.html" %}
+
+
+{% block main_content %}
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2 class="text-center">My Profile</h2>
+    </div>
+</div>
+<div class="row my-3">
+    <div class="col-sm-8 offset-md-2">
+        <div class="card my-3">
+            <div class="card-body">
+              <form method="POST" name="terms_form">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form, hiddens="only") }}
+                {% for field in form.non_hidden_fields %}
+                  {{ wtf.form_field(field) }}
+                {% endfor %}
+
+                <button type="submit" class="btn btn-success">Save</button>
+              </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-2 d-flex justify-content-center">
+        <div class="card my-3">
+            <div class="card-body">
+              <img src="{{ user.avatar_resized(96) }}" alt="profile picture" class="img-thumbnail avatar_profile">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock main_content %}
