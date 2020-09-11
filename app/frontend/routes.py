@@ -45,3 +45,9 @@ def maintenance():
 def list_entries():
     vcdb = VulncodeDB()
     return render_template("list_vuln_entries.html", vcdb=vcdb)
+
+
+@bp.route("/terms")
+@skip_authorization
+def terms():
+    return render_template("terms_text.html")

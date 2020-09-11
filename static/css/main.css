@@ -356,3 +356,9 @@ pre {
   color: black;
   font-weight: bold;
 }
+
+
+iframe.terms {
+  width: 100%;
+  height: 50em;
+}

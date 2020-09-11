@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pytest
+
 from app.auth.routes import oauth
 from tests.conftest import as_user
 from tests.conftest import regular_user_info, blocked_user_info
@@ -36,7 +38,7 @@ def test_unauthenticated_users_can_choose_login(client_without_db):
 
 
 def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
-        client_without_db):
+    client_without_db):
     client = client_without_db
     resp = client.get('/auth/login?as_user=OAuth')
     assert resp.status_code == 302
@@ -59,7 +61,7 @@ def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
 
 
 def test_users_get_redirected_to_full_oauth_consent_screen_with_optin(
-        client_without_db):
+    client_without_db):
     client = client_without_db
     resp = client.post('/auth/login?as_user=OAuth',
                        data={'fetch_profile': 'true'})
@@ -95,12 +97,14 @@ def test_authorization_callback_success(mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
     mocker.patch('app.auth.routes.oauth.google.parse_id_token')
+    query = mocker.patch('data.models.user.User.query')
 
     oauth.google.authorize_access_token.return_value = {
         'access_token': 'TOKEN'
     }
 
     oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
+    query.filter_by.one_or_none.return_value = True
 
     resp = client.get('/auth/authorized')
 
@@ -132,7 +136,7 @@ def test_authorization_callback_success(mocker, client_without_db):
 
 
 def test_authorization_callback_access_denied_with_reason(
-        mocker, client_without_db):
+    mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
     mocker.patch('app.auth.routes.oauth.google.get')
@@ -156,12 +160,14 @@ def test_authorization_callback_redirect(mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
     mocker.patch('app.auth.routes.oauth.google.parse_id_token')
+    query = mocker.patch('data.models.user.User.query')
 
     oauth.google.authorize_access_token.return_value = {
         'access_token': 'TOKEN'
     }
 
     oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
+    query.filter_by.one_or_none.return_value = True
 
     with client.session_transaction() as session:
         session['redirect_path'] = '/FOO'
@@ -179,6 +185,7 @@ def test_authorization_callback_redirect(mocker, client_without_db):
         assert 'redirect_path' not in session
 
 
+@pytest.mark.integration
 def test_blocked_user(mocker, client):
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
     mocker.patch('app.auth.routes.oauth.google.parse_id_token')

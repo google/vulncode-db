@@ -17,6 +17,9 @@ from functools import wraps
 from flask import (session, request, url_for, abort, redirect, Blueprint, g,
                    current_app, flash, render_template)
 from authlib.integrations.flask_client import OAuth, OAuthError  # type: ignore
+from flask_wtf import FlaskForm
+from wtforms import BooleanField
+from wtforms.validators import DataRequired
 
 from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE
@@ -116,11 +119,33 @@ def authorized():
     user = oauth.google.parse_id_token(token)
     session["user_info"] = user
 
-    do_redirect = session.pop("redirect_path", None)
-    if do_redirect:
-        return redirect(do_redirect)
+    if User.query.filter_by(email=user['email']).one_or_none() is None:
+        return redirect(url_for('auth.terms'))
 
-    return redirect("/")
+    do_redirect = session.pop("redirect_path", '/')
+    return redirect(do_redirect)
+
+
+class TermsAndConditionsForm(FlaskForm):
+    terms = BooleanField('I have read and accept the terms and conditions',
+                         validators=[DataRequired()])
+    # conditions = BooleanField('', validators=[DataRequired()])
+
+
+@bp.route("/terms", methods=['GET', 'POST'])
+@skip_authorization
+def terms():
+    if request.args.get(
+            'text', 'false').lower() == 'true' or 'user_info' not in session:
+        return render_template('terms_text.html')
+
+    form = TermsAndConditionsForm()
+    if form.validate_on_submit():
+        session['terms_accepted'] = True
+
+        do_redirect = session.pop("redirect_path", '/')
+        return redirect(do_redirect)
+    return render_template('terms.html', form=form)
 
 
 def is_admin():
@@ -149,6 +174,10 @@ def load_user():
     if request.path == url_for('auth.logout'):
         return
 
+    # continue for terms page
+    if request.path == url_for('auth.terms'):
+        return
+
     if not is_authenticated():
         g.user = None
         return
@@ -175,6 +204,11 @@ def load_user():
     is_new = False
     is_changed = False
     if not user:
+        if not session.get('terms_accepted'):
+            log.warn('Terms not accepted yet')
+            request._authorized = True
+            return redirect(url_for('auth.terms'))
+
         name, host = email.rsplit('@', 1)
         log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
         user = User(email=email,
