@@ -87,7 +87,7 @@ def edit_proposal(vuln_id: str = None):
 
 # Create a catch all route for profile identifiers.
 @bp.route("/proposals")
-@requires(READ, 'Proposal')
+@requires('READ_OWN', 'Proposal')
 def view_proposals(vendor: str = None, profile: str = None):
     entries = db.session.query(Vulnerability, Nvd)
     entries = entries.filter(Vulnerability.creator == g.user)
