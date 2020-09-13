@@ -106,7 +106,7 @@ class VulnerabilityDetailsForm(FlaskForm):
 class VulnerabilityProposalReject(FlaskForm):
     review_feedback = TextAreaField("Feedback what should be changed",
                                     validators=[validators.DataRequired()])
-    submit_reject = SubmitField("Reject proposal")
+    submit_reject = SubmitField("Ask for improvements")
 
 
 class VulnerabilityProposalApprove(FlaskForm):
@@ -115,6 +115,10 @@ class VulnerabilityProposalApprove(FlaskForm):
 
 class VulnerabilityProposalAssign(FlaskForm):
     submit_assign = SubmitField("Take review")
+
+
+class VulnerabilityProposalUnassign(FlaskForm):
+    submit_unassign = SubmitField("Unassign from this review")
 
 
 class VulnerabilityProposalPublish(FlaskForm):

@@ -210,7 +210,7 @@ $(function() {
     });
     $('.clickable-row').click(function() {
       if (!getSelection().toString()) {
-        const win = window.open($(this).data('href'), '_blank');
+        const win = window.open($(this).data('href'), '_top');
         win.focus();
       }
     });
