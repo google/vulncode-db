@@ -6,27 +6,30 @@
         {% set progress_percent = 0 %}
         {% set progress_color = 'bg-light' %}
         {% set next_step = 'send for review' %}
-        {% if vuln_view.has_feedback() %}
-            {% set next_step = 'address feedback' %}
-        {% endif %}
+    {% elif vuln_view.state.name == 'NEEDS_IMPROVEMENT' %}
+        {% set progress_percent = 12.5 %}
+        {% set progress_color = 'bg-danger' %}
+        {% set next_step = 'address feedback' %}
     {% elif vuln_view.state.name == 'READY' %}
         {% set progress_percent = 25 %}
         {% set progress_color = 'bg-info' %}
-        {% set next_step = 'searching reviewer' %}
+        {% set next_step = 'waiting for a reviewer' %}
     {% elif vuln_view.state.name == 'IN_REVIEW' %}
         {% set progress_percent = 50 %}
-        {% set progress_color = 'bg-danger' %}
+        {% set progress_color = 'bg-warning' %}
         {% set next_step = 'waiting for review' %}
     {% elif vuln_view.state.name == 'REVIEWED' %}
         {% set progress_percent = 75 %}
-        {% set progress_color = 'bg-warning' %}
+        {% set progress_color = 'bg-success' %}
         {% set next_step = 'waiting for admin approval' %}
     {% elif vuln_view.state.name == 'PUBLISHED' %}
         {% set progress_percent = 100 %}
-        {% set progress_color = 'bg-success' %}
+        {% set progress_color = 'bg-primary' %}
+        {% set next_step = 'your version is live' %}
     {% elif vuln_view.state.name == 'ARCHIVED' %}
         {% set progress_percent = 100 %}
-        {% set progress_color = 'bg-secondary' %}
+        {% set progress_color = 'bg-light' %}
+        {% set next_step = 'this is an old version' %}
     {% endif %}
 
     <div class="progress">

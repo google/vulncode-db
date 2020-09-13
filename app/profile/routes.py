@@ -35,8 +35,7 @@ bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
 
 
-def _get_vulnerability_details(vcdb_id,
-                               vuln_id=None,
+def _get_vulnerability_details(vcdb_id, vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)

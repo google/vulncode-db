@@ -48,13 +48,15 @@
             {% endif %}
 
             {% set num_unassigned = vuln_helper.get_num_proposals_unassigned() %}
-            {% if num_unassigned > 0 %}
-            <span class="badge badge-warning">{{ num_unassigned }}</span>
+            {% set num_unassigned_to_self = vuln_helper.get_num_proposals_assigned_to(g.user) %}
+            {% set num_actionable = num_unassigned + num_unassigned_to_self %}
+            {% if num_actionable > 0 %}
+            <span class="badge badge-danger">{{ num_actionable }}</span>
             {% endif %}
 
-            {% set num_assigned = vuln_helper.get_num_proposals_assigned() %}
-            {% if num_assigned > 0 %}
-            <span class="badge badge-info">{{ num_assigned }}</span>
+            {% set num_assigned_to_others = vuln_helper.get_num_proposals_assigned() - num_unassigned_to_self %}
+            {% if num_assigned_to_others > 0 %}
+            <span class="badge badge-light">{{ num_assigned_to_others }}</span>
             {% endif %}
           </button>
         </a>
@@ -71,7 +73,7 @@
 
             {% set num_proposals_pending = vuln_helper.get_num_proposals_pending(g.user) %}
             {% if num_proposals_pending > 0 %}
-            <span class="badge badge-warning">{{ num_proposals_pending }}</span>
+            <span class="badge badge-light">{{ num_proposals_pending }}</span>
             {% endif %}
           </button>
         </a>
