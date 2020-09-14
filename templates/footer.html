@@ -29,25 +29,17 @@
 </footer>
 <!-- Footer -->
 <script src="{{ url_for('frontend.serve_static', path='js/main.js') }}" type="module" crossorigin></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-        crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/js/mdb.min.js"
-        integrity="sha512-Mug9KHKmroQFMLm93zGrjhibM2z2Obg9l6qFG2qKjXEXkMp/VDkI4uju9m4QKPjWSwQ6O2qzZEnJDEeCw0Blcw=="
-        crossorigin="anonymous"></script>
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/popper.min.js') }}"></script>
+
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/mdb.min.js') }}"></script>
+
 
 <!-- load monaco after all the other scripts to avoid issues with AMD defines -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.14.3/min/vs/loader.js"
-        integrity="sha256-DCcsMJctA23m3sXp1RrDWMEb5YtO7w+6TIUVHzDnK6Y="
-        crossorigin="anonymous"></script>
-
+<script src="{{ url_for('frontend.serve_static', path='monaco/min/vs/loader.js') }}"></script>
 <script>
-  require.config(
-      {paths: {'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.14.3/min/vs'}});
-
+ require.config(
+    {paths: {'vs': "{{ url_for('frontend.serve_static', path='monaco/min/vs') }}"}});
   // Before loading vs/editor/editor.main, define a global MonacoEnvironment that overwrites
   // the default worker url location (used when creating WebWorkers). The problem here is that
   // HTML5 does not allow cross-domain web workers, so we need to proxy the instantiation of
@@ -56,9 +48,9 @@
     getWorkerUrl: function (workerId, label) {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
         self.MonacoEnvironment = {
-          baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.14.3/min/'
+          baseUrl: "{{ url_for('frontend.serve_static', path='monaco/min') }}"
         };
-        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.14.3/min/vs/base/worker/workerMain.js');`
+        importScripts("{{ url_for('frontend.serve_static', path='monaco/min/vs/base/worker/workerMain.js') }}");`
       )}`;
     }
   };

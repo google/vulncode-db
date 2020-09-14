@@ -1,52 +1,34 @@
 <link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/main.css') }}"/>
 <!-- See comments below for usage information. -->
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/themes/default/style.min.css"
-      integrity="sha256-gX9Z4Eev/EDg9VZ5YIkmKQSqcAHL8tST90dHvtutjTg=" crossorigin="anonymous"/>
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
-      crossorigin="anonymous">
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/css/jquery.dataTables.min.css"
-      integrity="sha256-YY1izqyhIj4W3iyJOaGWOpXDSwrHWFL4Nfk+W0LyCHE=" crossorigin="anonymous"/>
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-2/css/all.min.css"
-      integrity="sha256-46r060N2LrChLLb5zowXQ72/iKKNiw/lAmygmHExk/o=" crossorigin="anonymous"/>
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css"
-      integrity="sha256-rByPlHULObEjJ6XQxW/flG2r+22R5dKiAoef+aXWfik=" crossorigin="anonymous"/>
+<link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/third_party/style.min.css') }}"/>
 
+<link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/third_party/bootstrap.min.css') }}"/>
+
+<link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/third_party/jquery.dataTables.min.css') }}"/>
+
+<link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/third_party/all.min.css') }}"/>
+
+<link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/third_party/jquery-ui.min.css') }}"/>
 
 <!-- Polishes the CSS a bit and used for the footer. No real requirement though... TODO: drop? -->
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.css"
-      integrity="sha512-sjJT//vtBb7ohxokcp2yH2FHfU+9B1OQFVJzZ1JwIfe3oVHTEqk/67CYSihA0CoiRPdWNfUm5xHyaeg8wRUQuA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="{{ url_for('frontend.serve_static', path='css/third_party/mdb.css') }}"/>
 
 <!-- Used for lazyly displaying tables -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous"></script>
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/jquery.min.js') }}"></script>
 
 <!-- Used for lazyly displaying tables -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.19/js/jquery.dataTables.min.js"
-        integrity="sha256-t5ZQTZsbQi8NxszC10CseKjJ5QeMw5NINtOXQrESGSU="
-        crossorigin="anonymous"></script>
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/jquery.dataTables.min.js') }}"></script>
 
 <!-- Used for the editor's file navigation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js"
-        integrity="sha256-So1t0NS1GeCJlhjvbf3o+JHWA+60Rkrj9Qu0waUEMoU="
-        crossorigin="anonymous"></script>
+
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/jstree.min.js') }}"></script>
 
 <!-- Used for the sortable plugin (comment order + drag & drop)-->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"
-        integrity="sha256-KM512VNnjElC30ehFwehXjx1YCHPiQkOPmqnrWtpccM="
-        crossorigin="anonymous"></script>
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/jquery-ui.min.js') }}"></script>
 
 <!-- Used for rendering markdown comments -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.8.7/showdown.min.js"
-        integrity="sha256-CKVcPmoyXVeFTOJvk7+k99gKxTMnKIGs9u8RKFQngVk="
-        crossorigin="anonymous"></script>
+<script src="{{ url_for('frontend.serve_static', path='js/third_party/showdown.min.js') }}"></script>
+
 
 <script type="text/javascript">
   const CSRF_TOKEN = "{{ csrf_token() }}";
