@@ -20,7 +20,13 @@ jobs:
       run: |
         if [ "$GITHUB_EVENT_NAME" == 'push' ]
         then
-          git clone --recursive https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && git checkout $GITHUB_SHA
+          git clone --recursive https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && \
+            git -C "$GITHUB_WORKSPACE" checkout $GITHUB_SHA
+        elif [ "$GITHUB_EVENT_NAME" == 'pull_request' ]
+        then
+          git clone --single-branch --recursive https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE && \
+            git -C "$GITHUB_WORKSPACE" fetch origin $GITHUB_REF && \
+            git -C "$GITHUB_WORKSPACE" checkout FETCH_HEAD
         else
           git clone --recursive -b $GITHUB_HEAD_REF https://github.com/$GITHUB_REPOSITORY $GITHUB_WORKSPACE
         fi
