@@ -40,20 +40,6 @@
 <script>
  require.config(
     {paths: {'vs': "{{ url_for('frontend.serve_static', path='monaco/min/vs') }}"}});
-  // Before loading vs/editor/editor.main, define a global MonacoEnvironment that overwrites
-  // the default worker url location (used when creating WebWorkers). The problem here is that
-  // HTML5 does not allow cross-domain web workers, so we need to proxy the instantiation of
-  // a web worker through a same-domain script
-  window.MonacoEnvironment = {
-    getWorkerUrl: function (workerId, label) {
-      return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-        self.MonacoEnvironment = {
-          baseUrl: "{{ url_for('frontend.serve_static', path='monaco/min') }}"
-        };
-        importScripts("{{ url_for('frontend.serve_static', path='monaco/min/vs/base/worker/workerMain.js') }}");`
-      )}`;
-    }
-  };
 </script>
 
 {# TODO: This is currently disabled. Enable it again once it becomes useful.
