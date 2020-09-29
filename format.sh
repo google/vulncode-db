@@ -34,7 +34,7 @@ function fatal() {
 if npx eslint &>/dev/null
 then
   info 'Formatting *.js files.'
-  npx eslint "**/*.js" --fix --quiet --ignore-path .gitignore --debug 2>&1 > /dev/null | grep "Processing" | sed 's/^.*Processing\(.*\)$/Reformatting\1/'
+  npx eslint "**/*.js" --fix --quiet  --ignore-path '.gitignore' --ignore-pattern 'static/monaco/' --ignore-pattern 'static/js/third_party' --debug 2>&1 > /dev/null | grep "Processing" | sed 's/^.*Processing\(.*\)$/Reformatting\1/'
 else
   error 'Please install eslint. Install node.js and run: npm install'
 fi

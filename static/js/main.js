@@ -23,6 +23,7 @@ import {File} from './lib/File.js';
 const ui = new UI();
 let editor = null;
 let fileTree = null;
+const commitLinkID = '#commits-0-commit_link';
 /*
   We use two main elements:
     1) A file tree on the left side
@@ -74,16 +75,21 @@ function _initEditorInternal(jsonContent) {
 }
 
 $(function() {
-  $('#id').bind('input', function() {
+  $(commitLinkID).bind('input', function() {
     const currentUrl = this.value;
     let customRepoUrl = false;
 
-    $('#repo_url').val('');
-    $('#commit_hash').val('');
+    const repoNameID = '#commits-0-repo_name';
+    const repoUrlID = '#commits-0-repo_url';
+    const repoCommitHashID = '#commits-0-commit_hash';
+
+    $(repoUrlID).val('');
+    $(repoNameID).val('');
+    $(repoCommitHashID).val('');
     $('#id_type').text('');
 
     $('#unknown_input_msg').hide();
-    $('#repository_information').hide();
+    // $('#repository_information').hide();
     $('#commit_information').hide();
     $('#id_type').hide();
 
@@ -91,7 +97,7 @@ $(function() {
     let matches = cgitRegex.exec(currentUrl);
     if (matches) {
       $('#id_type').text('Cgit');
-      $('#commit_hash').val(matches[1]);
+      $(repoCommitHashID).val(matches[1]);
       customRepoUrl = true;
     }
 
@@ -99,7 +105,7 @@ $(function() {
     matches = gitwebRegex.exec(currentUrl);
     if (matches) {
       $('#id_type').text('Gitweb');
-      $('#commit_hash').val(matches[1]);
+      $(repoCommitHashID).val(matches[1]);
       customRepoUrl = true;
     }
 
@@ -107,7 +113,7 @@ $(function() {
     matches = gitlesRegex.exec(currentUrl);
     if (matches) {
       $('#id_type').text('Gitles');
-      $('#commit_hash').val(matches[1]);
+      $(repoCommitHashID).val(matches[1]);
       customRepoUrl = true;
     }
 
@@ -115,7 +121,7 @@ $(function() {
     matches = gitRepoRegex.exec(currentUrl);
     if (!customRepoUrl && matches) {
       $('#id_type').text('GIT repo');
-      $('#repo_url').val(this.value);
+      $(repoUrlID).val(this.value);
       $('#commit_information').show();
       customRepoUrl = true;
     }
@@ -124,19 +130,19 @@ $(function() {
     matches = gitRepoHashRegex.exec(currentUrl);
     if (!customRepoUrl && matches) {
       $('#id_type').text('Pinned GIT repo');
-      $('#repo_url').val(matches[1]);
-      $('#commit_hash').val(matches[2]);
-      $('#repository_information').show();
+      $(repoUrlID).val(matches[1]);
+      $(repoCommitHashID).val(matches[2]);
+      // $('#repository_information').show();
       $('#commit_information').show();
     }
 
-    if (this.value.toLowerCase().startsWith('cve-')) {
-      $('#id_type').text('CVE-ID');
-    }
-
-    if ($('#id_type').text().length === 0 &&
-        this.value.toLowerCase().includes('github.com/')) {
-      $('#id_type').text('Github Commit');
+    const githubRegex = /^.*github.com\/([^\/]+)\/([^\/]+)\/commit\/([^\/]+)\/?$/;
+    matches = githubRegex.exec(currentUrl);
+    if ($('#id_type').text().length === 0 && matches) {
+      // $(repoUrlID).val(matches[1]);
+      // $(repoNameID).val(matches[2]);
+      // $(repoCommitHashID).val(matches[3]);
+      $('#id_type').text('GitHub commit');
     }
 
     if (customRepoUrl) {
@@ -148,7 +154,7 @@ $(function() {
     $('#id_type').addClass('has-success');
     if (this.value.length > 0) $('#id_type').show();
 
-    if ($('#id_type').text().length === 0) {
+    if ($('#id_type').text().length === 0 && currentUrl.length > 0) {
       $('#id_type').text('?');
       $('#id_type').removeClass('has-success');
       $('#id_type').addClass('has-error');
@@ -159,10 +165,10 @@ $(function() {
 
 
   $('#fetchGitCommitBtn').bind('click', function() {
-    const commitLink = $('#id').val();
+    const commitLink = $(commitLinkID).val();
     // Forward to the correct main page.
-    const repoUrl = $('#repo_url').val();
-    const commitHash = $('#commit_hash').val();
+    const repoUrl = $(repoUrlID).val();
+    const commitHash = $(repoCommitHashID).val();
 
     const postData = [];
     postData.push(['csrf_token', CSRF_TOKEN]);
@@ -186,11 +192,11 @@ $(function() {
 
   $('#commitLinkSelection a').bind('click', function() {
     const useUrl = this.innerHTML;
-    $('#id').val(useUrl);
-    if (this.dataset.url) $('#id').val(this.dataset.url);
-    $('#id').trigger('input');
+    $(commitLinkID).val(useUrl);
+    if (this.dataset.url) $(commitLinkID).val(this.dataset.url);
+    $(commitLinkID).trigger('input');
 
-    if (this.dataset.hash) $('#commit_hash').val(this.dataset.hash);
+    if (this.dataset.hash) $(repoCommitHashID).val(this.dataset.hash);
 
     return false;
   });

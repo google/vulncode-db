@@ -58,7 +58,7 @@ class CommitLinksForm(FlaskForm):
 
     # Commit data is optional -> otherwise use: validators.DataRequired(),
     commit_link = StringField(
-        "Main comit link",
+        "Main commit link",
         validators=[validators.Optional(),
                     validators.URL()])
     repo_name = StringField("Repository Name", validators=[])

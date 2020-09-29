@@ -71,6 +71,7 @@ class GithubHandler(VcsHandler):
                 "(https://github.com/{owner}/{repo}/commit/{hash})"
                 " commit link.")
         self.repo_owner, self.repo_name, self.commit_hash = matches.groups()
+        self.repo_url = f'https://github.com/{self.repo_owner}/{self.repo_name}'
         self.commit_link = resource_url
 
     @staticmethod

@@ -96,7 +96,7 @@ class User(MainBase):
     def _resize(self, pic, px):
         if 'googleusercontent.com' in pic:
             pic = re.sub(r'/photo', f'/s{px}-cc-rw/photo', pic)
-            pic = re.sub(r'([=/])s\d+-', fr'\1s{px}-', pic)
+            pic = re.sub(r'([=/])s\d+-', f'\\1s{px}-', pic)
         return pic
 
     def to_json(self):

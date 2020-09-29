@@ -38,7 +38,7 @@ def test_unauthenticated_users_can_choose_login(client_without_db):
 
 
 def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
-    client_without_db):
+        client_without_db):
     client = client_without_db
     resp = client.get('/auth/login?as_user=OAuth')
     assert resp.status_code == 302
@@ -61,7 +61,7 @@ def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
 
 
 def test_users_get_redirected_to_full_oauth_consent_screen_with_optin(
-    client_without_db):
+        client_without_db):
     client = client_without_db
     resp = client.post('/auth/login?as_user=OAuth',
                        data={'fetch_profile': 'true'})
@@ -136,7 +136,7 @@ def test_authorization_callback_success(mocker, client_without_db):
 
 
 def test_authorization_callback_access_denied_with_reason(
-    mocker, client_without_db):
+        mocker, client_without_db):
     client = client_without_db
     mocker.patch('app.auth.routes.oauth.google.authorize_access_token')
     mocker.patch('app.auth.routes.oauth.google.get')
