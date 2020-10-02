@@ -204,7 +204,7 @@ export class ZoneViewWidget {
   }
 
   _decoratingElementsHeight() {
-    const lineHeight = this.viewZoneEditor.getConfiguration().lineHeight;
+    const lineHeight = this.viewZoneEditor.getRawOptions().lineHeight;
     let result = 0;
 
     if (this.options.showArrow) {
@@ -234,7 +234,7 @@ export class ZoneViewWidget {
     // Render the widget as zone (rendering) and widget (lifecycle)
     const viewZoneDomNode = document.createElement('div');
     viewZoneDomNode.style.overflow = 'hidden';
-    const lineHeight = this.viewZoneEditor.getConfiguration().lineHeight;
+    const lineHeight = this.viewZoneEditor.getRawOptions().lineHeight;
 
     // adjust heightInLines to viewport
     const maxHeightInLines =
@@ -344,7 +344,7 @@ export class ZoneViewWidget {
   }
 
   _calcHeightInLines(height) {
-    const lines = height / this.viewZoneEditor.getConfiguration().lineHeight;
+    const lines = height / this.viewZoneEditor.getRawOptions().lineHeight;
     return Math.floor(lines);
   }
 

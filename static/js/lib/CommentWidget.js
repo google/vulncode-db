@@ -174,8 +174,8 @@ export class CommentWidget extends ZoneViewWidget {
       height: this._bodyElement.clientHeight,
     };
     const headHeight =
-        Math.ceil(this.overlayEditor.getConfiguration().lineHeight * 1.2);
-    const lineHeight = this.overlayEditor.getConfiguration().lineHeight;
+        Math.ceil(this.overlayEditor.getRawOptions().lineHeight * 1.2);
+    const lineHeight = this.overlayEditor.getRawOptions().lineHeight;
     const arrowHeight = Math.round(lineHeight / 3);
     const frameThickness = Math.round(lineHeight / 9) * 2;
 
