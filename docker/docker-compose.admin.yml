@@ -2,8 +2,8 @@ version: '2'
 services:
   go-cve-dictionary:
     build:
-      context: ..
-      dockerfile: ./docker/go-cve-dictionary/Dockerfile
+      context: ../third_party/go-cve-dictionary
+      dockerfile: ../../docker/go-cve-dictionary/Dockerfile
     image: go-cve-dictionary
     links:
       - "database"

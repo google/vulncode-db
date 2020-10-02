@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from abc import abstractmethod, ABC
 
 HASH_PLACEHOLDER = "--ITEM_HASH--"
 PATH_PLACEHOLDER = "--PATH_PLACE--"
@@ -42,8 +43,8 @@ class CommitMetadata:
         self.files_metadata = files_metadata
 
 
-class VcsHandler:
-    def __init__(self, app, resource_url):
+class VcsHandler(ABC):
+    def __init__(self, app, resource_url=None):
         self.app = app
         self.resource_url = resource_url
 
@@ -61,21 +62,31 @@ class VcsHandler:
     def get_file_content(self, item_hash, item_path=None):
         pass
 
+    @abstractmethod
     def fetch_commit_data(self, commit_hash):
         pass
 
+    @abstractmethod
     def parse_resource_url(self, resource_url):
         pass
 
+    @abstractmethod
+    def parse_url_and_hash(self, repo_url, commit_hash):
+        pass
+
+    @abstractmethod
     def get_file_provider_url(self):
         pass
 
+    @abstractmethod
     def get_ref_file_provider_url(self):
         pass
 
+    @abstractmethod
     def get_file_url(self):
         pass
 
+    @abstractmethod
     def get_tree_url(self):
         pass
 

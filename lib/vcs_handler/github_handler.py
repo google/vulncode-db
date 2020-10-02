@@ -44,7 +44,7 @@ CACHE_DIR = "cache/"
 
 
 class GithubHandler(VcsHandler):
-    def __init__(self, app, resource_url):
+    def __init__(self, app, resource_url=None):
         """Initializes the questionnaire object."""
         super(GithubHandler, self).__init__(app, resource_url)
         # We're currently using DB caching for file tree data.
@@ -55,7 +55,8 @@ class GithubHandler(VcsHandler):
             use_token = app.config["GITHUB_API_ACCESS_TOKEN"]
 
         self.github = Github(login_or_token=use_token)
-        self.parse_resource_url(resource_url)
+        if resource_url is not None:
+            self.parse_resource_url(resource_url)
 
     def parse_resource_url(self, resource_url):
         if not resource_url:
@@ -73,6 +74,28 @@ class GithubHandler(VcsHandler):
         self.repo_owner, self.repo_name, self.commit_hash = matches.groups()
         self.repo_url = f'https://github.com/{self.repo_owner}/{self.repo_name}'
         self.commit_link = resource_url
+
+    def parse_url_and_hash(self, repo_url, commit_hash):
+        if not repo_url or not commit_hash:
+            raise InvalidIdentifierException(
+                "Please provide a Github url and hash.")
+        url_data = urlparse(repo_url)
+        git_path = url_data.path
+        matches = re.match(r"/([^/]+)/([^/]+)/?$", git_path)
+        if (not url_data.hostname or "github.com" not in url_data.hostname
+                or not matches):
+            raise InvalidIdentifierException(
+                "Please provide a valid "
+                "(https://github.com/{owner}/{repo})"
+                " repository url.")
+        if not re.match(r"[a-fA-F0-9]{5,}$", commit_hash):
+            raise InvalidIdentifierException(
+                "Please provide a valid "
+                "git commit hash (min 5 characters)")
+        self.repo_owner, self.repo_name = matches.groups()
+        self.repo_url = repo_url
+        self.commit_hash = commit_hash
+        self.commit_link = f'{repo_url}/commit/{commit_hash}'
 
     @staticmethod
     def _parse_patch_per_file(files):

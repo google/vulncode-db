@@ -47,10 +47,12 @@ from app.exceptions import InvalidIdentifierException
 
 REPO_PATH = "vulnerable_code/"
 
+# [SCHEMA]://[HOST]/[PATH].git
+BASE_URL_RE = re.compile(r"^(?P<url>.*/(?P<name>[^/]+).git)$")
 # [SCHEMA]://[HOST]/[PATH].git#[COMMIT_HASH]
 # [SCHEMA]://[HOST]/[PATH].git@[COMMIT_HASH]
-URL_RE = re.compile(
-    r"^(?P<url>.*/(?P<name>[^/]+).git)(?:[#@](?P<commit>[a-fA-Z0-9]{7,}))?$")
+URL_RE = re.compile(BASE_URL_RE.pattern[:-1] +
+                    r"(?:[#@](?P<commit>[a-fA-Z0-9]{7,}))?$")
 
 
 class GitTreeElement:
@@ -93,11 +95,12 @@ def _file_list_dulwich(repo, tgt_env, recursive=False):
 
 
 class GitRepoHandler(VcsHandler):
-    def __init__(self, app, resource_url):
+    def __init__(self, app, resource_url=None):
         """Initializes the questionnaire object."""
         super(GitRepoHandler, self).__init__(app, resource_url)
         self.repo = None
-        self.parse_resource_url(resource_url)
+        if resource_url is not None:
+            self.parse_resource_url(resource_url)
 
     def parse_resource_url(self, resource_url):
         if not resource_url or not urlparse(resource_url.replace("@", "#")):
@@ -113,6 +116,22 @@ class GitRepoHandler(VcsHandler):
         self.repo_url = matches.group("url")
         self.commit_hash = matches.group("commit")
         self.commit_link = resource_url
+
+    def parse_url_and_hash(self, repo_url, commit_hash):
+        if not repo_url or not commit_hash:
+            raise InvalidIdentifierException("Please provide an URL and hash.")
+        if not re.match(r"[a-fA-F0-9]{5,}$", commit_hash):
+            raise InvalidIdentifierException(
+                "Please provide a valid "
+                "git commit hash (min 5 characters)")
+        matches = BASE_URL_RE.search(repo_url)
+        if not urlparse(repo_url) or not matches:
+            raise InvalidIdentifierException("Please provide a valid git URL")
+        self.repo_name = matches.group("name")
+        self.repo_name = os.path.basename(self.repo_name)
+        self.repo_url = repo_url
+        self.commit_hash = commit_hash
+        self.commit_link = f'{repo_url}#{commit_hash}'
 
     @staticmethod
     def _get_patch_deltas(patch_set):

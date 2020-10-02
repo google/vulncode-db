@@ -235,8 +235,10 @@ def _db(app):
                             ),
                             repo_owner=repo_owner,
                             repo_name=repo_name,
-                            # repo_url=repo_url,
-                            commit_hash=commit)
+                            # TODO: test conflicting data?
+                            repo_url=repo_url,
+                            commit_hash=commit,
+                        )
                     ]))
         vulns.append(
             Vulnerability(
