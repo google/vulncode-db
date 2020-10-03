@@ -36,6 +36,15 @@ class Affect(nvd_template.Affect, NvdBase):
         }
 
 
+class Cert(nvd_template.Cert, NvdBase):
+    def to_json(self):
+        """Serialize object properties as dict."""
+        return {
+            'title': self.title,
+            'link': self.link,
+        }
+
+
 class Cpe(nvd_template.Cpe, NvdBase):
     nvd_json_id = Column(INTEGER(10),
                          ForeignKey("cve.nvd_jsons.id"),

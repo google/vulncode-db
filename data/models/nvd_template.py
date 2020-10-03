@@ -22,7 +22,7 @@
 # Documentation: https://pypi.org/project/sqlacodegen/
 # Executed: ./sqlacodegen mysql://[name]:[pass]@localhost/cve
 # coding: utf-8
-from sqlalchemy import Column, Float, String, TIMESTAMP, Text
+from sqlalchemy import Column, Float, String, TIMESTAMP, Text, DateTime
 from sqlalchemy.dialects.mysql import INTEGER, TINYINT
 from sqlalchemy.ext.declarative import AbstractConcreteBase
 
@@ -38,6 +38,19 @@ class Affect(AbstractConcreteBase):
     vendor = Column(String(255))
     product = Column(String(255))
     version = Column(String(255))
+
+
+class Cert(AbstractConcreteBase):
+    __tablename__ = 'certs'
+
+    id = Column(INTEGER(10), primary_key=True)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
+    deleted_at = Column(DateTime, index=True)
+    jvn_id = Column(INTEGER(10), index=True)
+    nvd_json_id = Column(INTEGER(10), index=True)
+    title = Column(Text)
+    link = Column(Text)
 
 
 class Cpe(AbstractConcreteBase):
