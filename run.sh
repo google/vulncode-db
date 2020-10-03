@@ -31,15 +31,7 @@ if [[ $(./manage.sh db current 2>/dev/null | wc -l) -lt 2 ]]; then
   ./manage.sh db upgrade
 fi
 
-
-BASEDIR="$( cd "$( dirname "$0" )" && pwd )"
-THIRD_PARTY_DIR="third_party"
-# If this is run from Docker all dependencies should be available system wide in the container already.
-if [[ "${BASEDIR}" == "/app/" ]]; then
-  THIRD_PARTY_DIR=""
-fi
-
-PYTHONPATH="${THIRD_PARTY_DIR}" python3 -c "import main; main.check_db_state()" || exit 1
+python3 -c "import main; main.check_db_state()" || exit 1
 
 if which dev_appserver.py &>/dev/null
 then
@@ -49,5 +41,5 @@ then
   # dev_appserver.py --port=8090 --admin_port=8089 app.yaml
 else
   # Start without GAE support.
-  PYTHONPATH="${THIRD_PARTY_DIR}" python3 -m main
+  python3 -m main
 fi
