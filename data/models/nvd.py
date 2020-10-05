@@ -308,7 +308,7 @@ class Nvd(nvd_template.NvdJson, NvdBase):
         return [ref.link for ref in self.references]
 
     def get_patches(self):
-        links = [ref.link for ref in self.references if "Patch" in ref.tags]
+        links = [ref.link for ref in self.references if ref.tags and "Patch" in ref.tags]
         patch_regex = re.compile(cfg.PATCH_REGEX)
         return list(filter(patch_regex.match, links))
 
