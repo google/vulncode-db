@@ -285,3 +285,4 @@ class Reference(AbstractConcreteBase):
     jvn_id = Column(INTEGER(10), index=True)
     source = Column(String(255))
     link = Column(Text)
+    tags = Column(String(255))

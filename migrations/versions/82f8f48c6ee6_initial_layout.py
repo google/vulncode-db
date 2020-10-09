@@ -308,6 +308,7 @@ def upgrade():
     sa.Column('nvd_xml_id', mysql.INTEGER(display_width=10), nullable=True),
     sa.Column('jvn_id', mysql.INTEGER(display_width=10), nullable=True),
     sa.Column('source', sa.String(length=255), nullable=True),
+    sa.Column('tags', sa.String(length=255), nullable=True),
     sa.Column('link', sa.Text(), nullable=True),
     sa.Column('nvd_json_id', mysql.INTEGER(display_width=10), nullable=True),
     sa.ForeignKeyConstraint(['nvd_json_id'], ['cve.nvd_jsons.id'], ),
