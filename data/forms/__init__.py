@@ -18,7 +18,7 @@ from wtforms import (  # type: ignore
     IntegerField, HiddenField, BooleanField)
 from wtforms import validators
 
-from data.models import VulnerabilityGitCommits
+from data.models import VulnerabilityGitCommits, VulnerabilityResources
 from data.models.base import db
 
 
@@ -67,14 +67,13 @@ class CommitLinksForm(FlaskForm):
         csrf = False
 
 
-# TODO: Enable this once custom resource links are supported again.
-#class VulnerabilityResourcesForm(FlaskForm):
-#    link = StringField(
-#        "Link", validators=[validators.DataRequired(),
-#                            validators.URL()])
-#
-#    class Meta:
-#        csrf = False
+class VulnerabilityResourcesForm(FlaskForm):
+    link = StringField(
+        "Link", validators=[validators.DataRequired(),
+                            validators.URL()])
+
+    class Meta:
+        csrf = False
 
 
 class VulnerabilityDetailsForm(FlaskForm):
@@ -97,9 +96,8 @@ class VulnerabilityDetailsForm(FlaskForm):
     )
     comment = TextAreaField("High-Level Bug Overview",
                             validators=[validators.DataRequired()])
-    # TODO: Enable this once custom resource links are supported again.
-    #additional_resources = ModelFieldList(
-    #    FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
+    additional_resources = ModelFieldList(
+        FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
     submit = SubmitField("Propose change")
 
 
