@@ -354,3 +354,36 @@ if (editorSettings) {
 } else {
   console.log('[-] No editor settings found to proceed.');
 }
+
+$(function() {
+  $('div[data-toggle=fieldset]').each(function() {
+    const $this = $(this);
+
+    // Allow dynamically adding/removing form fields as per
+    // https://gist.github.com/jb-l/466eb6a96e39bf2d92500fe8d6909b14#file-test_fieldlist-py
+    // Note: This requires at least one (hidden) template input to exist.
+    $this.find('button[data-toggle=fieldset-add-row]').click(function() {
+      const target = $($(this).data('target'));
+      const oldrow = target.find('[data-toggle=fieldset-entry]:last');
+      const row = oldrow.clone(true, true);
+      const elem_id = row.find(':input')[0].id;
+      const elem_num = parseInt(elem_id.match(/-(-?\d{1,4})(?!.*\d)/m)[1]) + 1;
+      row.children(':input').each(function() {
+        const id = $(this).attr('id').replace((elem_num - 1), elem_num);
+        $(this).attr('name', id).attr('id', id).val('').removeAttr('checked');
+      });
+      row.children('label').each(function() {
+        const id = $(this).attr('for').replace((elem_num - 1), elem_num);
+        $(this).attr('for', id);
+      });
+      row.show();
+      oldrow.after(row);
+    });
+    $this.find('button[data-toggle=fieldset-remove-row]').click(function() {
+      if ($this.find('[data-toggle=fieldset-entry]').length > 1) {
+        const thisRow = $(this).closest('[data-toggle=fieldset-entry]');
+        thisRow.remove();
+      }
+    });
+  });
+});

@@ -96,8 +96,8 @@ class VulnerabilityDetailsForm(FlaskForm):
     )
     comment = TextAreaField("High-Level Bug Overview",
                             validators=[validators.DataRequired()])
-    additional_resources = ModelFieldList(
-        FormField(VulnerabilityResourcesForm), model=VulnerabilityResources)
+    resources = ModelFieldList(FormField(VulnerabilityResourcesForm),
+                               model=VulnerabilityResources)
     submit = SubmitField("Propose change")
 
 

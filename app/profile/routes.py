@@ -75,6 +75,9 @@ def edit_proposal(vuln_id: str = None):
     if form.comment.data == "":
         form.comment.data = view.comment
 
+    if request.method == 'POST' and not form.validate():
+        flash_error("Your proposal contains invalid data, please correct.")
+
     form_submitted = form.validate_on_submit()
     if form_submitted and view.is_creator():
         update_proposal(vuln, form)

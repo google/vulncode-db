@@ -2,7 +2,7 @@
 # 'MySQLdb' dependency.
 mysqlclient>=1.4.6
 # Main Flask related dependencies.
-Flask==1.1.1
+Flask>=1.1.2
 Flask-Bootstrap==3.3.7.1
 flask-marshmallow==0.10.1
 Flask-Migrate>=2.2.1
@@ -12,7 +12,7 @@ Flask-SQLAlchemy>=2.4.0
 # Not in use due to a problem when matching against multiple fulltext columns with a joined table.
 # SQLAlchemy-FullText-Search==0.2.5
 Flask-WTF>=0.14.2
-marshmallow-sqlalchemy==0.17.0
+marshmallow-sqlalchemy>=0.23.1
 google-auth==1.6.1
 flask-bouncer==0.3.0
 bouncer==0.1.12
