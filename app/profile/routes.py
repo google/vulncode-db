@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import (Blueprint, render_template, g, abort, flash, request)
+from flask import (Blueprint, render_template, g, abort, flash, request,
+                   redirect, url_for)
 from sqlakeyset import get_page
 from sqlalchemy import desc
-from bouncer.constants import READ, EDIT
+from bouncer.constants import READ, EDIT, DELETE
 
 from app.auth.acls import skip_authorization, requires, ensure
 from app.exceptions import InvalidIdentifierException
@@ -147,3 +148,29 @@ def index(user_id=None):
         db.session.add(user)
         db.session.commit()
     return render_template("profile/index.html", form=form, user=user)
+
+
+@bp.route("/proposal/<vuln_id>/delete", methods=["GET", "POST"])
+@requires(DELETE, Vulnerability)
+def delete_proposal(vuln_id: str = None):
+    vulnerability_details = _get_vulnerability_details(None,
+                                                       vuln_id,
+                                                       simplify_id=False)
+    vuln = vulnerability_details.get_vulnerability()
+    if not vuln:
+        abort(404)
+
+    if vuln.state == VulnerabilityState.PUBLISHED:
+        flash_error("Can't delete a published entry w/o reverting it first")
+        return redirect(url_for('profile.view_proposals'))
+
+    ensure(DELETE, vuln)
+
+    if request.method != "GET" and request.form.get("confirm",
+                                                    "false").lower() == "true":
+        db.session.delete(vuln)
+        db.session.commit()
+        flash("Entry deleted", "success")
+        return redirect(url_for('profile.view_proposals'))
+    return render_template("vulnerability/delete.html",
+                           vuln_view=vulnerability_details.vulnerability_view)
