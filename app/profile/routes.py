@@ -35,7 +35,8 @@ bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
 
 
-def _get_vulnerability_details(vcdb_id, vuln_id=None,
+def _get_vulnerability_details(vcdb_id,
+                               vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
@@ -69,6 +70,7 @@ def edit_proposal(vuln_id: str = None):
                                                        simplify_id=False)
     view = vulnerability_details.vulnerability_view
     vuln = vulnerability_details.get_or_create_vulnerability()
+    ensure(EDIT, vuln)
     form = VulnerabilityDetailsForm(obj=vuln)
 
     # Populate the form data from the vulnerability view if necessary.

@@ -49,6 +49,15 @@ def authorize(user: User, they: RuleList):
                 elif isinstance(check, dict):
                     they.can(action, cls, **check)
                 # based on check function
+                elif hasattr(check, '__call__'):
+
+                    def gen_wrapper(check):
+                        def wrapper(subject):
+                            return check(subject, user)
+
+                        return wrapper
+
+                    they.can(action, cls, gen_wrapper(check))
                 else:
                     they.can(action, cls, check)
 
