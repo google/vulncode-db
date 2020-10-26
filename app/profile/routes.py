@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
 
 from flask import (Blueprint, render_template, g, abort, flash, request,
                    redirect, url_for)
@@ -34,6 +35,7 @@ from lib.utils import parse_pagination_param
 
 bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
+log = logging.getLogger(__name__)
 
 
 def _get_vulnerability_details(vcdb_id,
@@ -53,6 +55,27 @@ def _get_vulnerability_details(vcdb_id,
 
 def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     form.populate_obj(vuln)
+
+    with db.session.no_autoflush:
+        changes = vuln.model_changes()
+    # ignore metadata
+    changes.pop('date_modified', None)
+    changes.pop('date_created', None)
+    changes.pop('creator', None)
+    changes.pop('state', None)
+    changes.pop('version', None)
+    changes.pop('prev_version', None)
+    changes.pop('reviewer_id', None)
+    changes.pop('reviewer', None)
+    changes.pop('review_feedback', None)
+    changes.pop('id', None)
+    if not changes:
+        flash_error(
+            "No changes detected. Please modify the entry first to propose a change"
+        )
+        return False
+    log.debug('Detected changes: %r', changes)
+
     vuln.make_reviewable()
     db.session.add(vuln)
     db.session.commit()
@@ -60,6 +83,7 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     flash(
         "Your proposal is in the review queue. You can monitor progress in your Proposals Section.",
         "success")
+    return True
 
 
 # Create a catch all route for profile identifiers.

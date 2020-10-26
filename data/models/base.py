@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Tuple, Any, TYPE_CHECKING
+from typing import Dict, Tuple, Any, TYPE_CHECKING, Union, Optional, List
 from itertools import zip_longest
 import logging
 
@@ -21,6 +21,8 @@ from flask_marshmallow import Marshmallow  # type: ignore
 from sqlalchemy import Index, Column, Integer, func, DateTime, inspect
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapper, RelationshipProperty
+from sqlalchemy.orm.state import InstanceState, AttributeState
+from sqlalchemy.orm.attributes import History
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +41,8 @@ ma = Marshmallow()  # pylint: disable=invalid-name
 
 BaseModel: DefaultMeta = db.Model
 
+Changes = Dict[str, Union[Tuple[Any, Any], Dict[str, Any], List[Any]]]
+
 
 class MainBase(BaseModel):
     # N.B. We leave the schema out on purpose as alembic gets confused
@@ -56,24 +60,65 @@ class MainBase(BaseModel):
         onupdate=func.current_timestamp(),
     )
 
-    def diff(self,
-             other: BaseModel,
-             *,
-             already_tested=None) -> Dict[str, Tuple[Any, Any]]:
-        changes = {}
+    def model_changes(self, *, already_tested=None) -> Changes:
+        """Returns the changed attributes of this instance.
+
+        Returns:
+            a dictionary mapping the attributes to (new, old) tuples or a
+            recursive version if the attribute is a list or reference.
+        """
+        def inner(current) -> Optional[Union[List[Any], Changes]]:
+            if isinstance(current, list):
+                res = [inner(item) for item in current]
+                if any(res):
+                    return res
+            elif hasattr(current, 'model_changes'):
+                return current.model_changes(already_tested=already_tested)
+            return None
+
+        changes: Changes = {}
+        if already_tested is None:
+            already_tested = {id(self)}
+        elif id(self) in already_tested:
+            return changes
+        already_tested.add(id(self))
+        state: InstanceState = inspect(self)
+        attr: AttributeState
+        for name, attr in state.attrs.items():
+            hist: History = attr.load_history()
+            if hist.has_changes():
+                changes[name] = hist[0], hist[2]
+            else:
+                vc = inner(getattr(self, name))
+                if vc:
+                    changes[name] = vc
+        return changes
+
+    def diff(self, other: BaseModel, *, already_tested=None) -> Changes:
+        """Returns the difference between this instance and the given one.
+
+        Returns:
+            a dictionary mapping the attributes to (new, old) tuples or a
+            recursive version if the attribute is a list or reference.
+        """
+        changes: Changes = {}
         if already_tested is None:
             already_tested = {id(self), id(other)}
         elif id(self) in already_tested and id(other) in already_tested:
             return changes
         already_tested.add(id(self))
         already_tested.add(id(other))
+        if id(self) == id(other):  # identity cache
+            log.warning('Comparing the same instance (%r). Identity cache?',
+                        self)
+            return self.model_changes()
         clz = type(self)
         oclz = type(other)
         if not isinstance(other, clz):
             raise TypeError("Instance of {} expected. Got {}".format(
                 clz.__name__, oclz.__name__))
 
-        def innerdiff(current, other):
+        def innerdiff(current, other) -> Optional[Union[List[Any], Changes]]:
             if current is None and other is None:
                 return None
             elif current is None or other is None:
@@ -84,9 +129,11 @@ class MainBase(BaseModel):
                 res = []
                 for c, o in zip_longest(current, other):
                     res.append(innerdiff(c, o))
-                return res
+                if all(res):
+                    return res
             elif current != other:
                 return (cv, ov)
+            return None
 
         m: Mapper = inspect(clz)
         for name, attr in m.attrs.items():
@@ -94,10 +141,7 @@ class MainBase(BaseModel):
             ov = getattr(other, name)
             cv = getattr(self, name)
 
-            if name == 'resources':
-                breakpoint()
-
-            if isinstance(attr, RelationshipProperty):
+            if isinstance(attr, RelationshipProperty) and ov is None:
                 for c in attr.local_columns:
                     cname = c.name
                     if innerdiff(getattr(self, cname), getattr(other, cname)):
