@@ -1,6 +1,5 @@
 <!-- Footer -->
 <footer class="page-footer font-small special-color-dark pt-4">
-
   <!-- Footer Elements -->
   <div class="container">
 
@@ -25,9 +24,8 @@
       </em>
     </p>
   </div>
-
 </footer>
-
+<!-- Footer -->
 {% if vulnerability_details %}
 <script>
   const EDITOR_SETTINGS = {{ vulnerability_details.get_settings()|tojson }};
@@ -35,7 +33,6 @@
 </script>
 {% endif %}
 
-<!-- Footer -->
 <script src="{{ url_for('frontend.serve_static', path='js/main.js') }}" type="module" crossorigin></script>
 <script src="{{ url_for('frontend.serve_static', path='js/third_party/popper.min.js') }}"></script>
 

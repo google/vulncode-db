@@ -38,8 +38,7 @@ db = DEFAULT_DATABASE
 log = logging.getLogger(__name__)
 
 
-def _get_vulnerability_details(vcdb_id,
-                               vuln_id=None,
+def _get_vulnerability_details(vcdb_id, vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)

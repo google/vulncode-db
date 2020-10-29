@@ -101,6 +101,7 @@ def product_view(vendor: str = None, product: str = None):
                            repo_urls=repo_urls,
                            number_vulns=number_vulns)
 
+
 # Used for autocomplete forms supports filtering.
 @bp.route("/list:<filter_term>")
 @skip_authorization
