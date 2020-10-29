@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import (Blueprint, render_template)
+from flask import (Blueprint, render_template, jsonify)
 from sqlakeyset import get_page  # type: ignore
-from sqlalchemy import and_, desc
+from sqlalchemy import and_, or_, desc
 from sqlalchemy.orm import joinedload, Load
 
 from app.auth.acls import skip_authorization
@@ -100,3 +100,13 @@ def product_view(vendor: str = None, product: str = None):
                            product_vulns=product_vulns,
                            repo_urls=repo_urls,
                            number_vulns=number_vulns)
+
+# Used for autocomplete forms supports filtering.
+@bp.route("/list:<filter_term>")
+@skip_authorization
+def list_all(filter_term: str = None):
+    if not filter_term or len(filter_term) < 3:
+        return '{}'
+    products = db.session.query(Cpe.product, Cpe.vendor).filter(
+        Cpe.product.like(f"%{filter_term}%")).distinct().all()
+    return jsonify(products)

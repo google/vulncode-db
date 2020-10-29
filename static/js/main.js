@@ -387,3 +387,48 @@ $(function() {
     });
   });
 });
+
+new Vue({
+  data () {
+    return {
+      loading: false,
+      items: [],
+      search: null,
+      select: null,
+      timer: null,
+    }
+  },
+  watch: {
+    search (val) {
+      val && val !== this.select && val.length > 2 && this.querySelections(val)
+    },
+  },
+  methods: {
+    customFilter (item, queryText, itemText) {
+      const productName = item.product.toLowerCase()
+      const searchText = queryText.toLowerCase()
+      return productName.indexOf(searchText) > -1
+    },
+    remove (item) {
+      const index = this.items.indexOf(item)
+      if (index >= 0) this.items.splice(index, 1)
+    },
+    querySelections (v) {
+      this.loading = true
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        $.getJSON('/product/list:' + v, (data) => {
+          this.loading = false
+          if (!data || !data.length) {
+            return;
+          }
+          data.forEach(pair =>
+              this.items.push({'vendor': pair['vendor'], 'product': pair['product']}));
+        });
+      }, 500)
+    },
+  },
+  el: '#app',
+  vuetify: new Vuetify(),
+  delimiters: ['[[',']]']
+})

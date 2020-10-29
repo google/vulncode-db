@@ -39,8 +39,14 @@
       </div>
     </div>
 
-    {% block main_content %}
-    {% endblock %}
+    <div id="app">
+      <v-app>
+        <v-main>
+          {% block main_content %}
+          {% endblock %}
+        </v-main>
+      </v-app>
+    </div>
   </div>
 
   {% include 'footer.html' %}
