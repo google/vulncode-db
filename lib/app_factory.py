@@ -20,6 +20,7 @@ from flask import url_for
 from flask import g
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
+from flask_debugtoolbar import module as debug_toolbar_bp  # type: ignore
 from flask_wtf.csrf import CSRFProtect  # type: ignore
 from werkzeug import Response
 from werkzeug.exceptions import Forbidden
@@ -129,6 +130,7 @@ def register_extensions(app, test_config=None):
         # more.
         # See: https://flask-debugtoolbar.readthedocs.io/en/latest/
         DebugToolbarExtension(app)
+        csrf.exempt(debug_toolbar_bp)
         public_paths.append('/_debug_toolbar/')
 
     def always_authorize():

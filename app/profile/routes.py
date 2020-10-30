@@ -19,8 +19,8 @@ from sqlakeyset import get_page
 from sqlalchemy import desc
 from bouncer.constants import READ, EDIT, DELETE
 
-from app.auth.acls import skip_authorization, requires, ensure
-from app.exceptions import InvalidIdentifierException
+from app.auth.acls import requires, ensure
+from app.exceptions import InvalidIdentifierException, InvalidProducts
 from app.vulnerability.views.details import VulnerabilityDetails
 from app.vulnerability.views.vulncode_db import (
     VulnViewTypesetPaginationObjectWrapper, )
@@ -31,14 +31,15 @@ from data.models import Vulnerability, Nvd, User
 from data.models.nvd import default_nvd_view_options
 from data.models.vulnerability import VulnerabilityState
 from data.database import DEFAULT_DATABASE
-from lib.utils import parse_pagination_param
+from lib.utils import parse_pagination_param, update_products
 
 bp = Blueprint("profile", __name__, url_prefix="/profile")
 db = DEFAULT_DATABASE
 log = logging.getLogger(__name__)
 
 
-def _get_vulnerability_details(vcdb_id, vuln_id=None,
+def _get_vulnerability_details(vcdb_id,
+                               vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
@@ -54,6 +55,12 @@ def _get_vulnerability_details(vcdb_id, vuln_id=None,
 
 def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     form.populate_obj(vuln)
+
+    try:
+        new_products = update_products(vuln)
+    except InvalidProducts as e:
+        flash_error(e.args[0])
+        return None
 
     with db.session.no_autoflush:
         changes = vuln.model_changes()
@@ -72,7 +79,7 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
         flash_error(
             "No changes detected. Please modify the entry first to propose a change"
         )
-        return False
+        return None
     log.debug('Detected changes: %r', changes)
 
     vuln.make_reviewable()
@@ -82,7 +89,7 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     flash(
         "Your proposal is in the review queue. You can monitor progress in your Proposals Section.",
         "success")
-    return True
+    return new_products
 
 
 # Create a catch all route for profile identifiers.
@@ -106,7 +113,9 @@ def edit_proposal(vuln_id: str = None):
 
     form_submitted = form.validate_on_submit()
     if form_submitted and view.is_creator():
-        update_proposal(vuln, form)
+        new_products = update_proposal(vuln, form)
+        if new_products is not None:
+            view.products = [(p.vendor, p.product) for p in new_products]
 
     return render_template("profile/edit_proposal.html",
                            vulnerability_details=vulnerability_details,

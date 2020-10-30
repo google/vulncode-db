@@ -15,6 +15,7 @@
 
 import os
 import sys
+import logging
 import logging.config
 
 import alembic.script
@@ -34,6 +35,25 @@ from lib.app_factory import create_app  # pylint: disable=ungrouped-imports
 
 app = create_app()
 db = DEFAULT_DATABASE.db
+
+
+@app.shell_context_processor
+def autoimport():
+    from data import models
+    from data.database import db
+
+    ctx = {m: getattr(models, m) for m in models.__all__}
+    ctx['session'] = db.session
+    ctx['db'] = db
+    return ctx
+
+
+@app.shell_context_processor
+def enable_sql_logs():
+    logging.basicConfig(
+        format='\x1b[34m%(levelname)s\x1b[m:\x1b[2m%(name)s\x1b[m:%(message)s')
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    return {}
 
 
 def check_db_state():

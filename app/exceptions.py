@@ -15,3 +15,7 @@
 
 class InvalidIdentifierException(Exception):
     pass
+
+
+class InvalidProducts(Exception):
+    pass

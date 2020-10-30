@@ -109,5 +109,6 @@ def list_all(filter_term: str = None):
     if not filter_term or len(filter_term) < 3:
         return '{}'
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        Cpe.product.like(f"%{filter_term}%")).distinct().all()
+        or_(Cpe.product.like(f"%{filter_term}%"),
+            Cpe.vendor.like(f"%{filter_term}%"))).distinct().all()
     return jsonify(products)

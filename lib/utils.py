@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional, List
+import json
 import os
 import re
 import time
@@ -22,6 +24,8 @@ from flask import jsonify, request, redirect
 from sqlakeyset import unserialize_bookmark  # type: ignore
 from werkzeug.exceptions import HTTPException
 from werkzeug.routing import RoutingException
+
+from app.exceptions import InvalidProducts
 
 TRACING_PATH = "traces/"
 TRACING_ACTIVE = False
@@ -175,3 +179,44 @@ class RequestRedirect(HTTPException, RoutingException):
 
     def get_response(self, environ):
         return redirect(self.new_url)
+
+
+def update_products(
+        vuln: 'data.models.Vulnerability',
+        products: List = None) -> Optional[List['data.models.Product']]:
+    from data.models import Product, Cpe
+    from data.database import db
+
+    if products is None:
+        products = request.form.get("products")
+
+    if isinstance(products, str):
+        try:
+            products = json.loads(products)
+        except (TypeError, json.JSONDecodeError):
+            raise InvalidProducts("Invalid products")
+
+    if products is not None:
+        if not isinstance(products, list) or any([
+                not isinstance(p, dict) or 'product' not in p
+                or 'vendor' not in p for p in products
+        ]):
+            return "Invalid products"
+
+        vuln.products = []
+        for product in products:
+            if not db.session.query(
+                    Cpe.query.filter_by(
+                        vendor=product['vendor'],
+                        product=product['product']).exists()).scalar():
+                raise InvalidProducts(
+                    "Invalid product {vendor}/{product}".format(**product))
+            p = Product.query.filter_by(
+                vendor=product['vendor'],
+                product=product['product']).one_or_none()
+            if not p:
+                p = Product(vendor=product['vendor'],
+                            product=product['product'])
+            vuln.products.append(p)
+        return vuln.products
+    return None

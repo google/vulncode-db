@@ -20,7 +20,7 @@ from data.models.vulnerability import (RepositoryFileComments,
                                        RepositoryFilesSchema, Vulnerability,
                                        VulnerabilityGitCommits,
                                        VulnerabilityResources,
-                                       VulnerabilityState, OpenSourceProducts)
+                                       VulnerabilityState, Product)
 from data.models.nvd import (Cpe, Description, Nvd, Reference,
                              default_nvd_view_options)
 

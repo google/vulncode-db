@@ -39,9 +39,6 @@
 <script src="{{ url_for('frontend.serve_static', path='js/third_party/bootstrap.min.js') }}"></script>
 <script src="{{ url_for('frontend.serve_static', path='js/third_party/mdb.min.js') }}"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-
 <!-- load monaco after all the other scripts to avoid issues with AMD defines -->
 <script src="{{ url_for('frontend.serve_static', path='monaco/min/vs/loader.js') }}"></script>
 <script>
