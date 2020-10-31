@@ -15,10 +15,10 @@
  */
 
 
-import { Editor } from './lib/Editor.js';
-import { FileTree } from './lib/FileTree.js';
-import { UI } from './lib/UI.js';
-import { File } from './lib/File.js';
+import {Editor} from './lib/Editor.js';
+import {FileTree} from './lib/FileTree.js';
+import {UI} from './lib/UI.js';
+import {File} from './lib/File.js';
 
 const ui = new UI();
 let editor = null;
@@ -74,8 +74,8 @@ function _initEditorInternal(jsonContent) {
   });
 }
 
-$(function () {
-  $(commitLinkID).bind('input', function () {
+$(function() {
+  $(commitLinkID).bind('input', function() {
     const currentUrl = this.value;
     let customRepoUrl = false;
 
@@ -164,7 +164,7 @@ $(function () {
   });
 
 
-  $('#fetchGitCommitBtn').bind('click', function () {
+  $('#fetchGitCommitBtn').bind('click', function() {
     const commitLink = $(commitLinkID).val();
     // Forward to the correct main page.
     const repoUrl = $(repoUrlID).val();
@@ -180,17 +180,17 @@ $(function () {
     }
     if (commitHash) postData.push(['commit_hash', commitHash]);
     // Send POST request to /vuln endpoint.
-    const form = $('<form>', { 'action': '/vuln', 'method': 'POST' });
+    const form = $('<form>', {'action': '/vuln', 'method': 'POST'});
     postData.forEach((keyVal) => {
       form.append(
-        $('<input/>', { type: 'hidden', name: keyVal[0], value: keyVal[1] }));
+          $('<input/>', {type: 'hidden', name: keyVal[0], value: keyVal[1]}));
     });
     form.appendTo(document.body).submit();
 
     return false;
   });
 
-  $('#commitLinkSelection a').bind('click', function () {
+  $('#commitLinkSelection a').bind('click', function() {
     const useUrl = this.innerHTML;
     $(commitLinkID).val(useUrl);
     if (this.dataset.url) $(commitLinkID).val(this.dataset.url);
@@ -201,7 +201,7 @@ $(function () {
     return false;
   });
 
-  $('input[name=\'jstree_filter\']').change(function () {
+  $('input[name=\'jstree_filter\']').change(function() {
     const newFilter = this.id.replace('jstree_filter_', '');
     fileTree.applyFilter(newFilter);
   });
@@ -211,10 +211,10 @@ $(function () {
 
   function initClickableElements() {
     $('[data-toggle="tooltip"]').tooltip();
-    $('.clickable-row .link').click(function (e) {
+    $('.clickable-row .link').click(function(e) {
       e.stopPropagation();
     });
-    $('.clickable-row').click(function () {
+    $('.clickable-row').click(function() {
       if (!getSelection().toString()) {
         const win = window.open($(this).data('href'), '_top');
         win.focus();
@@ -223,10 +223,10 @@ $(function () {
   }
 
   // Enable all tooltips in the document.
-  $(document).ready(function () {
+  $(document).ready(function() {
     initClickableElements();
     // Convert all markdown comments.
-    $('.markdown_comment').each(function (index) {
+    $('.markdown_comment').each(function(index) {
       const comment = $(this).text();
       const markdown_comment = UI.toMarkdown(comment);
       $(this).html(markdown_comment);
@@ -234,11 +234,11 @@ $(function () {
   });
 
   let searchTimeout;
-  $('#searchKeyword').on('input', function () {
+  $('#searchKeyword').on('input', function() {
     const value = $(this).val();
     clearTimeout(searchTimeout);
 
-    searchTimeout = setTimeout(function () {
+    searchTimeout = setTimeout(function() {
       $.ajax({
         url: '/list_entries',
         type: 'get',
@@ -261,16 +261,16 @@ function fetchGitCommitLink(treeUrl) {
 
   // Fetch the file tree data and initialize the editor after that.
   $.getJSON(
-    treeUrl,
-    function (jsonContent) {
-      initEditor(jsonContent);
-    })
-    .fail(function (jqXHR) {
-      ui.showError(
-        'Status (' + jqXHR.status +
+      treeUrl,
+      function(jsonContent) {
+        initEditor(jsonContent);
+      })
+      .fail(function(jqXHR) {
+        ui.showError(
+            'Status (' + jqXHR.status +
         ') when fetching ' + treeUrl + ' (see console)!');
-      console.log(jqXHR.responseText);
-    });
+        console.log(jqXHR.responseText);
+      });
 }
 
 const editorSettings = window.EDITOR_SETTINGS;
@@ -284,7 +284,7 @@ if (editorSettings) {
   require(['vs/editor/editor.main'], () => {
     const fileCache = {};
 
-    $('.mutli-editor').each(function (index) {
+    $('.mutli-editor').each(function(index) {
       const targetElement = $(this);
       const targetEditorId = targetElement.attr('id');
       const targetData = targetElement.data();
@@ -355,31 +355,31 @@ if (editorSettings) {
   console.log('[-] No editor settings found to proceed.');
 }
 
-$(function () {
-  $('div[data-toggle=fieldset]').each(function () {
+$(function() {
+  $('div[data-toggle=fieldset]').each(function() {
     const $this = $(this);
 
     // Allow dynamically adding/removing form fields as per
     // https://gist.github.com/jb-l/466eb6a96e39bf2d92500fe8d6909b14#file-test_fieldlist-py
     // Note: This requires at least one (hidden) template input to exist.
-    $this.find('button[data-toggle=fieldset-add-row]').click(function () {
+    $this.find('button[data-toggle=fieldset-add-row]').click(function() {
       const target = $($(this).data('target'));
       const oldrow = target.find('[data-toggle=fieldset-entry]:last');
       const row = oldrow.clone(true, true);
       const elem_id = row.find(':input')[0].id;
       const elem_num = parseInt(elem_id.match(/-(-?\d{1,4})(?!.*\d)/m)[1]) + 1;
-      row.children(':input').each(function () {
+      row.children(':input').each(function() {
         const id = $(this).attr('id').replace((elem_num - 1), elem_num);
         $(this).attr('name', id).attr('id', id).val('').removeAttr('checked');
       });
-      row.children('label').each(function () {
+      row.children('label').each(function() {
         const id = $(this).attr('for').replace((elem_num - 1), elem_num);
         $(this).attr('for', id);
       });
       row.show();
       oldrow.after(row);
     });
-    $this.find('button[data-toggle=fieldset-remove-row]').click(function () {
+    $this.find('button[data-toggle=fieldset-remove-row]').click(function() {
       if ($this.find('[data-toggle=fieldset-entry]').length > 1) {
         const thisRow = $(this).closest('[data-toggle=fieldset-entry]');
         thisRow.remove();

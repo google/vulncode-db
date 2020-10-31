@@ -1,19 +1,19 @@
 // setup shadow dom
-const treeHead = document.querySelector("#product-search");
-const parent = document.createElement("div");
-const holder = document.createElement("div");
-const shadow = treeHead.attachShadow({ mode: "open" });
+const treeHead = document.querySelector('#product-search');
+const parent = document.createElement('div');
+const holder = document.createElement('div');
+const shadow = treeHead.attachShadow({mode: 'open'});
 parent.appendChild(holder);
 shadow.appendChild(parent);
 
 // ##### workarounds ahead!! ####
-(function () {
+(function() {
   // https://github.com/vuetifyjs/vuetify/issues/7622
-  const { querySelector } = document;
-  document.querySelector = function (selector) {
+  const {querySelector} = document;
+  document.querySelector = function(selector) {
     if (selector === '[data-app]') return shadow.querySelector(selector);
-    return querySelector.call(this, selector)
-  }
+    return querySelector.call(this, selector);
+  };
   // ugly hack until https://github.com/vuetifyjs/vuetify/issues/7622 is fixed
   // we're not using document.activeElement at the momemt so it should be fine
   // but shouldn't be mixed with monaco just in case.
@@ -26,8 +26,8 @@ shadow.appendChild(parent);
   document.body.addEventListener('click', (e) => {
     const target = shadow.querySelector('.v-select__selections input[type=text]');
     if (e.target === target || e.target === treeHead) return;
-    const evt = new KeyboardEvent("keydown", {
-      keyCode: 9 // tab,
+    const evt = new KeyboardEvent('keydown', {
+      keyCode: 9, // tab,
     });
     target.dispatchEvent(evt);
   });
@@ -49,23 +49,23 @@ shadow.appendChild(parent);
     }
 `);
   shadow.adoptedStyleSheets = [styles];
-})()
+})();
 // ##### workarounds done!! ####
 
 
 function loadStyle(url) {
-  const el = document.createElement("link");
-  el.setAttribute("rel", "stylesheet");
-  el.setAttribute("type", "text/css");
-  el.setAttribute("href", url);
+  const el = document.createElement('link');
+  el.setAttribute('rel', 'stylesheet');
+  el.setAttribute('type', 'text/css');
+  el.setAttribute('href', url);
   parent.appendChild(el);
 }
 
-loadStyle("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css");
-loadStyle("https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css");
+loadStyle('https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css');
+loadStyle('https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css');
 
 const ProductSearch = {
-  template: "#product-search-template",
+  template: '#product-search-template',
 
   props: {
     products: Array,
@@ -119,7 +119,7 @@ const ProductSearch = {
           }
           // TODO: replace with Set?
           data.forEach((pair) =>
-            this.internalItems.push({ vendor: pair['vendor'], product: pair['product'] }));
+            this.internalItems.push({vendor: pair['vendor'], product: pair['product']}));
         });
       }, 500);
     },
@@ -128,34 +128,34 @@ const ProductSearch = {
       const n = document.createTextNode(html);
       const p = document.createElement('pre');
       p.appendChild(n);
-      return p.innerHTML.replace('"', '&quot;').replace("'", '&#39;')
+      return p.innerHTML.replace('"', '&quot;').replace('\'', '&#39;');
     },
 
     highlightText(text) {
-      const searchInput = (this.search || '').toString().toLocaleLowerCase()
-      const index = text.toLocaleLowerCase().indexOf(searchInput)
+      const searchInput = (this.search || '').toString().toLocaleLowerCase();
+      const index = text.toLocaleLowerCase().indexOf(searchInput);
 
       if (index < 0) return this.escapeHTML(text);
 
-      const start = text.slice(0, index)
-      const middle = text.slice(index, index + searchInput.length)
-      const end = text.slice(index + searchInput.length)
+      const start = text.slice(0, index);
+      const middle = text.slice(index, index + searchInput.length);
+      const end = text.slice(index + searchInput.length);
 
       return this.escapeHTML(start) + `<span class="v-list-item__mask">${this.escapeHTML(middle)}</span>` + this.escapeHTML(end);
-    }
+    },
   },
   delimiters: ['[[', ']]'],
 };
 
 
 // also accessed outside of this file
-let selectedProducts = [];
+const selectedProducts = [];
 
 // hook form submit
 let el = treeHead;
 while (el) {
   if (el.tagName === 'FORM') {
-    el.addEventListener('submit', function () {
+    el.addEventListener('submit', function() {
       const container = this.querySelector('#product-fields');
       // clear node
       while (container.firstChild) {

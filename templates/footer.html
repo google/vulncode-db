@@ -19,8 +19,12 @@
   <div class="footer-copyright text-center py-3">
     <p>
       <em>
-        Disclaimer: Vulncode-DB is not an officially supported Google product.<br />
-        Please see the <a href="https://github.com/google/vulncode-db/blob/master/README.md">vulncode-db repository</a> for more information.
+        Disclaimer: Vulncode-DB is not an officially supported Google product.
+      <em>
+        <b><a href="{{ url_for('auth.terms', text=True) }}">Terms of Use</a></b><br />
+      </em>
+      <em>
+        See the <a href="https://github.com/google/vulncode-db/blob/master/README.md">vulncode-db repository</a> for more information.
       </em>
     </p>
   </div>

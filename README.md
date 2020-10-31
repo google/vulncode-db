@@ -73,14 +73,16 @@ Please also see the documentation provided in `docker/README.md` for more detail
 
 ### Vulncode-DB Data
 
-This project provides exclusive data such as vulnerability annotations and mappings from vulnerability entries to corresponding patches
-and code. The terms of use apply to data provided through the website or implicitly through code in this repository.
+This project provides data such as vulnerability annotations and mappings from vulnerability entries to corresponding patches
+and code. It can be self-hosted or accessed through the main project site at https://vulncode-db.com.
 
+For any user provided content on the project's website we refer to the terms of conditions provided within this repository.
+Otherwise, for the project's code itself:
 ```
 Vulncode-DB hereby grants you a perpetual, worldwide, non-exclusive,
 no-charge, royalty-free, irrevocable copyright license to reproduce, prepare
 derivative works of, publicly display, publicly perform, sublicense, and
-distribute data which is exclusively provided by Vulncode-DB. Any copy you make for
+distribute code which exclusively provided by the Vulncode-DB project. Any copy you make for
 such purposes is authorized provided that you reproduce Vulncode-DB's copyright
 designation and this license in any such copy.
 ```
