@@ -64,6 +64,13 @@ function loadStyle(url) {
 loadStyle('https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css');
 loadStyle('https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css');
 
+function sanitizeQueryText(val) {
+  val = val.toLocaleLowerCase();
+  val = val.replace(' ', '_');
+  val = val.replace('-', '\\-');
+  return val
+}
+
 const ProductSearch = {
   template: '#product-search-template',
 
@@ -89,10 +96,11 @@ const ProductSearch = {
 
   methods: {
     customFilter(item, queryText, itemText) {
+      // Only search for the product name for now.
       const productName = item.product.toLowerCase();
-      const vendorName = item.vendor.toLowerCase();
-      const searchText = queryText.toLowerCase();
-      return productName.indexOf(searchText) > -1 || vendorName.indexOf(searchText) > -1;
+      //const vendorName = item.vendor.toLowerCase();
+      const searchText = sanitizeQueryText(queryText);
+      return productName.indexOf(searchText) > -1;
     },
 
     remove(item) {
@@ -112,7 +120,7 @@ const ProductSearch = {
       this.loading = true;
       clearTimeout(this.timer);
       this.timer = setTimeout(() => {
-        $.getJSON('/product/list:' + v, (data) => {
+        $.getJSON('/product/list:' + sanitizeQueryText(v), (data) => {
           this.loading = false;
           if (!data || !data.length) {
             return;
@@ -129,6 +137,16 @@ const ProductSearch = {
       const p = document.createElement('pre');
       p.appendChild(n);
       return p.innerHTML.replace('"', '&quot;').replace('\'', '&#39;');
+    },
+
+    formatProductText(val) {
+      if (!val || !val.length) {
+        return '';
+      }
+      val = val.replace('\\-', '-');
+      val = val.replace('_', ' ');
+      val = val.charAt(0).toUpperCase() + val.slice(1);
+      return val
     },
 
     highlightText(text) {
@@ -149,7 +167,7 @@ const ProductSearch = {
 
 
 // also accessed outside of this file
-const selectedProducts = [];
+let selectedProducts = [];
 
 // hook form submit
 let el = treeHead;

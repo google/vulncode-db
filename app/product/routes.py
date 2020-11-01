@@ -108,7 +108,7 @@ def product_view(vendor: str = None, product: str = None):
 def list_all(filter_term: str = None):
     if not filter_term or len(filter_term) < 3:
         return '{}'
+    # Only search the product name for now.
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        or_(Cpe.product.like(f"%{filter_term}%"),
-            Cpe.vendor.like(f"%{filter_term}%"))).distinct().all()
+       Cpe.product.like(f"%{filter_term}%")).distinct().all()
     return jsonify(products)
