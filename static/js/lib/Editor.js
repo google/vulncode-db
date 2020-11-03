@@ -15,11 +15,11 @@
  */
 
 // import {AnnotateInlineToolbar} from './InlineToolbar.js';
-import {CommentWidget} from './CommentWidget.js';
+import { CommentWidget } from './CommentWidget.js';
 import * as constants from './Constants.js';
-import {File} from './File.js';
-import {FileComment} from './FileComment.js';
-import {FileMarker} from './FileMarker.js';
+import { File } from './File.js';
+import { FileComment } from './FileComment.js';
+import { FileMarker } from './FileMarker.js';
 
 
 function defaultQueryParameters() {
@@ -71,7 +71,7 @@ class Editor {
     this._ui = null;
     this._selected_marker = null;
     this._hidden_ranges = [];
-    this._view_range = {'start': 0, 'end': 9999999};
+    this._view_range = { 'start': 0, 'end': 9999999 };
     this._num_collapsable_ranges = 0;
 
     // Install an auto resize listener for the editor.
@@ -83,7 +83,7 @@ class Editor {
    * @private
    */
   _getSelection() {
-    const selection = {'startRow': 0, 'endRow': 0};
+    const selection = { 'startRow': 0, 'endRow': 0 };
     const sel = this._editor.getSelection();
 
     const startRow = sel.startLineNumber - 1;
@@ -92,10 +92,10 @@ class Editor {
     selection.endRow = endRow;
     if (this._editor.getEditorType() === monaco.editor.EditorType.IDiffEditor) {
       selection.startRow =
-          this._editor.getDiffLineInformationForModified(startRow)
-              .equivalentLineNumber;
-      selection.endRow = this._editor.getDiffLineInformationForModified(endRow)
+        this._editor.getDiffLineInformationForModified(startRow)
           .equivalentLineNumber;
+      selection.endRow = this._editor.getDiffLineInformationForModified(endRow)
+        .equivalentLineNumber;
     }
     return selection;
   }
@@ -104,7 +104,7 @@ class Editor {
    * @param allowDiffMode {Boolean} Whether to allow the editor's diff mode.
    * @private
    */
-  _createEditor(allowDiffMode=true) {
+  _createEditor(allowDiffMode = true) {
     // Create the editor based on the current display mode
     if (this._display_patch_data && allowDiffMode) {
       this._diffEditor();
@@ -120,14 +120,14 @@ class Editor {
       function toggleVulnerable() {
         const selection = this._getSelection();
         this.toggleMarkerSelection(
-            selection.startRow, selection.endRow,
-            constants.VULNERABLE_MARKER_CLASS);
+          selection.startRow, selection.endRow,
+          constants.VULNERABLE_MARKER_CLASS);
       }
       function toggleIrrelevant() {
         const selection = this._getSelection();
         this.toggleMarkerSelection(
-            selection.startRow, selection.endRow,
-            constants.IRRELEVANT_MARKER_CLASS);
+          selection.startRow, selection.endRow,
+          constants.IRRELEVANT_MARKER_CLASS);
       }
       this._editor.addAction({
         id: 'add_comment',
@@ -179,14 +179,14 @@ class Editor {
       return;
     }
     fetch('/static/monaco/themes/' + themeName + '.json')
-        .then((data) => data.json())
-        .then((data) => {
-          monaco.editor.defineTheme(themeName, data);
-          monaco.editor.setTheme(themeName);
-        })
-        .catch((e) => {
-          console.log('Can\'t fetch theme: ' + themeName, e);
-        });
+      .then((data) => data.json())
+      .then((data) => {
+        monaco.editor.defineTheme(themeName, data);
+        monaco.editor.setTheme(themeName);
+      })
+      .catch((e) => {
+        console.log('Can\'t fetch theme: ' + themeName, e);
+      });
   }
   /**
    * Create non-diff editor
@@ -195,7 +195,7 @@ class Editor {
    */
   _normalEditor(content, fileName) {
     this._editor = monaco.editor.create(
-        this._editor_container, MONACO_EDITOR_BASE_SETTINGS);
+      this._editor_container, MONACO_EDITOR_BASE_SETTINGS);
     if (!content) {
       content = 'Editor loaded\nsuccessfully.\n';
     }
@@ -246,8 +246,8 @@ class Editor {
     // let layoutInfo = this._editor.getLayoutInfo();
 
     // The codeLens lines / widgets are not considered in the scrollHeight.
-    const configuration = this._editor.getConfiguration();
-    const lineHeight = configuration.lineHeight;
+    const configuration = this._editor.getOptions();
+    const lineHeight = configuration.get(monaco.editor.EditorOption.lineHeight);
     const paddingOffset = lineHeight * this._num_collapsable_ranges;
     const editorContainerHeight = scrollHeight + paddingOffset;
     $(this._editor_container).height(editorContainerHeight);
@@ -263,13 +263,13 @@ class Editor {
     this.addHiddenRange(startLine, endLine);
 
     const usedLanguage = this._editor.getModel().getModeId();
-    const commandId = this._editor.addCommand(0, function() {
+    const commandId = this._editor.addCommand(0, function () {
       // services available in `ctx`
       console.log('Todo: action missing.');
     }, '');
 
     monaco.languages.registerCodeLensProvider(usedLanguage, {
-      provideCodeLenses: function(model, token) {
+      provideCodeLenses: function (model, token) {
         return {
           lenses: [{
             range: {
@@ -279,11 +279,11 @@ class Editor {
               endColumn: 1,
             },
             id: 'Foobar',
-            command: {id: commandId, title: '[...]'},
+            command: { id: commandId, title: '[...]' },
           }]
         };
       },
-      resolveCodeLens: function(model, codeLens, token) {
+      resolveCodeLens: function (model, codeLens, token) {
         return codeLens;
       },
     });
@@ -362,7 +362,7 @@ class Editor {
    */
   collapseAllIrrelevantLines() {
     const irrelevantMarkers =
-        this._getMarkers(constants.IRRELEVANT_MARKER_CLASS);
+      this._getMarkers(constants.IRRELEVANT_MARKER_CLASS);
 
     const collapseRanges = [];
     irrelevantMarkers.forEach((marker) => {
@@ -372,10 +372,10 @@ class Editor {
 
       // Skip markers outside the current view scope.
       if (endLine <= this._view_range.start ||
-          startLine >= this._view_range.end) {
+        startLine >= this._view_range.end) {
         return;
       }
-      collapseRanges.push({'start': startLine, 'end': endLine});
+      collapseRanges.push({ 'start': startLine, 'end': endLine });
     });
     // Merge ranges before collapsing them.
     for (let i = 0; i < collapseRanges.length; i++) {
@@ -398,8 +398,8 @@ class Editor {
    */
   _diffEditor(original, modified, fileName) {
     this._editor = monaco.editor.createDiffEditor(
-        this._editor_container,
-        {...MONACO_EDITOR_BASE_SETTINGS, ...MONACO_DIFF_EDITOR_SETTINGS});
+      this._editor_container,
+      { ...MONACO_EDITOR_BASE_SETTINGS, ...MONACO_DIFF_EDITOR_SETTINGS });
     if (!original) {
       original = 'Editor loaded\nsuccessfully.\n';
     }
@@ -412,7 +412,7 @@ class Editor {
     }
     original = monaco.editor.createModel(original, null, uri);
     modified = monaco.editor.createModel(modified, null, uri);
-    this._editor.setModel({original, modified});
+    this._editor.setModel({ original, modified });
     this._editor.getModifiedEditor().updateOptions({
       minimap: {
         enabled: true,
@@ -541,7 +541,7 @@ class Editor {
     const startRow = selectedMarker.row_from;
     const endRow = selectedMarker.row_to;
     this.toggleMarkerSelection(
-        startRow, endRow, constants.MARKER_HIGHLIGHT_CLASS);
+      startRow, endRow, constants.MARKER_HIGHLIGHT_CLASS);
   }
   /**
    * Remove all custom file content from the editor and the file objects.
@@ -553,14 +553,14 @@ class Editor {
       if (!fileCustomContent) continue;
       const customComments = fileCustomContent.comments.slice();
       customComments.forEach(
-          (comment) => {
-            this.removeComment(comment, this._known_files[key]);
-          });
+        (comment) => {
+          this.removeComment(comment, this._known_files[key]);
+        });
       const customMarkers = fileCustomContent.markers.slice();
       customMarkers.forEach(
-          (marker) => {
-            this.removeMarker(marker, this._known_files[key]);
-          });
+        (marker) => {
+          this.removeMarker(marker, this._known_files[key]);
+        });
     }
   }
   /**
@@ -666,7 +666,7 @@ class Editor {
           if (!(targetFilePath in this._known_files)) {
             console.log('[!] restoreFileBackendData: restoring unknown file:', fileData.file_name);
             const newFile =
-                new File(null, fileData.file_name, fileData.file_hash, null);
+              new File(null, fileData.file_name, fileData.file_hash, null);
             this._known_files[targetFilePath] = newFile;
           }
           // TODO: add proper checks here (e.g. does the target id exist?)
@@ -679,7 +679,7 @@ class Editor {
             targetFile.highlightNodes(marker.class);
           });
         });
-        allComments.sort(function(a, b) {
+        allComments.sort(function (a, b) {
           return a.sort_pos - b.sort_pos;
         });
         // Render essential UI elements for this custom data.
@@ -705,12 +705,12 @@ class Editor {
    */
   deleteEntry() {
     this._ui.confirmYesNo(
-        'Do you want to delete the complete entry?',
-        () => {
-          $.when(this._deleteEntryFromBackend()).then((status) => {
-            this._ui.showSuccess(status['msg']);
-          });
+      'Do you want to delete the complete entry?',
+      () => {
+        $.when(this._deleteEntryFromBackend()).then((status) => {
+          this._ui.showSuccess(status['msg']);
         });
+      });
   }
   /**
    * Save all current changes in the backend.
@@ -718,34 +718,34 @@ class Editor {
    */
   saveState() {
     this._ui.confirmYesNo(
-        'Do you want to overwrite the previous state?', () => {
-          // delay spinner by 0.5s so it wont show if the save operation is
-          // fast.
-          const t = window.setTimeout(() => {
-            this._ui.showSpinner('Saving');
-          }, 500);
-          const data = this.serializeFileData();
-          $.when(this.saveFileDataInBackend(data))
-              .then((status) => {
-                window.clearTimeout(t);
-                this._ui.hideSpinner();
-                this._ui.showSuccess(status['msg']);
-              })
-              .catch(() => {
-                window.clearTimeout(t);
-                this._ui.hideSpinner();
-                this._ui.showError('Error during save');
-              });
-        });
+      'Do you want to overwrite the previous state?', () => {
+        // delay spinner by 0.5s so it wont show if the save operation is
+        // fast.
+        const t = window.setTimeout(() => {
+          this._ui.showSpinner('Saving');
+        }, 500);
+        const data = this.serializeFileData();
+        $.when(this.saveFileDataInBackend(data))
+          .then((status) => {
+            window.clearTimeout(t);
+            this._ui.hideSpinner();
+            this._ui.showSuccess(status['msg']);
+          })
+          .catch(() => {
+            window.clearTimeout(t);
+            this._ui.hideSpinner();
+            this._ui.showError('Error during save');
+          });
+      });
   }
   /**
    * Loads the last stored entries and throws away unsaved changes.
    */
   resetState() {
     this._ui.confirmYesNo(
-        'Do you want to reset the complete current state?', () => {
-          this.restoreFileBackendData();
-        });
+      'Do you want to reset the complete current state?', () => {
+        this.restoreFileBackendData();
+      });
   }
   /**
    * Fetches metadata from this and other involved objects.
@@ -826,8 +826,8 @@ class Editor {
       selectionLines: createdComment.row_from,
     });
     const widget = new CommentWidget(
-        createdComment, this._editor, this._display_patch_data,
-        constants.EDIT_MODE_ACTIVE);
+      createdComment, this._editor, this._display_patch_data,
+      constants.EDIT_MODE_ACTIVE);
     widget.create();
     widget.onRemove((comment) => {
       this.removeComment(comment);
@@ -838,7 +838,7 @@ class Editor {
     widget.show(new monaco.Position(rowTo + 1, 1), 5);
     createdComment.raw_widget = widget;
     createdComment.raw_section_marker =
-        this.createMarker(rowFrom, rowTo, constants.SECTION_MARKER_CLASS);
+      this.createMarker(rowFrom, rowTo, constants.SECTION_MARKER_CLASS);
   }
   /**
    * Paints a marker on the editor canvas in a given region and binds it to a
@@ -853,13 +853,13 @@ class Editor {
     // Adjust the linue number if needed
     if (editor.getEditorType() === monaco.editor.EditorType.IDiffEditor) {
       startRow = editor.getDiffLineInformationForOriginal(startRow)
-          .equivalentLineNumber;
+        .equivalentLineNumber;
       endRow =
-          editor.getDiffLineInformationForOriginal(endRow).equivalentLineNumber;
+        editor.getDiffLineInformationForOriginal(endRow).equivalentLineNumber;
       editor = editor.getModifiedEditor();
     }
     const range = new monaco.Range(
-        startRow, marker.colum_from + 1, endRow, marker.column_to + 1);
+      startRow, marker.colum_from + 1, endRow, marker.column_to + 1);
     const options = {
       isWholeLine: true,
     };
@@ -884,7 +884,7 @@ class Editor {
     const currentlyOpenFile = this._getCurrentlyOpenFile();
     if (!currentlyOpenFile) return null;
     const marker =
-        new FileMarker(currentlyOpenFile, markerClass, startRow, endRow);
+      new FileMarker(currentlyOpenFile, markerClass, startRow, endRow);
     //
     const useMarker = currentlyOpenFile.addMarker(marker);
     this.paintMarker(useMarker);
@@ -1023,7 +1023,7 @@ class Editor {
         this._editor.setModel({
           original: this._getOrCreateModel(content, monaco.Uri.file(file.path)),
           modified: this._getOrCreateModel(
-              patchedContent, monaco.Uri.file('b/' + file.path)),
+            patchedContent, monaco.Uri.file('b/' + file.path)),
         });
         return new Promise((resolve) => {
           this._editor.onDidUpdateDiff(() => resolve());
@@ -1032,22 +1032,22 @@ class Editor {
     } else {
       result = file.content.then((content) => {
         const model =
-            this._getOrCreateModel(content, monaco.Uri.file(file.path));
+          this._getOrCreateModel(content, monaco.Uri.file(file.path));
         this._editor.setModel(model);
       });
     }
     return result
-        .then(() => {
-          // Restore any previous markers:
-          for (const marker of file.markers) {
-            this.paintMarker(marker);
-          }
-          // Restore any previous comments:
-          for (const comment of file.comments) {
-            this.paintCommentWidget(comment);
-            this.paintCommentSortable(comment);
-          }
-        });
+      .then(() => {
+        // Restore any previous markers:
+        for (const marker of file.markers) {
+          this.paintMarker(marker);
+        }
+        // Restore any previous comments:
+        for (const comment of file.comments) {
+          this.paintCommentWidget(comment);
+          this.paintCommentSortable(comment);
+        }
+      });
   }
   /**
    * Determines whether to display patch data (added and removed lines).
@@ -1082,11 +1082,11 @@ class Editor {
       // a bug
       const verticalRevealTypeTop = 3;
       this._getEditor()._revealPosition(
-          {
-            column: 0,
-            lineNumber: row,
-          },
-          verticalRevealTypeTop);
+        {
+          column: 0,
+          lineNumber: row,
+        },
+        verticalRevealTypeTop);
     });
   }
   /**
@@ -1125,7 +1125,7 @@ class Editor {
   displayFile(file, forceRefresh = false) {
     const currentlyOpenFile = this._getCurrentlyOpenFile();
     if (currentlyOpenFile && file.hash === currentlyOpenFile.hash &&
-        !forceRefresh) {
+      !forceRefresh) {
       return Promise.resolve();
     }
     this.cleanup();
@@ -1200,7 +1200,7 @@ class Editor {
     if (!patchData) {
       return content;
     }
-    let sep ='\n';
+    let sep = '\n';
     const lineSeparatorMaches = content.match(/\r?\n/);
     if (lineSeparatorMaches) {
       sep = content.match(/\r?\n/)[0];
@@ -1223,4 +1223,4 @@ class Editor {
     return contentLines.join(sep);
   }
 }
-export {Editor};
+export { Editor };
