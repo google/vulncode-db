@@ -270,16 +270,18 @@ class Editor {
 
     monaco.languages.registerCodeLensProvider(usedLanguage, {
       provideCodeLenses: function(model, token) {
-        return [{
-          range: {
-            startLineNumber: endLine + 1,
-            startColumn: 1,
-            endLineNumber: endLine + 1,
-            endColumn: 1,
-          },
-          id: 'Foobar',
-          command: {id: commandId, title: '[...]'},
-        }];
+        return {
+          lenses: [{
+            range: {
+              startLineNumber: endLine + 1,
+              startColumn: 1,
+              endLineNumber: endLine + 1,
+              endColumn: 1,
+            },
+            id: 'Foobar',
+            command: {id: commandId, title: '[...]'},
+          }]
+        };
       },
       resolveCodeLens: function(model, codeLens, token) {
         return codeLens;
