@@ -1,4 +1,5 @@
 {% import "bootstrap/wtf.html" as wtf %}
+{% from 'macros/generate_vuln_table.html' import display_vuln_column %}
 
 {% extends "base.html" %}
 
@@ -29,6 +30,23 @@
         <div class="card my-3">
             <div class="card-body">
               <img src="{{ user.avatar_resized(96) }}" alt="profile picture" class="img-thumbnail avatar_profile">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row my-3">
+    <div class="col-sm-8 offset-md-2">
+        <div class="card my-3">
+            <div class="card-body">
+                <h3 class="card-title">Contributions</h3>
+                <ul>
+                {%- for vuln in vulns %}
+                  <li>
+                    <a href="{{ url_for('vuln.vuln_view', vcdb_id=vuln.cve_id) }}">{{ vuln.cve_id }}</a>
+                    ({{ display_vuln_column(vuln, 'state') }})
+                  <li>
+                {% endfor %}
+                </ul>
             </div>
         </div>
     </div>

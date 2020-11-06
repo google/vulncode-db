@@ -13,9 +13,12 @@
 # limitations under the License.
 import enum
 import re
+import uuid
 
-from sqlalchemy import Column, String, Integer, ForeignKey, Enum, Boolean
+from sqlalchemy import Column, String, Integer, ForeignKey, Enum, Boolean, Table
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import null
+from sqlalchemy.sql.schema import PrimaryKeyConstraint
 
 from data.utils import populate_models
 from data.models.base import MainBase, BaseModel
@@ -50,6 +53,25 @@ class Role(MainBase):
         return self.name
 
 
+class InviteCode(MainBase):
+    code = Column(String(36),
+                  unique=True,
+                  nullable=False,
+                  index=True,
+                  default=lambda: str(uuid.uuid4()))
+    remaining_uses = Column(Integer, nullable=False, default=1)
+    description = Column(String(255), nullable=False)
+    roles = relationship(Role, secondary='invite_role')
+    users = relationship('User', back_populates='invite_code')
+
+
+invite_roles = Table(
+    'invite_role', BaseModel.metadata,
+    Column('invite_id', ForeignKey(InviteCode.id), nullable=False),
+    Column('role_id', ForeignKey(Role.id), nullable=False),
+    PrimaryKeyConstraint('invite_id', 'role_id'))
+
+
 class UserState(StateMachine):
     REGISTERED = 0
     ACTIVE = 1
@@ -69,6 +91,8 @@ class User(MainBase):
                    nullable=False)
     hide_name = Column(Boolean, nullable=False, default=True)
     hide_picture = Column(Boolean, nullable=False, default=True)
+    invite_code_id = Column(Integer, ForeignKey(InviteCode.id), nullable=True)
+    invite_code = relationship(InviteCode, back_populates='users')
 
     @property
     def name(self):
@@ -126,7 +150,10 @@ class User(MainBase):
         self.state.next_state(UserState.BLOCKED)
 
     def enable(self):
-        self.state = self.state.next_state(UserState.ACTIVE)
+        if self.state is None:
+            self.state = UserState.ACTIVE
+        else:
+            self.state = self.state.next_state(UserState.ACTIVE)
 
 
 # must be set after all definitions

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+from typing import Optional, Tuple
 from functools import wraps
 
 from flask import (session, request, url_for, abort, redirect, Blueprint, g,
@@ -20,10 +21,11 @@ from authlib.integrations.flask_client import OAuth, OAuthError  # type: ignore
 from flask_wtf import FlaskForm
 from wtforms import BooleanField
 from wtforms.validators import DataRequired
+from werkzeug import Response
 
 from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE
-from data.models.user import User, Role, PredefinedRoles, UserState
+from data.models.user import InviteCode, User, Role, PredefinedRoles, UserState
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 db = DEFAULT_DATABASE.db
@@ -98,6 +100,13 @@ def login():
     return render_template('login.html')
 
 
+@bp.route("/invite/<invite_code>", methods=["GET"])
+@skip_authorization
+def invite(invite_code: str):
+    session["invite_code"] = invite_code
+    return redirect(url_for("auth.login"))
+
+
 @bp.route("/logout", methods=["GET"])
 @skip_authorization
 def logout():
@@ -120,7 +129,9 @@ def authorized():
     session["user_info"] = user
 
     if User.query.filter_by(email=user['email']).one_or_none() is None:
-        return redirect(url_for('auth.terms'))
+        resp, _ = registration_required()
+        if resp is not None:
+            return resp
 
     do_redirect = session.pop("redirect_path", '/')
     return redirect(do_redirect)
@@ -164,6 +175,32 @@ def get_or_create_role(name) -> Role:
     return role
 
 
+def registration_required() -> Tuple[Optional[Response], Optional[InviteCode]]:
+    if current_app.config["REGISTRATION_MODE"] == "CLOSED":
+        logout()
+        flash("Registration is closed", "danger")
+        return redirect("/"), None
+
+    invite_code = None
+    if current_app.config["REGISTRATION_MODE"] == "INVITE_ONLY":
+        invite_code = InviteCode.query.filter_by(
+            code=session.get('invite_code')).one_or_none()
+        if not invite_code:
+            logout()
+            flash("Registration is invite only", "danger")
+            return redirect("/"), None
+        if invite_code.remaining_uses < 1:
+            logout()
+            flash("Invitation code has expired", "danger")
+            return redirect("/"), None
+
+    if not session.get('terms_accepted'):
+        log.warn('Terms not accepted yet')
+        # request._authorized = True
+        return redirect(url_for('auth.terms')), None
+    return None, invite_code
+
+
 @bp.before_app_request
 def load_user():
     # continue for assets
@@ -204,10 +241,9 @@ def load_user():
     is_new = False
     is_changed = False
     if not user:
-        if not session.get('terms_accepted'):
-            log.warn('Terms not accepted yet')
-            request._authorized = True
-            return redirect(url_for('auth.terms'))
+        resp, invite_code = registration_required()
+        if resp is not None:
+            return resp
 
         name, host = email.rsplit('@', 1)
         log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
@@ -215,6 +251,14 @@ def load_user():
                     full_name=data.get("name", name),
                     profile_picture=data.get("picture"))
         is_new = True
+        if invite_code is not None:
+            session.pop("invite_code")
+            user.roles = invite_code.roles
+            user.invite_code = invite_code
+            invite_code.remaining_uses -= 1
+            if current_app.config["AUTO_ENABLE_INVITED_USERS"]:
+                user.enable()
+            db.session.add(invite_code)
     else:
         log.info('Updating user %s', user)
         if 'name' in data and user.full_name != data['name']:

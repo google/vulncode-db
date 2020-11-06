@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from data.utils import populate_models
-from data.models.user import (
-    User, )
+from data.models.user import (User, InviteCode)
 from data.models.vulnerability import (RepositoryFileComments,
                                        RepositoryFileMarkers, RepositoryFiles,
                                        RepositoryFilesSchema, Vulnerability,

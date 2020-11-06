@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block main_content %}
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <h2 class="text-center">Invite Codes ({{ invite_codes|count }})</h2>
+    </div>
+</div>
+<div class="row my-3">
+  <div class="col-sm-8 offset-md-2">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="form-group">
+            <label for="code-desc">Descriptive name of this code</label>
+            <input id="code-desc" class="form-control" type="text" name="desc" placeholder="Initial invites/Reviewers/..." required>
+          </div>
+          <div class="form-group">
+            <label for="code-amount">How often can this code be used?</label>
+            <input id="code-amount" class="form-control" type="number" min="1" name="amount" value="1" required>
+          </div>
+          <div class="form-group">
+            <label for="code-roles">Auto assigned roles (multiselect)</label>
+            <select id="code-roles" class="form-control" name="roles" multiple>
+              {%- for role in roles %}
+                <option value="{{ role.id }}" {% if role.name == "USER" %}selected{% endif %}>{{role.name}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-success">Create</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row my-3">
+  <div class="col-sm-8 offset-md-2">
+    <!-- Code table -->
+    <div class="card">
+      <div class="card-body">
+        <table id="invite-codes-table" class="table table-striped">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Code</th>
+              <th scope="col">Remaining uses</th>
+              <th scope="col">Already used</th>
+              <th scope="col">Roles</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for code in invite_codes %}
+            <tr {% if code.remaining_uses == 0 %}class="expired"{% endif %}>
+              <td>{{ code.description }}</td>
+              <td><a href="{{ url_for("auth.invite", invite_code=code.code, _external=True) }}" onclick="copyURI(event)">{{ code.code }}</a></td>
+              <td>{{ code.remaining_uses }}</td>
+              <td>{{ code.users|count }}</td>
+              <td>{{ code.roles|join(', ') }}</td>
+              <td>
+              {%- if code.remaining_uses > 0 %}
+              <form method="post" onsubmit="return confirm('Expire remaining {{ code.remaining_uses }} uses of {{ code.description }}');")>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="expire_code" value="{{ code.id }}"/>
+                <button type="submit" class="btn btn-sm btn-danger">Expire</button>
+              </form>
+              {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function copyURI(evt) {
+    evt.preventDefault();
+    navigator.clipboard.writeText(evt.target.getAttribute('href')).then(() => {
+      alert("Link copied to clipboard");
+    }, () => {
+      alert("Link copy failed!");
+    });
+}
+</script>
+<style>
+#invite-codes-table tr.expired td {
+  background-color: #fcc;
+}
+#invite-codes-table tr td a {
+  text-decoration: underline;
+}
+</style>
+{% endblock %}

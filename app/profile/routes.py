@@ -179,7 +179,15 @@ def index(user_id=None):
         form.populate_obj(user)
         db.session.add(user)
         db.session.commit()
-    return render_template("profile/index.html", form=form, user=user)
+    vulns = Vulnerability.query.filter(
+        Vulnerability.creator == user,
+        Vulnerability.state.in_(
+            [VulnerabilityState.PUBLISHED,
+             VulnerabilityState.ARCHIVED])).all()
+    return render_template("profile/index.html",
+                           form=form,
+                           user=user,
+                           vulns=vulns)
 
 
 @bp.route("/proposal/<vuln_id>/delete", methods=["GET", "POST"])

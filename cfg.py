@@ -139,6 +139,11 @@ if suggested_admins != '':
 # restrict the login to administrators only
 RESTRICT_LOGIN = True
 
+# registration mode. INVITE_ONLY / OPEN / CLOSED
+REGISTRATION_MODE = "INVITE_ONLY"
+
+AUTO_ENABLE_INVITED_USERS = True
+
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 
 # Disable link intercepts for the Flask toolbar.
