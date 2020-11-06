@@ -68,7 +68,7 @@ function sanitizeQueryText(val) {
   val = val.toLocaleLowerCase();
   val = val.replace(' ', '_');
   val = val.replace('-', '\\-');
-  return val
+  return val;
 }
 
 const ProductSearch = {
@@ -98,7 +98,7 @@ const ProductSearch = {
     customFilter(item, queryText, itemText) {
       // Only search for the product name for now.
       const productName = item.product.toLowerCase();
-      //const vendorName = item.vendor.toLowerCase();
+      // const vendorName = item.vendor.toLowerCase();
       const searchText = sanitizeQueryText(queryText);
       return productName.indexOf(searchText) > -1;
     },
@@ -146,7 +146,7 @@ const ProductSearch = {
       val = val.replace('\\-', '-');
       val = val.replace('_', ' ');
       val = val.charAt(0).toUpperCase() + val.slice(1);
-      return val
+      return val;
     },
 
     highlightText(text) {
