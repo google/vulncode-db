@@ -19,6 +19,7 @@ from flask import request
 from flask import url_for
 from flask import g
 from flask_bootstrap import Bootstrap  # type: ignore
+from flask_bouncer import can as bouncer_can
 from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
 from flask_debugtoolbar import module as debug_toolbar_bp  # type: ignore
 from flask_wtf.csrf import CSRFProtect  # type: ignore
@@ -93,11 +94,15 @@ def register_custom_helpers(app):
         result = jinja2.Markup(result)
         return result
 
+    def can_do(action, subject):
+        return bouncer_can(action, subject)
+
     app.jinja_env.globals['url_for_self'] = url_for_self
     app.jinja_env.globals['is_admin'] = is_admin_user
     app.jinja_env.globals['is_reviewer'] = is_reviewer
     app.jinja_env.globals['url_for_no_querystring'] = url_for_no_querystring
     app.jinja_env.globals['vuln_helper'] = Vulnerability
+    app.jinja_env.globals['can'] = can_do
     app.jinja_env.filters['highlight'] = highlight
 
 

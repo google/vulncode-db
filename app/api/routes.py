@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from flask import Blueprint, request, current_app, g, make_response, jsonify
+from flask_bouncer import ensure
 
 from app.auth.acls import admin_required
 from app.exceptions import InvalidIdentifierException
@@ -24,6 +25,7 @@ from data.models import (
     RepositoryFileMarkers,
     RepositoryFiles,
 )
+from data.models.vulnerability import ANNOTATE
 from lib.utils import create_json_response
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -169,6 +171,8 @@ def bug_save_editor_data():
         current_app.logger.error(
             f"Vuln (id: {vuln_view.id}) has no linked Git commits!")
         return create_json_response("Entry has no linked Git link!", 404)
+
+    ensure(ANNOTATE, vulnerability_details.get_vulnerability())
 
     master_commit = vulnerability_details.get_master_commit()
 
