@@ -33,7 +33,7 @@ from pygments.lexers import SqlLexer
 
 from lib.vcs_management import get_vcs_handler
 from lib.utils import measure_execution_time
-from data.models import Nvd, Vulnerability, VulnerabilityGitCommits, Cpe, OpenSourceProducts, Reference, \
+from data.models import Nvd, Vulnerability, VulnerabilityGitCommits, Cpe, Product, Reference, \
     VulnerabilityState
 from data.database import DEFAULT_DATABASE, init_app as init_db
 
@@ -227,18 +227,17 @@ def update_oss_table():
     unique_products = unique_products.distinct(Cpe.vendor, Cpe.product)
     # Fetch only entries which are not already contained in OpenSourceProducts.
     unique_products = unique_products.outerjoin(
-        OpenSourceProducts,
-        and_(Cpe.vendor == OpenSourceProducts.vendor,
-             Cpe.product == OpenSourceProducts.product))
-    unique_products = unique_products.filter(
-        OpenSourceProducts.vendor.is_(None))
+        Product,
+        and_(Cpe.vendor == Product.vendor, Cpe.product == Product.product))
+    unique_products = unique_products.filter(Product.vendor.is_(None))
     dump_query(unique_products)
 
     # We don't do any updates for now.
     created = 0
     for entry in unique_products:
-        new_entry = OpenSourceProducts(vendor=entry.vendor,
-                                       product=entry.product)
+        new_entry = Product(vendor=entry.vendor,
+                            product=entry.product,
+                            is_open_source=True)
         db.session.add(new_entry)
         sys.stdout.write(".")
         sys.stdout.flush()
@@ -259,9 +258,9 @@ def create_oss_entries():
     nvd_entries = nvd_entries.filter(Vulnerability.cve_id.is_(None))
     # nvd_entries = nvd_entries.options(default_nvd_view_options)
     nvd_entries = nvd_entries.join(
-        OpenSourceProducts,
-        and_(Cpe.vendor == OpenSourceProducts.vendor,
-             Cpe.product == OpenSourceProducts.product))
+        Product,
+        and_(Cpe.vendor == Product.vendor, Cpe.product == Product.product,
+             Product.is_open_source == True))
     nvd_entries = nvd_entries.distinct(Nvd.cve_id)
     return nvd_entries
 
