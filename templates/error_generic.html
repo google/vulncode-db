@@ -1,0 +1,18 @@
+{% extends "base_nonav.html" %}
+{% block main_content %}
+<div class="row">
+  <div class="col-sm-8 offset-md-2">
+    <div class="card my-3">
+      <div class="card-body">
+        <h1 class="card-title">{{ error_name }}</h1>
+        {% if config.DEBUG %}
+        <div class="alert alert-danger" role="alert">
+          {{ exception }}
+        </div>
+        <pre><code>{{ traceback|highlight('pytb') }}</code></pre>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

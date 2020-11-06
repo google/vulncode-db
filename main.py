@@ -13,13 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from app import flash_error
 import os
 import sys
+import traceback
 import logging
 import logging.config
 
 import alembic.script
 import alembic.runtime.environment
+from flask import g, session, request, url_for
+from flask.templating import render_template
+from werkzeug.utils import redirect
 
 from lib.utils import manually_read_app_config
 
@@ -54,6 +59,54 @@ def enable_sql_logs():
         format='\x1b[34m%(levelname)s\x1b[m:\x1b[2m%(name)s\x1b[m:%(message)s')
     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
     return {}
+
+
+def generic_error_page(title, err):
+    tb = traceback.TracebackException.from_exception(err)
+    return render_template("error_generic.html",
+                           error_name=title,
+                           traceback=''.join(tb.format()),
+                           exception=err)
+
+
+@app.errorhandler(500)
+def internal_error(err):
+    return generic_error_page("Internal Server Error", err), 500
+
+
+@app.errorhandler(404)
+def not_found_error(err):
+    return generic_error_page("Not Found", err), 404
+
+
+@app.errorhandler(403)
+def forbidden_error(err):
+    if g.user is None:
+        return unauthorized_error(err)
+    if cfg.DEBUG and not request.args.get('prod') == 'true':
+        return generic_error_page("Forbidden", err), 403
+
+    location = request.referrer
+    if not location or not location.startswith(request.url_root):
+        location = '/'
+    flash_error("This action is not allowed")
+    return redirect(location)
+
+
+@app.errorhandler(401)
+def unauthorized_error(err):
+    session['redirect_path'] = request.path
+    return redirect(url_for('auth.login'))
+
+
+@app.errorhandler(400)
+def invalid_request_error(err):
+    return generic_error_page("Invalid Request", err), 400
+
+
+@app.errorhandler(405)
+def method_not_allowed_error(err):
+    return generic_error_page("Method not allowed", err), 405
 
 
 def check_db_state():

@@ -22,6 +22,10 @@ from flask_bootstrap import Bootstrap  # type: ignore
 from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
 from flask_debugtoolbar import module as debug_toolbar_bp  # type: ignore
 from flask_wtf.csrf import CSRFProtect  # type: ignore
+import jinja2
+import pygments
+import pygments.formatters
+import pygments.lexers
 from werkzeug import Response
 from werkzeug.exceptions import Forbidden
 
@@ -81,11 +85,20 @@ def register_custom_helpers(app):
     def is_reviewer():
         return getattr(g, 'user') and g.user.is_reviewer()
 
+    def highlight(value, language='python'):
+        formatter = pygments.formatters.HtmlFormatter(style='colorful')
+        lexer = pygments.lexers.get_lexer_by_name(language)
+        result = pygments.highlight(value, lexer, formatter)
+        result += '<style>{}</style>'.format(formatter.get_style_defs())
+        result = jinja2.Markup(result)
+        return result
+
     app.jinja_env.globals['url_for_self'] = url_for_self
     app.jinja_env.globals['is_admin'] = is_admin_user
     app.jinja_env.globals['is_reviewer'] = is_reviewer
     app.jinja_env.globals['url_for_no_querystring'] = url_for_no_querystring
     app.jinja_env.globals['vuln_helper'] = Vulnerability
+    app.jinja_env.filters['highlight'] = highlight
 
 
 def register_route_checks(app):
@@ -136,6 +149,8 @@ def register_extensions(app, test_config=None):
     def always_authorize():
         for path in public_paths:
             if request.path.startswith(path):
+                logging.warning("Bypassing ACL check for %s (matches %s)",
+                                request.path, path)
                 request._authorized = True
                 return
 

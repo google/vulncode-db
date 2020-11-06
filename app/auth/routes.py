@@ -86,7 +86,7 @@ def login():
                 users=current_app.config["APPLICATION_ADMINS"])
 
         flash("Bypassed OAuth on local dev environment.", 'info')
-        return redirect("/")
+        return redirect(session.pop("redirect_path", "/"))
     elif as_user == 'OAuth':
         if request.form.get('fetch_profile') != 'true':
             return oauth.google.authorize_redirect(
