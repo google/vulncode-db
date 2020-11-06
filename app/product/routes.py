@@ -110,5 +110,5 @@ def list_all(filter_term: str = None):
         return '{}'
     # Only search the product name for now.
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-       Cpe.product.like(f"%{filter_term}%")).distinct().all()
+        Cpe.product.like(f"%{filter_term}%")).distinct().all()
     return jsonify(products)

@@ -181,8 +181,9 @@ class RequestRedirect(HTTPException, RoutingException):
         return redirect(self.new_url)
 
 
-def update_products(vuln: 'data.models.Vulnerability', products: List = None
-                    ) -> Optional[List['data.models.Product']]:
+def update_products(
+        vuln: 'data.models.Vulnerability',
+        products: List = None) -> Optional[List['data.models.Product']]:
     from data.models import Product, Cpe
     from data.database import db
 

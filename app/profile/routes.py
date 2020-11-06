@@ -38,7 +38,8 @@ db = DEFAULT_DATABASE
 log = logging.getLogger(__name__)
 
 
-def _get_vulnerability_details(vcdb_id, vuln_id=None,
+def _get_vulnerability_details(vcdb_id,
+                               vuln_id=None,
                                simplify_id: bool = True):
     try:
         vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
@@ -193,6 +194,10 @@ def delete_proposal(vuln_id: str = None):
 
     if vuln.state == VulnerabilityState.PUBLISHED:
         flash_error("Can't delete a published entry w/o reverting it first")
+        return redirect(url_for('profile.view_proposals'))
+
+    if vuln.state == VulnerabilityState.ARCHIVED:
+        flash_error("Can't delete an archived")
         return redirect(url_for('profile.view_proposals'))
 
     ensure(DELETE, vuln)
