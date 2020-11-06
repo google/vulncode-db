@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING, Dict
 import json
 import os
 import re
@@ -26,6 +26,9 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.routing import RoutingException
 
 from app.exceptions import InvalidProducts
+
+if TYPE_CHECKING:
+    import data
 
 TRACING_PATH = "traces/"
 TRACING_ACTIVE = False
@@ -182,8 +185,9 @@ class RequestRedirect(HTTPException, RoutingException):
 
 
 def update_products(
-        vuln: 'data.models.Vulnerability',
-        products: List = None) -> Optional[List['data.models.Product']]:
+    vuln: 'data.models.Vulnerability',
+    products: List[Dict[str, str]] = None
+) -> Optional[List['data.models.Product']]:
     from data.models import Product, Cpe
     from data.database import db
 
@@ -201,9 +205,9 @@ def update_products(
                 not isinstance(p, dict) or 'product' not in p
                 or 'vendor' not in p for p in products
         ]):
-            return "Invalid products"
+            raise InvalidProducts("Invalid products")
 
-        vuln.products = []
+        vuln.products = []  # type: ignore
         for product in products:
             if not db.session.query(
                     Cpe.query.filter_by(

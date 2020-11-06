@@ -31,6 +31,8 @@ function fatal() {
   exit 1
 }
 
+failures=0
+
 if npx eslint &>/dev/null
 then
   info 'Linting *.js files with eslint'
@@ -51,7 +53,7 @@ fi
 if which bandit &>/dev/null
 then
   info 'Checking python files with bandit'
-  bandit -r app data lib
+  bandit -r app data lib || failures=$(($failures+1))
 else
   fatal 'Please install bandit'
 fi
@@ -59,9 +61,13 @@ fi
 if which mypy &>/dev/null
 then
   info 'Linting python files with mypy'
-  mypy --warn-unused-ignores app data lib
+  mypy --warn-unused-ignores app data lib || failures=$(($failures+1))
 else
   fatal 'Please install mypy'
 fi
 
+if [ $failures -gt 0 ]
+then
+  fatal "Lint failed"
+fi
 success "Done. Happy coding :)"

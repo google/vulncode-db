@@ -15,12 +15,12 @@ import logging
 from typing import Optional, Tuple
 from functools import wraps
 
-from flask import (session, request, url_for, abort, redirect, Blueprint, g,
+from flask import (session, request, url_for, redirect, Blueprint, g,
                    current_app, flash, render_template)
-from authlib.integrations.flask_client import OAuth, OAuthError  # type: ignore
-from flask_wtf import FlaskForm
-from wtforms import BooleanField
-from wtforms.validators import DataRequired
+from authlib.integrations.flask_client import OAuth  # type: ignore
+from flask_wtf import FlaskForm  # type: ignore
+from wtforms import BooleanField  # type: ignore
+from wtforms.validators import DataRequired  # type: ignore
 from werkzeug import Response
 
 from app.auth.acls import skip_authorization

@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import (Blueprint, render_template, g)
-from sqlakeyset import get_page
-from sqlakeyset.results import s as sqlakeysetserial
+from flask import Blueprint, render_template
+from sqlakeyset import get_page  # type: ignore
+from sqlakeyset.results import s as sqlakeysetserial  # type: ignore
 from sqlalchemy import desc, asc, case
-from bouncer.constants import READ
+from bouncer.constants import READ  # type: ignore
 
 from app.auth.acls import requires
-from app.vulnerability.views.vulncode_db import (
-    VulnViewTypesetPaginationObjectWrapper, )
+from app.vulnerability.views.vulncode_db import VulnViewTypesetPaginationObjectWrapper
 
 from data.models import Vulnerability, Nvd
 from data.models.nvd import default_nvd_view_options

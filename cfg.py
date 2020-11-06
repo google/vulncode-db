@@ -225,7 +225,7 @@ LOGGING = {
 # local overrides
 try:
     # pylint: disable=wildcard-import
-    from local_cfg import *  # type: ignore
+    from local_cfg import *
     # pylint: enable=wildcard-import
 except ImportError:
     pass

@@ -10,6 +10,7 @@ pytest-flask-sqlalchemy==1.0.2
 bandit==1.6.2
 # static type checks
 mypy==0.770
+mypy-extensions==0.4.3
 sqlalchemy-stubs==0.3
 # Used for crawl_patches.
 pandas==0.25.1

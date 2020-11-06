@@ -19,14 +19,14 @@ from flask import request
 from flask import url_for
 from flask import g
 from flask_bootstrap import Bootstrap  # type: ignore
-from flask_bouncer import can as bouncer_can
+from flask_bouncer import can as bouncer_can  # type: ignore
 from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
-from flask_debugtoolbar import module as debug_toolbar_bp  # type: ignore
+from flask_debugtoolbar import module as debug_toolbar_bp
 from flask_wtf.csrf import CSRFProtect  # type: ignore
 import jinja2
-import pygments
-import pygments.formatters
-import pygments.lexers
+import pygments  # type: ignore
+import pygments.formatters  # type: ignore
+import pygments.lexers  # type: ignore
 from werkzeug import Response
 from werkzeug.exceptions import Forbidden
 

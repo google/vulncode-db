@@ -21,6 +21,7 @@ from flask_marshmallow import Marshmallow  # type: ignore
 from sqlalchemy import Index, Column, Integer, func, DateTime, inspect
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapper, RelationshipProperty
+from sqlalchemy.orm.interfaces import MapperProperty
 from sqlalchemy.orm.state import InstanceState, AttributeState
 from sqlalchemy.orm.attributes import History
 
@@ -41,7 +42,8 @@ ma = Marshmallow()  # pylint: disable=invalid-name
 
 BaseModel: DefaultMeta = db.Model
 
-Changes = Dict[str, Union[Tuple[Any, Any], Dict[str, Any], List[Any]]]
+ChangeUnion = Union[Tuple[Any, Any], Dict[str, Any], List[Any]]
+Changes = Dict[str, ChangeUnion]
 
 
 class MainBase(BaseModel):
@@ -118,7 +120,7 @@ class MainBase(BaseModel):
             raise TypeError("Instance of {} expected. Got {}".format(
                 clz.__name__, oclz.__name__))
 
-        def innerdiff(current, other) -> Optional[Union[List[Any], Changes]]:
+        def innerdiff(current, other) -> Optional[ChangeUnion]:
             if current is None and other is None:
                 return None
             elif current is None or other is None:
@@ -136,7 +138,9 @@ class MainBase(BaseModel):
             return None
 
         m: Mapper = inspect(clz)
-        for name, attr in m.attrs.items():
+        name: str
+        attr: MapperProperty
+        for name, attr in m.attrs.items():  # type: ignore
             # log.debug('Compare %s of %s <> %s', name, clz, oclz)
             ov = getattr(other, name)
             cv = getattr(self, name)

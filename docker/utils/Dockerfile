@@ -11,6 +11,6 @@ ENV PATH="/app_setup/node_modules/.bin/:${PATH}"
 RUN apk add --no-cache python3 bash build-base python3-dev
 #RUN python3 -m ensurepip
 #RUN pip3 install --upgrade pip
-RUN pip3 install yapf futures pylint bandit mypy sqlalchemy-stubs
+RUN pip3 install yapf futures pylint bandit mypy sqlalchemy-stubs mypy-extensions marshmallow
 
 WORKDIR /app

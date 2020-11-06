@@ -15,9 +15,9 @@ import logging
 
 from flask import (Blueprint, render_template, g, abort, flash, request,
                    redirect, url_for)
-from sqlakeyset import get_page
+from sqlakeyset import get_page  # type: ignore
 from sqlalchemy import desc
-from bouncer.constants import READ, EDIT, DELETE
+from bouncer.constants import READ, EDIT, DELETE  # type: ignore
 
 from app.auth.acls import requires, ensure
 from app.exceptions import InvalidIdentifierException, InvalidProducts
@@ -158,9 +158,6 @@ def view_proposals(vendor: str = None, profile: str = None):
         proposal_vulns=proposal_vulns,
         proposal_vulns_processed=proposal_vulns_processed,
     )
-
-
-import flask_wtf.csrf
 
 
 @bp.route("/", methods=["GET", "POST"])

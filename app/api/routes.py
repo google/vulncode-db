@@ -13,9 +13,8 @@
 # limitations under the License.
 
 from flask import Blueprint, request, current_app, g, make_response, jsonify
-from flask_bouncer import ensure
 
-from app.auth.acls import admin_required
+from app.auth.acls import admin_required, ensure
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability.views.details import VulnerabilityDetails
 
