@@ -84,16 +84,18 @@ class VulnerabilityDetailsForm(FlaskForm):
         default=[VulnerabilityGitCommits],
     )
 
+    # Changing the CVE ID is disabled for now.
     # The filters argument is used to have Null fields instead of empty strings.
     # This is important since the cve_id is supposed to be unique OR Null.
-    cve_id = StringField(
-        "CVE-ID",
-        filters=[lambda x: x and str(x).upper().strip(), lambda x: x or None],
-        validators=[
-            validators.Optional(),
-            validators.Regexp(r"^CVE-\d{4}-\d+$")
-        ],
-    )
+    # cve_id = StringField(
+    #     "CVE-ID",
+    #     filters=[lambda x: x and str(x).upper().strip(), lambda x: x or None],
+    #     validators=[
+    #         validators.Optional(),
+    #         validators.Regexp(r"^CVE-\d{4}-\d+$")
+    #     ],
+    # )
+
     comment = TextAreaField("High-Level Bug Overview",
                             validators=[validators.DataRequired()])
     resources = ModelFieldList(FormField(VulnerabilityResourcesForm),
