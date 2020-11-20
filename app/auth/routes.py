@@ -175,8 +175,11 @@ def get_or_create_role(name) -> Role:
     return role
 
 
-def registration_required() -> Tuple[Optional[Response], Optional[InviteCode]]:
+def registration_required(
+        email=None) -> Tuple[Optional[Response], Optional[InviteCode]]:
     if current_app.config["REGISTRATION_MODE"] == "CLOSED":
+        if email and email in current_app.config['APPLICATION_ADMINS']:
+            return None, None
         logout()
         flash("Registration is closed", "danger")
         return redirect("/"), None
@@ -186,6 +189,8 @@ def registration_required() -> Tuple[Optional[Response], Optional[InviteCode]]:
         invite_code = InviteCode.query.filter_by(
             code=session.get('invite_code')).one_or_none()
         if not invite_code:
+            if email and email in current_app.config['APPLICATION_ADMINS']:
+                return None, None
             logout()
             flash("Registration is invite only", "danger")
             return redirect("/"), None
@@ -241,7 +246,7 @@ def load_user():
     is_new = False
     is_changed = False
     if not user:
-        resp, invite_code = registration_required()
+        resp, invite_code = registration_required(email=email)
         if resp is not None:
             return resp
 
