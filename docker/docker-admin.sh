@@ -93,11 +93,8 @@ function load_latest() {
 
 function load_full_cve() {
   info "Loading and importing all CVE entries."
-  for i in `seq 2002 $(date +"%Y")`
-  do
-    dock-comp run --rm go-cve-dictionary \
-      go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -years $i
-  done
+  dock-comp run --rm go-cve-dictionary \
+      go-cve-dictionary fetchnvd -dbtype mysql -dbpath $DB_PATH -years `seq 2002 $(date +"%Y")`
 }
 
 function init_data() {
