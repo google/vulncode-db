@@ -15,27 +15,28 @@
 
 import os
 import sys
-import sqlparse
+
 import pandas as pd
-from lib.utils import manually_read_app_config
-
-if "MYSQL_CONNECTION_NAME" not in os.environ:
-    print("[~] Executed outside AppEngine context. Manually loading config.")
-    manually_read_app_config()
-
-from flask import Flask
-from sqlalchemy import and_, join, func
+import sqlparse
 
 from colorama import Fore, Style
+from flask import Flask
 from pygments import highlight
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import SqlLexer
+from sqlalchemy import and_, join, func
 
-from lib.vcs_management import get_vcs_handler
-from lib.utils import measure_execution_time
-from data.models import Nvd, Vulnerability, VulnerabilityGitCommits, Cpe, Product, Reference, \
-    VulnerabilityState
 from data.database import DEFAULT_DATABASE, init_app as init_db
+from data.models import (Nvd, Vulnerability, VulnerabilityGitCommits, Cpe,
+                         Product, Reference, VulnerabilityState)
+from lib.utils import manually_read_app_config
+from lib.utils import measure_execution_time
+from lib.vcs_management import get_vcs_handler
+
+if "MYSQL_CONNECTION_NAME" not in os.environ:
+    print("[~] Executed outside AppEngine context. Manually loading config.")
+    # updates os.environ
+    manually_read_app_config()
 
 pd.set_option("display.max_colwidth", -1)
 
@@ -85,12 +86,12 @@ def dump_query(query, filter_columns=None):
     print("Query:")
     print(f"{'-' * 15}\n{highlighted_sql_query}{'-' * 15}")
 
-    df = pd.read_sql(query.statement, CVE_DB_ENGINE)
+    data_frame = pd.read_sql(query.statement, CVE_DB_ENGINE)
     if filter_columns:
-        df = df[filter_columns]
+        data_frame = data_frame[filter_columns]
 
-    print(f"Results: {df.shape[0]}; showing first {num_rows}:")
-    print(df.head(num_rows))
+    print(f"Results: {data_frame.shape[0]}; showing first {num_rows}:")
+    print(data_frame.head(num_rows))
 
 
 def get_nvd_github_patch_candidates():
@@ -162,7 +163,8 @@ def store_or_update_vcdb_entries(github_commit_candidates):
         if existing_vcdb_vulnerability:
             # Check if the entry has changed.
             has_changed = False
-            if existing_vcdb_vulnerability.cve_id != vulnerability_suggestion.cve_id:
+            if (existing_vcdb_vulnerability.cve_id !=
+                    vulnerability_suggestion.cve_id):
                 print("{} != {}".format(
                     existing_vcdb_vulnerability.cve_id,
                     vulnerability_suggestion.cve_id,
@@ -257,10 +259,10 @@ def create_oss_entries():
                             Nvd.cve_id == Vulnerability.cve_id)).with_labels()
     nvd_entries = nvd_entries.filter(Vulnerability.cve_id.is_(None))
     # nvd_entries = nvd_entries.options(default_nvd_view_options)
-    nvd_entries = nvd_entries.join(
-        Product,
-        and_(Cpe.vendor == Product.vendor, Cpe.product == Product.product,
-             Product.is_open_source == True))
+    nvd_entries = nvd_entries.join(Product,
+                                   and_(Cpe.vendor == Product.vendor,
+                                        Cpe.product == Product.product,
+                                        Product.is_open_source == True))  # pylint: disable=singleton-comparison
     nvd_entries = nvd_entries.distinct(Nvd.cve_id)
     return nvd_entries
 
@@ -269,13 +271,13 @@ def create_oss_entries():
 def start_crawling():
     """- See how to best convert those entries into VCDB entries."""
 
-    write_highlighted(
-        "1) Fetching entries from NVD with a direct github.com/*/commit/* commit link."
-    )
+    write_highlighted("1) Fetching entries from NVD with a direct "
+                      "github.com/*/commit/* commit link.")
     github_commit_candidates = get_nvd_github_patch_candidates()
     # update_oss_table()
     # exit()
-    # write_highlighted("Fetching all entries that affect open source software.")
+    # write_highlighted("Fetching all entries that affect open source software."
+    #                  )
     # github_commit_candidates = create_oss_entries()
     dump_query(github_commit_candidates)
 

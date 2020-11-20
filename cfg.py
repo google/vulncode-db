@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# pylint: disable=line-too-long
 
 import os
 import logging
@@ -154,12 +155,12 @@ DEBUG_TB_INTERCEPT_REDIRECTS = False
 APP_CERT_FILE = "cert/cert.pem"
 
 
-class clsproperty(property):
+class clsproperty(property):  # pylint: disable=invalid-name
     def __get__(self, cls, owner):
-        return self.fget.__get__(None, owner)()
+        return self.fget.__get__(None, owner)()  # pylint: disable=no-member
 
 
-class __lazy:
+class __lazy:  # pylint: disable=invalid-name
     @clsproperty
     @classmethod
     def root_level(cls):

@@ -19,8 +19,8 @@ from sqlalchemy import desc, asc, or_
 from bouncer.constants import READ  # type: ignore
 
 from app.auth.acls import requires
-from app.vulnerability.views.vulncode_db import VulnViewTypesetPaginationObjectWrapper
-
+from app.vulnerability.views.vulncode_db import (
+    VulnViewTypesetPaginationObjectWrapper)
 from data.models import Vulnerability, Nvd
 from data.models.nvd import default_nvd_view_options
 from data.models.vulnerability import VulnerabilityState
@@ -81,7 +81,7 @@ def get_reviewed_proposals_paged():
 # Create a catch all route for profile identifiers.
 @bp.route("/list")
 @requires(READ, 'Proposal')
-def list(vendor: str = None, profile: str = None):
+def review_list():
     review_vulns = get_pending_proposals_paged()
     reviewed_vulns = get_reviewed_proposals_paged()
     return render_template("review/list.html",

@@ -17,7 +17,6 @@ import uuid
 
 from sqlalchemy import Column, String, Integer, ForeignKey, Enum, Boolean, Table
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import null
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
 
 from data.utils import populate_models
@@ -31,7 +30,7 @@ class PredefinedRoles(enum.Enum):
     ADMIN = enum.auto()
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class UserRole(BaseModel):
@@ -50,7 +49,7 @@ class Role(MainBase):
     users = relationship('User', secondary='user_role', back_populates='roles')
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
 
 class InviteCode(MainBase):
@@ -98,7 +97,7 @@ class User(MainBase):
     def name(self):
         if self.hide_name:
             return f'User {self.id}'
-        elif self.full_name:
+        if self.full_name:
             return self.full_name
         return self.email.split("@", 1)[0]
 
@@ -108,29 +107,30 @@ class User(MainBase):
             return ''
         return self.profile_picture
 
-    def profile_picture_resized(self, px):
+    def profile_picture_resized(self, px_sz):
         pic = None
         if self.profile_picture:
-            pic = self._resize(self.profile_picture, px)
+            pic = self._resize(self.profile_picture, px_sz)
         return pic
 
-    def avatar_resized(self, px):
-        return self._resize(self.avatar, px)
+    def avatar_resized(self, px_sz):
+        return self._resize(self.avatar, px_sz)
 
-    def _resize(self, pic, px):
+    @staticmethod
+    def _resize(pic, px_sz):
         if 'googleusercontent.com' in pic:
-            pic = re.sub(r'/photo', f'/s{px}-cc-rw/photo', pic)
-            pic = re.sub(r'([=/])s\d+-', f'\\1s{px}-', pic)
+            pic = re.sub(r'/photo', f'/s{px_sz}-cc-rw/photo', pic)
+            pic = re.sub(r'([=/])s\d+-', f'\\1s{px_sz}-', pic)
         return pic
 
     def to_json(self):
         """Serialize object properties as dict."""
         # TODO: Refactor how we will surface this.
-        return {'username': 'anonymous'}
+        return {'username': self.name, 'id': self.id}
 
     def _has_role(self, role):
-        for r in self.roles:
-            if r.name == str(role):
+        for cur_role in self.roles:
+            if cur_role.name == str(role):
                 return True
         return False
 

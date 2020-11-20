@@ -11,19 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, Tuple, Any, TYPE_CHECKING, Union, Optional, List
-from itertools import zip_longest
 import logging
 
-from flask_sqlalchemy import SQLAlchemy as SQLAlchemyBase  # type: ignore
-from flask_sqlalchemy import DefaultMeta
+from itertools import zip_longest
+from typing import Dict, Tuple, Any, Union, Optional, List
+
 from flask_marshmallow import Marshmallow  # type: ignore
+from flask_sqlalchemy import DefaultMeta  # type: ignore
+from flask_sqlalchemy import SQLAlchemy as SQLAlchemyBase
 from sqlalchemy import Index, Column, Integer, func, DateTime, inspect
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Mapper, RelationshipProperty
+from sqlalchemy.orm.attributes import History
 from sqlalchemy.orm.interfaces import MapperProperty
 from sqlalchemy.orm.state import InstanceState, AttributeState
-from sqlalchemy.orm.attributes import History
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ log = logging.getLogger(__name__)
 #       MariaDB server settings.
 class SQLAlchemy(SQLAlchemyBase):
     def apply_pool_defaults(self, app, options):
-        super(SQLAlchemy, self).apply_pool_defaults(app, options)
+        super().apply_pool_defaults(app, options)
         options["pool_pre_ping"] = True
 
 
@@ -91,9 +92,9 @@ class MainBase(BaseModel):
             if hist.has_changes():
                 changes[name] = hist[0], hist[2]
             else:
-                vc = inner(getattr(self, name))
-                if vc:
-                    changes[name] = vc
+                subchanges = inner(getattr(self, name))
+                if subchanges:
+                    changes[name] = subchanges
         return changes
 
     def diff(self, other: BaseModel, *, already_tested=None) -> Changes:
@@ -123,40 +124,40 @@ class MainBase(BaseModel):
         def innerdiff(current, other) -> Optional[ChangeUnion]:
             if current is None and other is None:
                 return None
-            elif current is None or other is None:
+            if current is None or other is None:
                 return (current, other)
-            elif hasattr(current, 'diff'):
+            if hasattr(current, 'diff'):
                 return current.diff(other, already_tested=already_tested)
-            elif isinstance(current, list) and isinstance(other, list):
+            if isinstance(current, list) and isinstance(other, list):
                 res = []
-                for c, o in zip_longest(current, other):
-                    res.append(innerdiff(c, o))
+                for cur, oth in zip_longest(current, other):
+                    res.append(innerdiff(cur, oth))
                 if all(res):
                     return res
             elif current != other:
-                return (cv, ov)
+                return (current, other)
             return None
 
-        m: Mapper = inspect(clz)
+        mapper: Mapper = inspect(clz)
         name: str
         attr: MapperProperty
-        for name, attr in m.attrs.items():  # type: ignore
+        for name, attr in mapper.attrs.items():  # type: ignore
             # log.debug('Compare %s of %s <> %s', name, clz, oclz)
-            ov = getattr(other, name)
-            cv = getattr(self, name)
+            other_value = getattr(other, name)
+            current_value = getattr(self, name)
 
-            if isinstance(attr, RelationshipProperty) and ov is None:
-                for c in attr.local_columns:
-                    cname = c.name
+            if isinstance(attr, RelationshipProperty) and other_value is None:
+                for col in attr.local_columns:
+                    cname = col.name
                     if innerdiff(getattr(self, cname), getattr(other, cname)):
                         break
                 else:
                     continue
                 if name in changes:
                     continue
-            c = innerdiff(cv, ov)
-            if c:
-                changes[name] = c
+            subchanges = innerdiff(current_value, other_value)
+            if subchanges:
+                changes[name] = subchanges
 
         return changes
 

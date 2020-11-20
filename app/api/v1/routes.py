@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from sqlalchemy import or_, and_
-from flask import jsonify, make_response, Blueprint, request, abort
+from flask import jsonify, make_response, Blueprint, abort
 
 from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE as db
@@ -25,18 +25,21 @@ bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
 @bp.errorhandler(403)
 def api_403(ex=None):
     """Return a 403 in JSON format."""
+    del ex
     return make_response(jsonify({'error': 'Forbidden', 'code': 403}), 403)
 
 
 @bp.errorhandler(404)
 def api_404(ex=None):
     """Return a 404 in JSON format."""
+    del ex
     return make_response(jsonify({'error': 'Not found', 'code': 404}), 404)
 
 
 @bp.errorhandler(500)
 def api_500(ex=None):
     """Return a 500 in JSON format."""
+    del ex
     return make_response(
         jsonify({
             'error': 'Internal server error',

@@ -23,6 +23,48 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 db = DEFAULT_DATABASE
 
 
+def _assign(role_id, user_ids):
+    role = Role.query.get_or_404(role_id)
+    for user_id in user_ids:
+        user = User.query.get_or_404(user_id)
+        user.roles.append(role)
+        yield user
+
+
+def _unassign(role_id, user_ids):
+    role = Role.query.get_or_404(role_id)
+    for user_id in user_ids:
+        user = User.query.get_or_404(user_id)
+        user.roles.remove(role)
+        yield user
+
+
+def _delete(role_id, user_ids):
+    del role_id
+    for user_id in user_ids:
+        user = User.query.get_or_404(user_id)
+        db.session.delete(user)
+    # don't readd
+    db.session.commit()
+    return []
+
+
+def _enable(role_id, user_ids):
+    del role_id
+    for user_id in user_ids:
+        user = User.query.get_or_404(user_id)
+        user.enable()
+        yield user
+
+
+def _block(role_id, user_ids):
+    del role_id
+    for user_id in user_ids:
+        user = User.query.get_or_404(user_id)
+        user.block()
+        yield user
+
+
 @bp.route('/users', methods=['GET', 'POST'])
 @admin_required()
 def users():
@@ -33,35 +75,15 @@ def users():
         ][0]
         role_id = request.form.get('role')
         changed_users = []
-        if action == 'assign':
-            role = Role.query.get_or_404(role_id)
-            for user_id in user_ids:
-                user = User.query.get_or_404(user_id)
-                user.roles.append(role)
-                changed_users.append(user)
-        elif action == 'unassign':
-            role = Role.query.get_or_404(role_id)
-            for user_id in user_ids:
-                user = User.query.get_or_404(user_id)
-                user.roles.remove(role)
-                changed_users.append(user)
-        elif action == 'delete':
-            for user_id in user_ids:
-                user = User.query.get_or_404(user_id)
-                db.session.delete(user)
-            db.session.commit()
-        elif action == 'enable':
-            for user_id in user_ids:
-                user = User.query.get_or_404(user_id)
-                user.enable()
-                changed_users.append(user)
-            db.session.commit()
-        elif action == 'block':
-            for user_id in user_ids:
-                user = User.query.get_or_404(user_id)
-                user.block()
-                changed_users.append(user)
-            db.session.commit()
+        functions = {
+            'assign': _assign,
+            'unassign': _unassign,
+            'delete': _delete,
+            'enable': _enable,
+            'block': _block
+        }
+        if action in functions:
+            changed_users.extend(functions[action](role_id, user_ids))
         else:
             flash('Invalid action', 'danger')
 
@@ -72,15 +94,15 @@ def users():
     name = request.args.get('name', default='')
     if name:
         query = f'%{name}%'
-        users = User.query.filter(
+        user_list = User.query.filter(
             or_(User.email.like(query),
                 User.full_name.like(query))).paginate()
     else:
-        users = User.query.paginate()
+        user_list = User.query.paginate()
     roles = Role.query.all()
 
     return render_template('admin/user_list.html',
-                           users=users,
+                           users=user_list,
                            roles=roles,
                            filter=name)
 
@@ -115,10 +137,10 @@ def _create_invite_token():
 def invite_codes():
     if request.method == "POST":
         if request.form.get("expire_code"):
-            ic = InviteCode.query.get_or_404(
+            icode = InviteCode.query.get_or_404(
                 request.form.get("expire_code", type=int))
-            ic.remaining_uses = 0
-            db.session.add(ic)
+            icode.remaining_uses = 0
+            db.session.add(icode)
             db.session.commit()
         else:
             _create_invite_token()

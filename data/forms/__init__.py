@@ -34,7 +34,7 @@ class BaseForm(FlaskForm):
 class ModelFieldList(FieldList):
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop("model", None)
-        super(ModelFieldList, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if not self.model:
             raise ValueError("ModelFieldList requires model to be set")
 
@@ -47,7 +47,7 @@ class ModelFieldList(FieldList):
             getattr(obj, name).append(new_model)
         while len(getattr(obj, name)) > len(self.entries):
             db.session.delete(getattr(obj, name).pop())
-        super(ModelFieldList, self).populate_obj(obj, name)
+        super().populate_obj(obj, name)
 
 
 class CommitLinksForm(FlaskForm):

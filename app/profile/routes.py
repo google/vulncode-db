@@ -13,44 +13,28 @@
 # limitations under the License.
 import logging
 
+from bouncer.constants import READ, EDIT, DELETE  # type: ignore
 from flask import (Blueprint, render_template, g, abort, flash, request,
                    redirect, url_for)
 from sqlakeyset import get_page  # type: ignore
 from sqlalchemy import desc
-from bouncer.constants import READ, EDIT, DELETE  # type: ignore
 
 from app.auth.acls import requires, ensure
-from app.exceptions import InvalidIdentifierException, InvalidProducts
-from app.vulnerability.views.details import VulnerabilityDetails
+from app.exceptions import InvalidProducts
 from app.vulnerability.views.vulncode_db import (
-    VulnViewTypesetPaginationObjectWrapper, )
+    VulnViewTypesetPaginationObjectWrapper)
 
 from app import flash_error
+from data.database import DEFAULT_DATABASE as db
 from data.forms import VulnerabilityDetailsForm, UserProfileForm
 from data.models import Vulnerability, Nvd, User
 from data.models.nvd import default_nvd_view_options
 from data.models.vulnerability import VulnerabilityState
-from data.database import DEFAULT_DATABASE
-from lib.utils import parse_pagination_param, update_products
+from lib.utils import (parse_pagination_param, update_products,
+                       get_vulnerability_details, clean_vulnerability_changes)
 
 bp = Blueprint("profile", __name__, url_prefix="/profile")
-db = DEFAULT_DATABASE
 log = logging.getLogger(__name__)
-
-
-def _get_vulnerability_details(vcdb_id,
-                               vuln_id=None,
-                               simplify_id: bool = True):
-    try:
-        vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
-        if simplify_id:
-            vulnerability_details.validate_and_simplify_id()
-        # Drop everything else.
-        if not vulnerability_details.vulnerability_view:
-            abort(404)
-        return vulnerability_details
-    except InvalidIdentifierException:
-        abort(404)
 
 
 def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
@@ -58,27 +42,17 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
 
     try:
         new_products = update_products(vuln)
-    except InvalidProducts as e:
-        flash_error(e.args[0])
+    except InvalidProducts as ex:
+        flash_error(ex.args[0])
         return None
 
     with db.session.no_autoflush:
         changes = vuln.model_changes()
     # ignore metadata
-    changes.pop('date_modified', None)
-    changes.pop('date_created', None)
-    changes.pop('creator', None)
-    changes.pop('state', None)
-    changes.pop('version', None)
-    changes.pop('prev_version', None)
-    changes.pop('reviewer_id', None)
-    changes.pop('reviewer', None)
-    changes.pop('review_feedback', None)
-    changes.pop('id', None)
+    clean_vulnerability_changes(changes)
     if not changes:
-        flash_error(
-            "No changes detected. Please modify the entry first to propose a change"
-        )
+        flash_error("No changes detected. "
+                    "Please modify the entry first to propose a change")
         return None
     log.debug('Detected changes: %r', changes)
 
@@ -87,8 +61,8 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     db.session.commit()
 
     flash(
-        "Your proposal is in the review queue. You can monitor progress in your Proposals Section.",
-        "success")
+        "Your proposal is in the review queue. "
+        "You can monitor progress in your Proposals Section.", "success")
     return new_products
 
 
@@ -96,9 +70,9 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
 @bp.route("/proposal/<vuln_id>/edit", methods=["GET", "POST"])
 @requires(EDIT, Vulnerability)
 def edit_proposal(vuln_id: str = None):
-    vulnerability_details = _get_vulnerability_details(None,
-                                                       vuln_id,
-                                                       simplify_id=False)
+    vulnerability_details = get_vulnerability_details(None,
+                                                      vuln_id,
+                                                      simplify_id=False)
     view = vulnerability_details.vulnerability_view
     vuln = vulnerability_details.get_or_create_vulnerability()
     ensure(EDIT, vuln)
@@ -125,7 +99,7 @@ def edit_proposal(vuln_id: str = None):
 # Create a catch all route for profile identifiers.
 @bp.route("/proposals")
 @requires('READ_OWN', 'Proposal')
-def view_proposals(vendor: str = None, profile: str = None):
+def view_proposals():
     entries = db.session.query(Vulnerability, Nvd)
     entries = entries.filter(Vulnerability.creator == g.user)
     entries = entries.outerjoin(Vulnerability,
@@ -190,9 +164,9 @@ def index(user_id=None):
 @bp.route("/proposal/<vuln_id>/delete", methods=["GET", "POST"])
 @requires(DELETE, Vulnerability)
 def delete_proposal(vuln_id: str = None):
-    vulnerability_details = _get_vulnerability_details(None,
-                                                       vuln_id,
-                                                       simplify_id=False)
+    vulnerability_details = get_vulnerability_details(None,
+                                                      vuln_id,
+                                                      simplify_id=False)
     vuln = vulnerability_details.get_vulnerability()
     if not vuln:
         abort(404)
@@ -207,8 +181,8 @@ def delete_proposal(vuln_id: str = None):
 
     ensure(DELETE, vuln)
 
-    if request.method != "GET" and request.form.get("confirm",
-                                                    "false").lower() == "true":
+    if (request.method != "GET"
+            and request.form.get("confirm", "false").lower() == "true"):
         db.session.delete(vuln)
         db.session.commit()
         flash("Entry deleted", "success")

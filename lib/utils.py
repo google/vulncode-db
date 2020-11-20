@@ -12,20 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, List, TYPE_CHECKING, Dict
 import json
 import os
 import re
-import time
 import sys
+import time
+
 from functools import wraps
+from typing import Optional, List, TYPE_CHECKING, Dict
 
-from flask import jsonify, request, redirect
+import werkzeug
+import werkzeug.routing
+
+from flask import jsonify, request, abort
 from sqlakeyset import unserialize_bookmark  # type: ignore
-from werkzeug.exceptions import HTTPException
-from werkzeug.routing import RoutingException
 
-from app.exceptions import InvalidProducts
+from app.exceptions import InvalidProducts, InvalidIdentifierException
 
 if TYPE_CHECKING:
     import data
@@ -116,7 +118,7 @@ def function_hooking_wrap(original_function, hooking_function):
 
 
 def log_trace(text):
-    global TRACING_ACTIVE, TRACING_FILE_HANDLE
+    global TRACING_ACTIVE, TRACING_FILE_HANDLE  # pylint: disable=global-statement
     if not TRACING_ACTIVE or not TRACING_FILE_HANDLE:
         return
     TRACING_FILE_HANDLE.write(text + "\n")
@@ -152,7 +154,7 @@ def enable_tracing(enabled=True):
     :param enabled: If to enable or disable the tracing.
     :return:
     """
-    global TRACING_PATH, TRACING_ACTIVE, TRACING_FILE_HANDLE
+    global TRACING_PATH, TRACING_ACTIVE, TRACING_FILE_HANDLE  # pylint: disable=global-statement
     if enabled:
         if TRACING_ACTIVE:
             return
@@ -172,24 +174,22 @@ def enable_tracing(enabled=True):
         TRACING_ACTIVE = False
 
 
-class RequestRedirect(HTTPException, RoutingException):
+class RequestRedirect(werkzeug.routing.RequestRedirect):
     """Used for redirection from within nested calls.
     Note: We avoid using 308 to avoid permanent
     """
-    def __init__(self, new_url):
-        RoutingException.__init__(self, new_url)
-        self.new_url = new_url
-
-    def get_response(self, environ):
-        return redirect(self.new_url)
+    code = None
 
 
 def update_products(
     vuln: 'data.models.Vulnerability',
     products: List[Dict[str, str]] = None
 ) -> Optional[List['data.models.Product']]:
-    from data.models import Product, Cpe
+    # avoid circular imports
+    # pylint: disable=import-outside-toplevel
     from data.database import db
+    from data.models import Product, Cpe
+    # pylint: enable=import-outside-toplevel
 
     if products is None:
         products = request.form.get("products")
@@ -197,14 +197,13 @@ def update_products(
     if isinstance(products, str):
         try:
             products = json.loads(products)
-        except (TypeError, json.JSONDecodeError):
-            raise InvalidProducts("Invalid products")
+        except (TypeError, json.JSONDecodeError) as ex:
+            raise InvalidProducts("Invalid products") from ex
 
     if products is not None:
-        if not isinstance(products, list) or any([
-                not isinstance(p, dict) or 'product' not in p
-                or 'vendor' not in p for p in products
-        ]):
+        if not isinstance(products, list) or any(
+            (not isinstance(p, dict) or 'product' not in p or 'vendor' not in p
+             ) for p in products):
             raise InvalidProducts("Invalid products")
 
         vuln.products = []  # type: ignore
@@ -215,12 +214,41 @@ def update_products(
                         product=product['product']).exists()).scalar():
                 raise InvalidProducts(
                     "Invalid product {vendor}/{product}".format(**product))
-            p = Product.query.filter_by(
+            prod_obj = Product.query.filter_by(
                 vendor=product['vendor'],
                 product=product['product']).one_or_none()
-            if not p:
-                p = Product(vendor=product['vendor'],
-                            product=product['product'])
-            vuln.products.append(p)
+            if not prod_obj:
+                prod_obj = Product(vendor=product['vendor'],
+                                   product=product['product'])
+            vuln.products.append(prod_obj)
         return vuln.products
     return None
+
+
+def get_vulnerability_details(vcdb_id, vuln_id=None, simplify_id: bool = True):
+    # pylint: disable=import-outside-toplevel,cyclic-import
+    from app.vulnerability.views.details import VulnerabilityDetails
+    # pylint: enable=import-outside-toplevel,cyclic-import
+    try:
+        vulnerability_details = VulnerabilityDetails(vcdb_id, vuln_id)
+        if simplify_id:
+            vulnerability_details.validate_and_simplify_id()
+        # Drop everything else.
+        if not vulnerability_details.vulnerability_view:
+            abort(404)
+        return vulnerability_details
+    except InvalidIdentifierException:
+        abort(404)
+
+
+def clean_vulnerability_changes(changes):
+    changes.pop('date_modified', None)
+    changes.pop('date_created', None)
+    changes.pop('creator', None)
+    changes.pop('state', None)
+    changes.pop('version', None)
+    changes.pop('prev_version', None)
+    changes.pop('reviewer_id', None)
+    changes.pop('reviewer', None)
+    changes.pop('review_feedback', None)
+    changes.pop('id', None)

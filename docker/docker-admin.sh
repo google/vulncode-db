@@ -122,11 +122,11 @@ function build_service() {
 }
 
 function format_code() {
-  dock-comp run --rm utils './format.sh'
+  dock-comp run --rm utils './format.sh' || exit 1
 }
 
 function lint_code() {
-  dock-comp run --rm utils './lint.sh'
+  dock-comp run --rm utils './lint.sh' || exit 1
 }
 
 function run_tests() {

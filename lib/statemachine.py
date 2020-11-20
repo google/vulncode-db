@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import enum
+
 import collections
+import enum
 
 
 def event(state):
     """Mark a method as an event handler, called on the given state."""
     def inner(func):
+        # pylint: disable=protected-access
         if not hasattr(func, '_on_state'):
             func._on_state = set()
         func._on_state.add(state)
@@ -39,6 +41,7 @@ def transition(from_state, to_state):
         foobar = transition(STATE1, STATE2)()
     """
     def inner(func=None):
+        # pylint: disable=protected-access
         if func is None:
             # define noop
             func = lambda *args: None
@@ -80,12 +83,12 @@ class TransitionDenied(Exception):
 
 class StateMachineMeta(enum.EnumMeta):
     """Metaclass for StateMachine."""
-    def __call__(cls, *args, **kwargs):
+    def __call__(cls, *args, **kwargs):  # pylint: disable=signature-differs
         obj = object.__new__(cls)
         obj.__init__(*args, **kwargs)
         return obj
 
-    def __new__(mcs, cls, bases, classdict):
+    def __new__(mcs, cls, bases, classdict):  # pylint: disable=too-many-branches
         # check if the __new__ was invoked for StateMachine itself
         try:
             is_base_cls = StateMachine not in bases
@@ -98,14 +101,14 @@ class StateMachineMeta(enum.EnumMeta):
             remove = set()
             for name, value in classdict.items():
                 if hasattr(value, '_on_state'):
-                    states = value._on_state
+                    states = value._on_state  # pylint: disable=protected-access
                     for state in states:
                         if isinstance(state, enum.Enum):
                             state = state.value
                         event_listeners[state].append(value)
                     remove.add(name)
                 if hasattr(value, '_on_transition'):
-                    transitions = value._on_transition
+                    transitions = value._on_transition  # pylint: disable=protected-access
                     for (current, next_state) in transitions:
                         if isinstance(current, enum.Enum):
                             current = current.value
@@ -126,6 +129,7 @@ class StateMachineMeta(enum.EnumMeta):
 
 
 class StateMachine(enum.Enum, metaclass=StateMachineMeta):
+    # pylint: disable=line-too-long
     """Base class for a state machine.
 
     >>> class WrongValue(StateMachine):
@@ -224,6 +228,8 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
      END -> FOO [label="FooState.exception"];
     }
     """
+    # pylint: enable=line-too-long
+
     @staticmethod
     def __new_member__(enumcls, value):
         if type(value) is not int:  # pylint: disable=unidiomatic-typecheck
@@ -235,7 +241,8 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
     def __init__(self, state=None):
         if state is None:
             cls = type(self)
-            state = cls.__new__(cls, 0)
+            # this calls enum.Enum.__new__ which is different from type.__new__
+            state = cls.__new__(cls, 0)  # pylint: disable=no-value-for-parameter
         self._change_state(state)
 
     def _change_state(self, state):
@@ -248,17 +255,18 @@ class StateMachine(enum.Enum, metaclass=StateMachineMeta):
         """Try to transition to the given state."""
 
         if hasattr(self, '_value_'):
-            sm = type(self)(self)
-            return sm.next_state(next_state)
+            state_machine = type(self)(self)
+            return state_machine.next_state(next_state)
         try:
             transitions = self.__change_listeners__[(self.current_state.value,
                                                      next_state.value)]
             for trans in transitions:
                 try:
                     res = trans(self, self.current_state, next_state)
-                except Exception:
+                except Exception as ex:
                     raise TransitionDenied(trans.name, self.current_state,
-                                           next_state, 'exception occured')
+                                           next_state,
+                                           'exception occured') from ex
                 if res is not None and res is not True:
                     raise TransitionDenied(trans.name, self.current_state,
                                            next_state, res)

@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import datetime
 import io
 import logging
@@ -18,9 +19,12 @@ import os
 import re
 
 from urllib.parse import urlparse
+
+from flask import jsonify
 from github import Github  # type: ignore
 from unidiff import PatchSet  # type: ignore
-from flask import jsonify
+
+import lib.utils
 
 from app.exceptions import InvalidIdentifierException
 from lib.vcs_handler.vcs_handler import (
@@ -31,10 +35,10 @@ from lib.vcs_handler.vcs_handler import (
     CommitFilesMetadata,
     CommitMetadata,
 )
-import lib.utils
 
 CACHE_DIR = "cache/"
-"""def get_github_archive_link(owner, repo, hash):
+"""
+def get_github_archive_link(owner, repo, hash):
 
   link =
   'https://github.com/{owner}/{repo}/archive/{hash}.zip'.format(owner=owner,
@@ -46,7 +50,7 @@ CACHE_DIR = "cache/"
 class GithubHandler(VcsHandler):
     def __init__(self, app, resource_url=None):
         """Initializes the questionnaire object."""
-        super(GithubHandler, self).__init__(app, resource_url)
+        super().__init__(app, resource_url)
         # We're currently using DB caching for file tree data.
         self.use_cache = False
 

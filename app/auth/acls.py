@@ -13,7 +13,8 @@
 # limitations under the License.
 import logging
 
-from flask_bouncer import Bouncer, requires, ensure, skip_authorization  # type: ignore
+from flask_bouncer import (  # type: ignore
+    Bouncer, requires, ensure, skip_authorization)
 from bouncer.models import RuleList  # type: ignore
 from bouncer.constants import ALL, MANAGE, READ  # type: ignore
 from werkzeug.exceptions import Forbidden
@@ -71,8 +72,8 @@ def authorize(user: User, they: RuleList):
             # admins can do everything
             they.can(MANAGE, ALL)
 
-    # import locally to avoid import
-    from data.models.vulnerability import Vulnerability
+    # import locally to avoid import cycle
+    from data.models.vulnerability import Vulnerability  # pylint: disable=import-outside-toplevel
     per_role(Vulnerability)
 
     log.debug('%s can %s', user, they)
@@ -82,10 +83,12 @@ def login_required(do_redirect=True):
     def decorator(func):
         return func
 
+    del do_redirect
     return decorator
 
 
 def admin_required(do_redirect=False):
+    del do_redirect
     try:
         return requires(MANAGE, ALL)
     except Forbidden as ex:

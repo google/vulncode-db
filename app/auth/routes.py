@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import logging
 from typing import Optional, Tuple
-from functools import wraps
 
 from flask import (session, request, url_for, redirect, Blueprint, g,
                    current_app, flash, render_template)
@@ -60,7 +60,7 @@ def login():
                 'Admin ' + as_user.split("@", 1)[0],
                 # https://de.wikipedia.org/wiki/Datei:User-admin.svg
                 'picture':
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/User-admin.svg/170px-User-admin.svg.png',
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/User-admin.svg/170px-User-admin.svg.png',  # pylint: disable=line-too-long
             }
         elif as_user == 'reviewer@vulncode-db.com':
             session["user_info"] = {
@@ -70,7 +70,7 @@ def login():
                 'Reviewer',
                 # https://de.wikipedia.org/wiki/Datei:Magnifying_glass_icon.svg
                 'picture':
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Magnifying_glass_icon.svg/240px-Magnifying_glass_icon.svg.png',
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Magnifying_glass_icon.svg/240px-Magnifying_glass_icon.svg.png',  # pylint: disable=line-too-long
             }
         elif as_user == 'user@vulncode-db.com':
             session["user_info"] = {
@@ -80,7 +80,7 @@ def login():
                 'User 1',
                 # https://de.wikipedia.org/wiki/Datei:User_font_awesome.svg
                 'picture':
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/User_font_awesome.svg/240px-User_font_awesome.svg.png',
+                'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/User_font_awesome.svg/240px-User_font_awesome.svg.png',  # pylint: disable=line-too-long
             }
         else:
             return render_template(
@@ -89,7 +89,7 @@ def login():
 
         flash("Bypassed OAuth on local dev environment.", 'info')
         return redirect(session.pop("redirect_path", "/"))
-    elif as_user == 'OAuth':
+    if as_user == 'OAuth':
         if request.form.get('fetch_profile') != 'true':
             return oauth.google.authorize_redirect(
                 redirect_uri=url_for("auth.authorized", _external=True))
@@ -177,6 +177,7 @@ def get_or_create_role(name) -> Role:
 
 def registration_required(
         email=None) -> Tuple[Optional[Response], Optional[InviteCode]]:
+    # pylint: disable=too-many-return-statements
     if current_app.config["REGISTRATION_MODE"] == "CLOSED":
         if email and email in current_app.config['APPLICATION_ADMINS']:
             return None, None
@@ -200,14 +201,16 @@ def registration_required(
             return redirect("/"), None
 
     if not session.get('terms_accepted'):
-        log.warn('Terms not accepted yet')
-        # request._authorized = True
+        log.warning('Terms not accepted yet')
         return redirect(url_for('auth.terms')), None
     return None, invite_code
 
 
 @bp.before_app_request
 def load_user():
+    # pylint: disable=too-many-return-statements,too-many-branches
+    # TODO: split into smaller functions
+
     # continue for assets
     if request.path.startswith('/static'):
         return

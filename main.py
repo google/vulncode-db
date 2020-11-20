@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app import flash_error
 import os
 import sys
 import traceback
@@ -26,6 +25,7 @@ from flask import g, session, request, url_for
 from flask.templating import render_template
 from werkzeug.utils import redirect
 
+from app import flash_error
 from lib.utils import manually_read_app_config
 
 if "MYSQL_CONNECTION_NAME" not in os.environ:
@@ -44,8 +44,9 @@ db = DEFAULT_DATABASE.db
 
 @app.shell_context_processor
 def autoimport():
+    # prevent cyclic imports
+    # pylint: disable=import-outside-toplevel
     from data import models
-    from data.database import db
 
     ctx = {m: getattr(models, m) for m in models.__all__}
     ctx['session'] = db.session
@@ -62,10 +63,10 @@ def enable_sql_logs():
 
 
 def generic_error_page(title, err):
-    tb = traceback.TracebackException.from_exception(err)
+    tback = traceback.TracebackException.from_exception(err)
     return render_template("error_generic.html",
                            error_name=title,
-                           traceback=''.join(tb.format()),
+                           traceback=''.join(tback.format()),
                            exception=err)
 
 
@@ -95,6 +96,7 @@ def forbidden_error(err):
 
 @app.errorhandler(401)
 def unauthorized_error(err):
+    del err
     session['redirect_path'] = request.path
     return redirect(url_for('auth.login'))
 

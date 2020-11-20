@@ -14,12 +14,10 @@
 # limitations under the License.
 
 import logging
-from logging.handlers import RotatingFileHandler
 import os
 import socket
 import sys
-
-# import traceback
+from logging.handlers import RotatingFileHandler
 
 from flask import Flask, request, Blueprint
 
@@ -30,7 +28,7 @@ from lib.utils import create_json_response
 def manually_read_app_config():
     config = {}
     try:
-        import yaml
+        import yaml  # pylint: disable=import-outside-toplevel
     except ImportError:
         return None
     with open("vcs_proxy.yaml") as file:
@@ -49,13 +47,13 @@ if not vcs_config:
 # This will enable pretty formatting of JSON and have other negative
 # side-effects when being run in prod.
 DEBUG = False
-is_prod = False
+IS_PROD = False
 
 if "PROD_HOSTNAME" in vcs_config:
     if vcs_config["PROD_HOSTNAME"] == socket.gethostname():
-        is_prod = True
+        IS_PROD = True
 
-if not is_prod:
+if not IS_PROD:
     print("[!] Running in dev mode!")
     DEBUG = True
 else:
@@ -101,7 +99,7 @@ def main_api():
             err = f"Could not retrieve object with hash {item_hash}."
             logging.error(err)
             return create_json_response(str(err), 400)
-        logging.info(f"Retrieved {item_hash}: {len(content)} bytes")
+        logging.info("Retrieved %s: %d  bytes", item_hash, len(content))
         return content
     return vcs_handler.fetch_commit_data(commit_hash)
     # except Exception as err:

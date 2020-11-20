@@ -15,7 +15,8 @@
 import logging
 from typing import Iterable, Optional, TypeVar, Type, overload
 
-from lib.vcs_handler import *
+# import all implementations
+from lib.vcs_handler import *  # pylint: disable=wildcard-import
 from lib.vcs_handler.vcs_handler import (
     VcsHandler,
     VCDB_ID_PLACEHOLDER,

@@ -13,39 +13,43 @@
 # limitations under the License.
 import logging
 
+from urllib.parse import urljoin
+from urllib.parse import urlparse
+
+import jinja2
+import pygments  # type: ignore
+import pygments.formatters  # type: ignore
+import pygments.lexers  # type: ignore
+
 from flask import Flask
+from flask import g
 from flask import redirect
 from flask import request
 from flask import url_for
-from flask import g
 from flask_bootstrap import Bootstrap  # type: ignore
 from flask_bouncer import can as bouncer_can  # type: ignore
 from flask_debugtoolbar import DebugToolbarExtension  # type: ignore
 from flask_debugtoolbar import module as debug_toolbar_bp
 from flask_wtf.csrf import CSRFProtect  # type: ignore
-import jinja2
-import pygments  # type: ignore
-import pygments.formatters  # type: ignore
-import pygments.lexers  # type: ignore
 from werkzeug import Response
 from werkzeug.exceptions import Forbidden
+
+import cfg
 
 from app.admin.routes import bp as admin_bp
 from app.api.routes import bp as api_bp
 from app.api.v1.routes import bp as api_v1_bp
+from app.auth.acls import bouncer
 from app.auth.routes import bp as auth_bp
 from app.auth.routes import is_admin
 from app.auth.routes import oauth
-from app.auth.acls import bouncer
 from app.frontend.routes import bp as frontend_bp
 from app.product.routes import bp as product_bp
-from app.vcs_proxy.routes import bp as vcs_proxy_bp
-from app.vulnerability.routes import bp as vuln_bp
 from app.profile.routes import bp as profile_bp
 from app.review.routes import bp as review_bp
-import cfg
+from app.vcs_proxy.routes import bp as vcs_proxy_bp
+from app.vulnerability.routes import bp as vuln_bp
 from data.database import init_app as init_db
-from urllib.parse import urljoin, urlparse
 from data.models import Vulnerability
 
 
@@ -156,7 +160,7 @@ def register_extensions(app, test_config=None):
             if request.path.startswith(path):
                 logging.warning("Bypassing ACL check for %s (matches %s)",
                                 request.path, path)
-                request._authorized = True
+                request._authorized = True  # pylint: disable=protected-access
                 return
 
     # Setup Acls

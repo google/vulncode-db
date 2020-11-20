@@ -13,6 +13,7 @@
 # limitations under the License.
 import os
 import re
+
 from io import BytesIO
 from urllib.parse import urlparse
 
@@ -21,18 +22,11 @@ import dulwich.repo  # type: ignore
 import dulwich.client  # type: ignore
 import dulwich.config  # type: ignore
 import dulwich.objects  # type: ignore
+
 from dulwich.patch import write_tree_diff  # type: ignore
 from dulwich.repo import Repo
 from flask import url_for, jsonify
 from unidiff import PatchSet  # type: ignore
-# Packages like GitPython are not supported on GAE since they make use of
-# c libraries or other system utilities. We only use such packages on other
-# sytems like GCE VMs.
-try:
-    from git import Repo as GitPythonRepo  # type: ignore
-except ImportError:
-    pass
-
 from lib.vcs_handler.vcs_handler import (
     VcsHandler,
     VCDB_ID_PLACEHOLDER,
@@ -42,6 +36,14 @@ from lib.vcs_handler.vcs_handler import (
     CommitFilesMetadata,
     CommitMetadata,
 )
+
+# Packages like GitPython are not supported on GAE since they make use of
+# c libraries or other system utilities. We only use such packages on other
+# sytems like GCE VMs.
+try:
+    from git import Repo as GitPythonRepo  # type: ignore
+except ImportError:
+    pass
 
 from app.exceptions import InvalidIdentifierException
 
@@ -97,7 +99,7 @@ def _file_list_dulwich(repo, tgt_env, recursive=False):
 class GitRepoHandler(VcsHandler):
     def __init__(self, app, resource_url=None):
         """Initializes the questionnaire object."""
-        super(GitRepoHandler, self).__init__(app, resource_url)
+        super().__init__(app, resource_url)
         self.repo = None
         if resource_url is not None:
             self.parse_resource_url(resource_url)

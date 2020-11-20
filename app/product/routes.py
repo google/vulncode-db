@@ -14,7 +14,7 @@
 
 from flask import (Blueprint, render_template, jsonify)
 from sqlakeyset import get_page  # type: ignore
-from sqlalchemy import and_, or_, desc
+from sqlalchemy import and_, desc
 from sqlalchemy.orm import joinedload, Load
 
 from app.auth.acls import skip_authorization

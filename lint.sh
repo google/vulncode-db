@@ -44,8 +44,7 @@ fi
 if which pylint &>/dev/null
 then
   info 'Linting python files with pylint'
-  find . -maxdepth 1 -name "*.py" -print -exec pylint --rcfile=./pylintrc --reports=no --disable=fixme {} \;
-  pylint --rcfile=./pylintrc --reports=no --disable=fixme app data lib
+  pylint --rcfile=./pylintrc --reports=no --disable=fixme *.py app data lib || failures=$(($failures+1))
 else
   fatal 'Please install pylint'
 fi

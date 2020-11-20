@@ -18,7 +18,7 @@ from app.auth.acls import admin_required, ensure
 from app.exceptions import InvalidIdentifierException
 from app.vulnerability.views.details import VulnerabilityDetails
 
-from data.database import DEFAULT_DATABASE
+from data.database import DEFAULT_DATABASE as db
 from data.models import (
     RepositoryFileComments,
     RepositoryFileMarkers,
@@ -28,12 +28,12 @@ from data.models.vulnerability import ANNOTATE
 from lib.utils import create_json_response
 
 bp = Blueprint("api", __name__, url_prefix="/api")
-db = DEFAULT_DATABASE.db
 
 
 @bp.errorhandler(403)
 def api_403(ex=None):
     """Return a 403 in JSON format."""
+    del ex
     return make_response(jsonify({'error': 'Forbidden', 'code': 403}), 403)
 
 
@@ -48,6 +48,7 @@ def api_404(ex=None):
 @bp.errorhandler(500)
 def api_500(ex=None):
     """Return a 500 in JSON format."""
+    del ex
     return make_response(
         jsonify({
             'error': 'Internal server error',
@@ -113,8 +114,7 @@ class Hashable:
 
 class HashableComment(Hashable):
     def __init__(self, comment):
-        super(HashableComment, self).__init__(comment, lambda c:
-                                              (c.row_from, c.row_to))
+        super().__init__(comment, lambda c: (c.row_from, c.row_to))
 
     def __str__(self):
         return f"comment @ {self.value}"
@@ -122,7 +122,7 @@ class HashableComment(Hashable):
 
 class HashableMarker(Hashable):
     def __init__(self, marker):
-        super(HashableMarker, self).__init__(
+        super().__init__(
             marker, lambda m:
             (m.row_from, m.row_to, m.column_from, m.column_to))
 
