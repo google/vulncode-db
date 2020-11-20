@@ -178,7 +178,7 @@ class RequestRedirect(werkzeug.routing.RequestRedirect):
     """Used for redirection from within nested calls.
     Note: We avoid using 308 to avoid permanent
     """
-    code = None
+    code = 302
 
 
 def update_products(
