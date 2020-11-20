@@ -24,4 +24,23 @@
         </div>
     </div>
 </div>
+<div class="row my-3">
+    <div class="col-sm-8 offset-md-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <p class="text-info d-inline"><b>Finished reviews</b></p>
+                </h5>
+                {% set vuln_columns = ['date', 'id', 'summary', 'products', 'state', 'creator'] %}
+
+                {% from 'macros/generate_vuln_table.html' import display_vuln_table %}
+                {% from 'macros/pagination.html' import display_nvd_pagination %}
+                <div id="vulnEntries">
+                    {{ display_vuln_table(reviewed_vulns.rows, 'reviewed', vuln_columns, 'vuln.vuln_review') }}
+                    {{ display_nvd_pagination(reviewed_vulns, 'reviewed', '') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
