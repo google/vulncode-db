@@ -20,6 +20,7 @@ import jinja2
 import pygments  # type: ignore
 import pygments.formatters  # type: ignore
 import pygments.lexers  # type: ignore
+import os.path
 
 from flask import Flask
 from flask import g
@@ -101,7 +102,11 @@ def register_custom_helpers(app):
     def can_do(action, subject):
         return bouncer_can(action, subject)
 
+    def template_exists(name):
+        return name in app.jinja_loader.list_templates()
+
     app.jinja_env.globals['url_for_self'] = url_for_self
+    app.jinja_env.globals['template_exists'] = template_exists
     app.jinja_env.globals['is_admin'] = is_admin_user
     app.jinja_env.globals['is_reviewer'] = is_reviewer
     app.jinja_env.globals['url_for_no_querystring'] = url_for_no_querystring
