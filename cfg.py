@@ -137,8 +137,8 @@ APPLICATION_ADMINS: List[str] = []
 if suggested_admins != '':
     APPLICATION_ADMINS = suggested_admins.split(",")
 
-# restrict the login to administrators only
-RESTRICT_LOGIN = True
+# Restrict the login to administrators only.
+RESTRICT_LOGIN = os.getenv("RESTRICT_LOGIN", "true").lower() == "true"
 
 # registration mode. INVITE_ONLY / OPEN / CLOSED
 REGISTRATION_MODE = "INVITE_ONLY"
