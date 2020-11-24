@@ -104,6 +104,7 @@ def users():
         if changed_users:
             db.session.add_all(changed_users)
             db.session.commit()
+            flash(f'Modified {len(changed_users)} user(s)', 'success')
 
     name = request.args.get('name', default='')
     if name:

@@ -71,6 +71,9 @@ def create_app(test_config=None):
     register_route_checks(app)
     register_custom_helpers(app)
 
+    app.jinja_env.lstrip_blocks = True
+    app.jinja_env.trim_blocks = True
+
     # Connect to the database and initialize SQLAlchemy.
     init_db(app)
     return app

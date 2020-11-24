@@ -17,9 +17,8 @@
     </ul>
 
     <ul class="navbar-nav mt-2 mt-md-0">
+      {% if g.user %}
       <li class="nav-item">
-        {% if g.user %}
-      <li>
         <span class="navbar-brand">
         {% if g.user.profile_picture %}
           <img src="{{ g.user.profile_picture_resized(30) }}" class="avatar_small d-inline-block align-top">
@@ -27,60 +26,60 @@
           <a href="{{ url_for("profile.index") }}">{{ g.user.full_name }}</a>
         </span>
       </li>
-      {% if is_admin() %}
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Admin
-        </a>
-        <div class="dropdown-menu" aria-labelledby="adminDropdown">
-          <a class="dropdown-item" href="{{ url_for("admin.users") }}">Users</a>
-          <a class="dropdown-item" href="{{ url_for("admin.invite_codes") }}">Invites</a>
-        </div>
-      </li>
-      {% endif %}
-      {% if is_reviewer() %}
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('review.review_list') }}">
-          Review
+        {% if is_admin() %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Admin
+            </a>
+            <div class="dropdown-menu" aria-labelledby="adminDropdown">
+              <a class="dropdown-item" href="{{ url_for("admin.users") }}">Users</a>
+              <a class="dropdown-item" href="{{ url_for("admin.invite_codes") }}">Invites</a>
+            </div>
+          </li>
+        {% endif %}
+        {% if is_reviewer() %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('review.review_list') }}">
+              Review
 
-          {% set num_publishing_pending = vuln_helper.get_num_proposals_publishing_pending() %}
-          {% if num_publishing_pending > 0 %}
-          <span class="badge badge-success">{{ num_publishing_pending }}</span>
-          {% endif %}
+              {% set num_publishing_pending = vuln_helper.get_num_proposals_publishing_pending() %}
+              {% if num_publishing_pending > 0 %}
+              <span class="badge badge-success">{{ num_publishing_pending }}</span>
+              {% endif %}
 
-          {% set num_unassigned = vuln_helper.get_num_proposals_unassigned() %}
-          {% set num_unassigned_to_self = vuln_helper.get_num_proposals_assigned_to(g.user) %}
-          {% set num_actionable = num_unassigned + num_unassigned_to_self %}
-          {% if num_actionable > 0 %}
-          <span class="badge badge-danger">{{ num_actionable }}</span>
-          {% endif %}
+              {% set num_unassigned = vuln_helper.get_num_proposals_unassigned() %}
+              {% set num_unassigned_to_self = vuln_helper.get_num_proposals_assigned_to(g.user) %}
+              {% set num_actionable = num_unassigned + num_unassigned_to_self %}
+              {% if num_actionable > 0 %}
+              <span class="badge badge-danger">{{ num_actionable }}</span>
+              {% endif %}
 
-          {% set num_assigned_to_others = vuln_helper.get_num_proposals_assigned() - num_unassigned_to_self %}
-          {% if num_assigned_to_others > 0 %}
-          <span class="badge badge-light">{{ num_assigned_to_others }}</span>
-          {% endif %}
-        </a>
-      </li>
-      {% endif %}
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('profile.view_proposals') }}">
-          Proposals
-          {% set num_proposals_action_required = vuln_helper.get_num_proposals_action_required(g.user) %}
-          {% if num_proposals_action_required > 0 %}
-          <span class="badge badge-danger">{{ num_proposals_action_required }}</span>
-          {% endif %}
+              {% set num_assigned_to_others = vuln_helper.get_num_proposals_assigned() - num_unassigned_to_self %}
+              {% if num_assigned_to_others > 0 %}
+              <span class="badge badge-light">{{ num_assigned_to_others }}</span>
+              {% endif %}
+            </a>
+          </li>
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('profile.view_proposals') }}">
+            Proposals
+            {% set num_proposals_action_required = vuln_helper.get_num_proposals_action_required(g.user) %}
+            {% if num_proposals_action_required > 0 %}
+            <span class="badge badge-danger">{{ num_proposals_action_required }}</span>
+            {% endif %}
 
-          {% set num_proposals_pending = vuln_helper.get_num_proposals_pending(g.user) %}
-          {% if num_proposals_pending > 0 %}
-          <span class="badge badge-light">{{ num_proposals_pending }}</span>
-          {% endif %}
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
-      </li>
+            {% set num_proposals_pending = vuln_helper.get_num_proposals_pending(g.user) %}
+            {% if num_proposals_pending > 0 %}
+            <span class="badge badge-light">{{ num_proposals_pending }}</span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a>
+        </li>
       {% else %}
-      <a class="nav-link" href="{{ url_for('auth.login') }}">Login/Register</a>
+        <a class="nav-link" href="{{ url_for('auth.login') }}">Login/Register</a>
       {% endif %}
       </li>
 
@@ -90,7 +89,7 @@
     </ul>
 
     <ul class="navbar-nav">
-      <li class="nav-item dropdow">
+      <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" role="button" id="fileBugDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <span style="color: #ffb500">Issues&nbsp;</span><i class="fa fa-question-circle" style="color: #ffb500"></i>
         </a>

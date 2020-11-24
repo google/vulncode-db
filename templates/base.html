@@ -9,43 +9,43 @@
 </head>
 
 <body>
-<div id="main-wrapper">
-  {% if not config.MAINTENANCE_MODE %}
-  {% include 'navbar.html' %}
-  {% endif %}
+  <div id="main-wrapper">
+    {% if not config.MAINTENANCE_MODE %}
+    {% include 'navbar.html' %}
+    {% endif %}
 
-  <div class="container-fluid">
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    <div class="container-fluid">
+      {% with messages = get_flashed_messages(with_categories=true) %}
 
-    <div class="row">
-      <div class="col-sm-4 offset-md-4">
-        <div id="alert_placeholder"></div>
-        <div id="dialog_placeholder"></div>
-        {% if config.MAINTENANCE_MODE %}
-        <div class="alert alert-warning alert-dismissible" role="alert">
-          <strong>Application is currently under maintenance. Please come back later.</strong>
+      <div class="row">
+        <div class="col-sm-4 offset-md-4">
+          <div id="alert_placeholder"></div>
+          <div id="dialog_placeholder"></div>
+          {% if config.MAINTENANCE_MODE %}
+          <div class="alert alert-warning alert-dismissible" role="alert">
+            <strong>Application is currently under maintenance. Please come back later.</strong>
+          </div>
+          {% endif %}
+          {% if messages %}
+          <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
+                aria-hidden="true">&times;</span></button>
+            <!-- <strong>Title</strong> --> <b>{{ message }}</b>
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% endwith %}
         </div>
-        {% endif %}
-        {% if messages %}
-        <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible" role="alert">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-              aria-hidden="true">&times;</span></button>
-          <!-- <strong>Title</strong> --> <b>{{ message }}</b>
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
       </div>
+
+      {% block main_content %}
+      {% endblock %}
     </div>
 
-    {% block main_content %}
-    {% endblock %}
+    {% include 'footer.html' %}
   </div>
-
-  {% include 'footer.html' %}
-</div>
 </body>
 
 </html>

@@ -157,7 +157,7 @@ class User(MainBase):
         return self.state == UserState.BLOCKED
 
     def block(self):
-        self.state.next_state(UserState.BLOCKED)
+        self.state = self.state.next_state(UserState.BLOCKED)
 
     def enable(self):
         if self.state is None:
