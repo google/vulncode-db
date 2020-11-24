@@ -46,7 +46,7 @@
                   <li>
                     <a href="{{ url_for('vuln.vuln_view', vcdb_id=vuln.cve_id) }}">{{ vuln.cve_id }}</a>
                     ({{ display_vuln_column(vuln, 'state') }})
-                  <li>
+                  </li>
                 {% endfor %}
                 </ul>
             </div>
