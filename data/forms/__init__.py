@@ -132,6 +132,7 @@ class VulnerabilityDeleteForm(FlaskForm):
 
 class UserProfileForm(BaseForm):
     full_name = StringField("Full Name")
-    profile_picture = StringField("Profile URL", validators=[validators.URL()])
+    profile_picture = StringField("Profile Picture URL",
+                                  validators=[validators.URL()])
     hide_name = BooleanField("Hide Name")
-    hide_picture = BooleanField("Hide Picture")
+    hide_picture = BooleanField("Hide Profile Picture")
