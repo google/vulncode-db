@@ -4,11 +4,15 @@
 
 {% macro display_vuln_column(vuln_view, column) %}
   {% if column == "date" %}
+  <span style="white-space: nowrap">
     {{ vuln_view.date_created }}
+  </span>
   {% endif %}
 
   {% if column == "id" %}
+  <span style="white-space: nowrap">
     {{ vuln_view.id or "N/A" }}
+  </span>
   {% endif %}
 
   {% if column == "state" %}
