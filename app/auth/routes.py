@@ -15,6 +15,8 @@
 import logging
 from typing import Optional, Tuple
 
+import jinja2
+
 from flask import (session, request, url_for, redirect, Blueprint, g,
                    current_app, flash, render_template)
 from authlib.integrations.flask_client import OAuth  # type: ignore
@@ -301,6 +303,16 @@ def load_user():
     elif user.is_enabled():
         g.user = user
         log.debug('Loaded user %s', g.user)
+        if user.is_first_login():
+            user.enable()
+            db.session.add(user)
+            db.session.commit()
+            flash(
+                jinja2.Markup(
+                    'Welcome to Vulncode-DB!<br>'
+                    'Please take a look at your'
+                    f'<a href="{url_for("profile.index")}">profile page</a>'
+                    'to review your settings.'), 'info')
     else:
         logout()
         flash('Account not yet activated', 'danger')

@@ -75,8 +75,15 @@ class UserState(StateMachine):
     REGISTERED = 0
     ACTIVE = 1
     BLOCKED = 2
+    FIRST_LOGIN = 3
 
-    enable = transition(REGISTERED, ACTIVE)()
+    @transition(BLOCKED, ACTIVE)
+    @transition(REGISTERED, FIRST_LOGIN)
+    @transition(FIRST_LOGIN, ACTIVE)
+    def enable(self, current_state, next_state):  # pylint: disable=no-self-use
+        del current_state, next_state
+        return True
+
     disable = transition(ACTIVE, BLOCKED)()
 
 
@@ -141,7 +148,10 @@ class User(MainBase):
         return self._has_role(PredefinedRoles.REVIEWER)
 
     def is_enabled(self):
-        return self.state == UserState.ACTIVE
+        return self.state in (UserState.ACTIVE, UserState.FIRST_LOGIN)
+
+    def is_first_login(self):
+        return self.state == UserState.FIRST_LOGIN
 
     def is_blocked(self):
         return self.state == UserState.BLOCKED
@@ -151,7 +161,9 @@ class User(MainBase):
 
     def enable(self):
         if self.state is None:
-            self.state = UserState.ACTIVE
+            self.state = UserState.FIRST_LOGIN
+        elif self.state == UserState.REGISTERED:
+            self.state = self.state.next_state(UserState.FIRST_LOGIN)
         else:
             self.state = self.state.next_state(UserState.ACTIVE)
 
