@@ -13,7 +13,7 @@ Flask-SQLAlchemy>=2.4.0
 # SQLAlchemy-FullText-Search==0.2.5
 Flask-WTF>=0.14.2
 marshmallow-sqlalchemy>=0.23.1
-google-auth==1.6.1
+google-auth==1.23
 flask-bouncer==0.3.0
 bouncer==0.1.12
 # Flask-debugtoolbar requirements -------
@@ -29,3 +29,5 @@ simplejson>=3.16.0
 # ---------------------------------------
 # Misc. requirements
 sqlakeyset==0.1.1559103842
+# GAE logging
+google-cloud-logging==2.0.0
