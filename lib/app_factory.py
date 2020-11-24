@@ -20,7 +20,6 @@ import jinja2
 import pygments  # type: ignore
 import pygments.formatters  # type: ignore
 import pygments.lexers  # type: ignore
-import os.path
 
 from flask import Flask
 from flask import g

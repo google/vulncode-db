@@ -129,7 +129,7 @@ def authorized():
     session["user_info"] = user
 
     if User.query.filter_by(email=user['email']).one_or_none() is None:
-        resp, _ = registration_required()
+        resp, _ = registration_required(user['email'])
         if resp is not None:
             return resp
 
