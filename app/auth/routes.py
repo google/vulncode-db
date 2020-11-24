@@ -310,8 +310,8 @@ def load_user():
             flash(
                 jinja2.Markup(
                     'Welcome to Vulncode-DB!<br>'
-                    'Please take a look at your'
-                    f'<a href="{url_for("profile.index")}">profile page</a>'
+                    'Please take a look at your '
+                    f'<a href="{url_for("profile.index")}">profile page</a> '
                     'to review your settings.'), 'info')
     else:
         logout()
