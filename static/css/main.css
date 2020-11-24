@@ -384,3 +384,27 @@ img.avatar_small {
   width: 30px;
   max-height: 30px;
 }
+
+/* Proposal progress stepper bar */
+ul.stepper {
+  padding: 0px !important;
+  margin: 0px !important;
+}
+ul.stepper li span {
+  font-size: 0.9em;
+}
+ul.stepper li a span.circle {
+  background-color: grey !important;
+}
+ul.stepper li.completed a span.circle {
+  background-color: #42F44B !important;
+}
+ul.stepper li.completed a .label {
+  color: rgba(0, 0, 0, 0.38) !important;
+}
+ul.stepper li.active a span.circle {
+  background-color: #4285f4 !important;
+}
+ul.stepper li.active a .label {
+  font-size: 1em !important;
+}

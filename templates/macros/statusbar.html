@@ -1,39 +1,67 @@
 {% macro show_progress_statusbar(vuln_view) %}
-    {% set progress_percent = 0 %}
-    {% set progress_color = 'bg-light' %}
+    {% set current_state = vuln_view.state.name %}
+    {% set active_step = 1 %}
     {% set next_step = '' %}
-    {% if vuln_view.state.name == 'NEW' %}
-        {% set progress_percent = 0 %}
-        {% set progress_color = 'bg-light' %}
-        {% set next_step = 'send for review' %}
-    {% elif vuln_view.state.name == 'NEEDS_IMPROVEMENT' %}
-        {% set progress_percent = 12.5 %}
-        {% set progress_color = 'bg-danger' %}
-        {% set next_step = 'address feedback' %}
-    {% elif vuln_view.state.name == 'READY' %}
-        {% set progress_percent = 25 %}
-        {% set progress_color = 'bg-info' %}
-        {% set next_step = 'waiting for a reviewer' %}
-    {% elif vuln_view.state.name == 'IN_REVIEW' %}
-        {% set progress_percent = 50 %}
-        {% set progress_color = 'bg-warning' %}
-        {% set next_step = 'waiting for review' %}
-    {% elif vuln_view.state.name == 'REVIEWED' %}
-        {% set progress_percent = 75 %}
-        {% set progress_color = 'bg-success' %}
-        {% set next_step = 'waiting for admin approval' %}
-    {% elif vuln_view.state.name == 'PUBLISHED' %}
-        {% set progress_percent = 100 %}
-        {% set progress_color = 'bg-primary' %}
-        {% set next_step = 'this version is live' %}
-    {% elif vuln_view.state.name == 'ARCHIVED' %}
-        {% set progress_percent = 100 %}
-        {% set progress_color = 'bg-light' %}
-        {% set next_step = 'this is an old version' %}
-    {% endif %}
 
-    <div class="progress">
-        <div class="progress-bar {{ progress_color }} progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ progress_percent }}%"></div>
-        <span class="progress-value">{{ progress_percent }}% completed {% if next_step %} ({{ next_step }}) {% endif %}</span>
+    {% if current_state == 'NEW' %}
+        {% set active_step = 1 %}
+        {% set next_step = 'submit for review.' %}
+    {% elif current_state == 'NEEDS_IMPROVEMENT' %}
+        {% set active_step = 2 %}
+        {% set next_step = 'address given feedback.' %}
+    {% elif current_state == 'READY' %}
+        {% set active_step = 3 %}
+        {% set next_step = 'wait until we find a reviewer.' %}
+    {% elif current_state == 'IN_REVIEW' %}
+        {% set active_step = 4 %}
+        {% set next_step = 'wait for review to complete.' %}
+    {% elif current_state == 'REVIEWED' %}
+        {% set active_step = 5 %}
+        {% set next_step = 'wait for admin approval.' %}
+    {% elif current_state == 'PUBLISHED' %}
+        {% set active_step = 6 %}
+        {% set next_step = 'this version is live!' %}
+    {% elif current_state == 'ARCHIVED' %}
+        {% set active_step = 7 %}
+        {% set next_step = 'this is an archived version.' %}
+    {% endif %}
+    <!-- Horizontal Steppers -->
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="stepper stepper-horizontal">
+
+                <!-- Submission step -->
+                <li class="{% if active_step >= 3 %}completed{% else %}active{% endif %}">
+                    <a href="#!">
+                        <span class="circle">{% if active_step >= 3 %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-paper-plane"></i>{% endif %}</span>
+                        <span class="label">Submission</span>
+                        {% if active_step < 3 %}<span class="label">Please {{ next_step }}</span>{% endif %}
+                    </a>
+                </li>
+    
+                <!-- Review step -->
+                <li class="{% if active_step >= 5 %}completed{% elif active_step >= 3 and active_step <= 5 %}active{% endif %}">
+                    <a href="#!">
+                        <span class="circle">{% if active_step >= 5 %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-clipboard-check"></i>{% endif %}</span>
+                        <span class="label">Review</span>
+                        {% if active_step >= 3 and active_step < 5 %}<span class="label">Please {{ next_step }}</span>{% endif %}
+                    </a>
+                </li>
+    
+                <!-- Publication step -->
+                <li class="{% if active_step >= 6 %}completed{% elif active_step == 5 %}active{% endif %}">
+                    <a href="#!">
+                        <span class="circle">{% if active_step >= 6 %}<i class="fas fa-check"></i>{% else %}<i class="far fa-check-circle"></i>{% endif %}</span>
+                        <span class="label">Publication</span>
+                        {% if active_step == 5 %}
+                            <span class="label">Please {{ next_step }}</span>
+                        {% elif active_step > 5 %}
+                            <span class="label">Complete - {{ next_step }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+    
+            </ul>
+        </div>
     </div>
 {% endmacro %}
