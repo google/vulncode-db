@@ -24,7 +24,7 @@ html, body {
 
 /* Show it is fixed to the top */
 body {
-  min-height: 75rem;
+  /* min-height: 75rem; */
   margin-bottom: 60px;
 }
 
@@ -79,6 +79,16 @@ pre {
 
 * {
   box-sizing: border-box;
+}
+
+div#main-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+div.container-fluid {
+  flex: 1;
 }
 
 .navbar-btn {
