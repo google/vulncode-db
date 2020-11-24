@@ -48,11 +48,18 @@
                     <option value="delete">Delete</option>
                     <option value="block">Block</option>
                     <option value="enable">Enable</option>
+                    <option value="state">Force State</option>
                   </select>
                   <select class="form-control" id="roles" name="role" style="display: none">
                     <option>---</option>
                     {% for role in roles %}
                     <option value="{{role.id}}">{{role}}</option>
+                    {% endfor %}
+                  </select>
+                  <select class="form-control" id="states" name="state" style="display: none">
+                    <option>---</option>
+                    {% for state in states %}
+                    <option value="{{state.name}}">{{state.name}}</option>
                     {% endfor %}
                   </select>
                   <button class="btn btn-danger btn-sm" id="delete-btn" style="display: none" type="button" data-toggle="modal" data-target="#confirmDelete">Delete</button>
@@ -123,6 +130,7 @@
     const usersForm = document.getElementById('users-form');
     const actionSelect = document.getElementById('action');
     const rolesSelect = document.getElementById('roles');
+    const statesSelect = document.getElementById('states');
     const saveBtn = document.getElementById('save-btn');
     const deleteBtn = document.getElementById('delete-btn');
     const blockBtn = document.getElementById('block-btn');
@@ -150,19 +158,24 @@
         enableBtn.style.display = null;
       } else if (this.value === 'block') {
         blockBtn.style.display = null;
+      } else if (this.value === 'state') {
+        statesSelect.style.display = null;
       } else {
         roles.value = '---';
       }
     });
 
-    rolesSelect.addEventListener('change', function() {
+    function enableSaveBtn() {
       for (const btn of btns) {
         btn.style.display = 'none';
       }
       if (this.value !== '---') {
         saveBtn.style.display = null;
       }
-    });
+    }
+
+    rolesSelect.addEventListener('change', enableSaveBtn);
+    statesSelect.addEventListener('change', enableSaveBtn);
 
     const deleteButtons = document.querySelectorAll('[data-action="delete"]');
     for(const btn of deleteButtons) {

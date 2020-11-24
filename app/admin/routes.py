@@ -16,14 +16,15 @@ from sqlalchemy import or_
 
 from app.auth.acls import admin_required
 from data.database import DEFAULT_DATABASE
-from data.models.user import InviteCode, User
+from data.models.user import InviteCode, User, UserState
 from data.models.user import Role
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 db = DEFAULT_DATABASE
 
 
-def _assign(role_id, user_ids):
+def _assign(role_id, user_ids, new_state):
+    del new_state
     role = Role.query.get_or_404(role_id)
     for user_id in user_ids:
         user = User.query.get_or_404(user_id)
@@ -31,7 +32,8 @@ def _assign(role_id, user_ids):
         yield user
 
 
-def _unassign(role_id, user_ids):
+def _unassign(role_id, user_ids, new_state):
+    del new_state
     role = Role.query.get_or_404(role_id)
     for user_id in user_ids:
         user = User.query.get_or_404(user_id)
@@ -39,8 +41,8 @@ def _unassign(role_id, user_ids):
         yield user
 
 
-def _delete(role_id, user_ids):
-    del role_id
+def _delete(role_id, user_ids, new_state):
+    del role_id, new_state
     for user_id in user_ids:
         user = User.query.get_or_404(user_id)
         db.session.delete(user)
@@ -49,19 +51,27 @@ def _delete(role_id, user_ids):
     return []
 
 
-def _enable(role_id, user_ids):
-    del role_id
+def _enable(role_id, user_ids, new_state):
+    del role_id, new_state
     for user_id in user_ids:
         user = User.query.get_or_404(user_id)
         user.enable()
         yield user
 
 
-def _block(role_id, user_ids):
-    del role_id
+def _block(role_id, user_ids, new_state):
+    del role_id, new_state
     for user_id in user_ids:
         user = User.query.get_or_404(user_id)
         user.block()
+        yield user
+
+
+def _change_state(role_id, user_ids, new_state):
+    del role_id
+    for user_id in user_ids:
+        user = User.query.get_or_404(user_id)
+        user.state = UserState[new_state]
         yield user
 
 
@@ -74,16 +84,20 @@ def users():
             action for action in request.form.getlist('action') if action
         ][0]
         role_id = request.form.get('role')
+        new_state = request.form.get('state')
         changed_users = []
         functions = {
             'assign': _assign,
             'unassign': _unassign,
             'delete': _delete,
             'enable': _enable,
-            'block': _block
+            'block': _block,
+            'state': _change_state,
         }
         if action in functions:
-            changed_users.extend(functions[action](role_id, user_ids))
+            changed_users.extend(functions[action](role_id=role_id,
+                                                   user_ids=user_ids,
+                                                   new_state=new_state))
         else:
             flash('Invalid action', 'danger')
 
@@ -104,6 +118,7 @@ def users():
     return render_template('admin/user_list.html',
                            users=user_list,
                            roles=roles,
+                           states=list(UserState),
                            filter=name)
 
 
