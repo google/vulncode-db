@@ -145,6 +145,7 @@ def check_db_state():
 def enable_cloud_logging():
     import google.cloud.logging  # pylint: disable=import-outside-toplevel
 
+    print('Enabling cloud logging')
     # Instantiates a client
     client = google.cloud.logging.Client()
 
@@ -152,14 +153,15 @@ def enable_cloud_logging():
     # you're running in and integrates the handler with the
     # Python logging module. By default this captures all logs
     # at INFO level and higher
-    client.get_default_handler()
+    print('Default handler:', client.get_default_handler())
     client.setup_logging()
+    print('Cloud logging enabled:', logging.getLogger().handlers)
 
 
 def main():
-    logging.config.dictConfig(cfg.LOGGING)
 
     if not cfg.IS_PROD:
+        logging.config.dictConfig(cfg.LOGGING)
         check_db_state()
     else:
         enable_cloud_logging()
