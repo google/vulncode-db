@@ -42,7 +42,7 @@ VULN_INFO_DETAILED_VARIANTS = [
             'relevant_files': [],
             'repo_name': 'REPO1',
             'repo_owner': 'OWNER',
-            'repo_url': 'https://github.com/OWNER/REPO1/'
+            'repo_url': 'https://github.com/OWNER/REPO1'
         }]
     }),
     ('CVE-1970-2000', 200, {
