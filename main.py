@@ -154,7 +154,7 @@ def enable_cloud_logging():
     # Python logging module. By default this captures all logs
     # at INFO level and higher
     print('Default handler:', client.get_default_handler())
-    client.setup_logging()
+    client.setup_logging(log_level=cfg.PROD_LOG_LEVEL)
     print('Cloud logging enabled:', logging.getLogger().handlers)
 
 
