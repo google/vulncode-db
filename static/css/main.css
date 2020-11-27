@@ -206,6 +206,15 @@ div.container-fluid {
   color: #a94442;
 }
 
+/* Marking required fields with a red asterisk.
+.required label:after {
+  content: " *";
+  font-size:0.7em;
+  color: red;
+  display:inline;
+}
+*/
+
 .input-group-prepend .has-success {
   color: #3c763d;
   background-color: #dff0d8;
