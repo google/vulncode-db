@@ -158,13 +158,16 @@ def enable_cloud_logging():
     print('Cloud logging enabled:', logging.getLogger().handlers)
 
 
+# enable cloud logging on module level as GAE uses gunicorn to run the app
+if cfg.IS_PROD:
+    enable_cloud_logging()
+
+
 def main():
+    logging.config.dictConfig(cfg.LOGGING)
 
     if not cfg.IS_PROD:
-        logging.config.dictConfig(cfg.LOGGING)
         check_db_state()
-    else:
-        enable_cloud_logging()
 
     # cert_dir = os.path.join(root_dir, 'cert')
     # cert_file = os.path.join(cert_dir, 'cert.pem')
