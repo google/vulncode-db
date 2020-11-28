@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {ZoneViewWidget} from './ZoneViewWidget.js';
-import {UI} from './UI.js';
+import { ZoneViewWidget } from './ZoneViewWidget.js';
+import { UI } from './UI.js';
 
 
 /**
@@ -31,9 +31,9 @@ export class CommentWidget extends ZoneViewWidget {
    */
   constructor(comment, editor, isDiffMode, isEditMode) {
     super(
-        isDiffMode ? editor.getOriginalEditor() : editor,
-        isDiffMode ? editor.getModifiedEditor() : editor,
-        {glyphClassName: 'fa fa-comment'});
+      isDiffMode ? editor.getOriginalEditor() : editor,
+      isDiffMode ? editor.getModifiedEditor() : editor,
+      { glyphClassName: 'fa fa-comment' });
     this._comment = comment;
     this._isEditMode = isEditMode;
     this._isDiffMode = isDiffMode;
@@ -71,12 +71,21 @@ export class CommentWidget extends ZoneViewWidget {
 
     this._headingLabel = document.createElement('span');
     if (this._comment.creator) {
-      this._headingLabel.textContent = '@' + this._comment.creator.name;
+      const a = document.createElement('a');
+      a.href = this._comment.creator.profile_link;
+      a.textContent = '@' + this._comment.creator.name;
+      this._headingLabel.appendChild(a);
+    } else if (window.CURRENT_USER) {
+      const a = document.createElement('a');
+      a.href = window.CURRENT_USER.profile_link;
+      a.textContent = '@' + window.CURRENT_USER.name;
+      this._headingLabel.appendChild(a);
     } else {
       this._headingLabel.textContent = '<unknown creator>';
     }
     if (this._comment.revision) {
-      this._headingLabel.textContent += ' (rev ' + this._comment.revision + ')';
+      const txt = document.createTextNode(' (rev ' + this._comment.revision + ')');
+      this._headingLabel.appendChild(txt);
     }
     titleElement.appendChild(this._headingLabel);
   }
@@ -91,7 +100,7 @@ export class CommentWidget extends ZoneViewWidget {
 
     if (this._isEditMode) {
       const textarea =
-          container.appendChild(document.createElement('textarea'));
+        container.appendChild(document.createElement('textarea'));
       textarea.value = this._comment.text;
       textarea.className = 'form-control z-depth-1';
       textarea.style.display = this._comment.text ? 'none' : null;
@@ -174,14 +183,14 @@ export class CommentWidget extends ZoneViewWidget {
       height: this._bodyElement.clientHeight,
     };
     const headHeight =
-        Math.ceil(this.overlayEditor.getRawOptions().lineHeight * 1.2);
+      Math.ceil(this.overlayEditor.getRawOptions().lineHeight * 1.2);
     const lineHeight = this.overlayEditor.getRawOptions().lineHeight;
     const arrowHeight = Math.round(lineHeight / 3);
     const frameThickness = Math.round(lineHeight / 9) * 2;
 
     const computedLinesNumber = Math.ceil(
-        (headHeight + dimensions.height + arrowHeight + frameThickness) /
-        lineHeight);
+      (headHeight + dimensions.height + arrowHeight + frameThickness) /
+      lineHeight);
     this._relayout(computedLinesNumber);
   }
 

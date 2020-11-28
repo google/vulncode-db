@@ -134,13 +134,24 @@ def view_proposals():
     )
 
 
+@bp.route("/<int:user_id>", methods=["GET"])
+def user_profile(user_id=None):
+    user: User = User.query.get_or_404(user_id)
+    ensure(READ, user)
+
+    vulns = Vulnerability.query.filter(
+        Vulnerability.creator == user,
+        Vulnerability.state.in_(
+            [VulnerabilityState.PUBLISHED,
+             VulnerabilityState.ARCHIVED])).all()
+    return render_template("profile/profile_viewer.html",
+                           user=user,
+                           vulns=vulns)
+
+
 @bp.route("/", methods=["GET", "POST"])
-@bp.route("/<int:user_id>", methods=["GET", "POST"])
-def index(user_id=None):
-    if user_id is None:
-        user = g.user
-    else:
-        user: User = User.query.get_or_404(user_id)
+def index():
+    user = g.user
     if request.method == "GET":
         ensure(READ, user)
     else:

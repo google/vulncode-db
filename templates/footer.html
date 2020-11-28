@@ -36,6 +36,10 @@
 <script>
   const EDITOR_SETTINGS = {{ vulnerability_details.get_settings()|tojson }};
   window.EDITOR_SETTINGS = EDITOR_SETTINGS;
+  {% if g.user %}
+  const CURRENT_USER = {{ g.user.to_json()|tojson}};
+  window.CURRENT_USER = CURRENT_USER;
+  {% endif %}
 </script>
 {% endif %}
 

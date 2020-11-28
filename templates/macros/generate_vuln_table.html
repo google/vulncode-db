@@ -1,4 +1,5 @@
 {% from 'macros/products.html' import print_product_links %}
+{% from 'macros/user.html' import print_user %}
 {% set default_vuln_columns = ['date', 'id', 'summary', 'products', 'score', 'patch'] %}
 {% set default_vuln_columns_full = default_vuln_columns + ['annotated'] %}
 
@@ -36,7 +37,7 @@
   {% endif %}
 
   {% if column == "creator" %}
-    {{ vuln_view.creator.name }}
+    {{ print_user(vuln_view.creator) }}
   {% endif %}
 
   {% if column == "summary" %}

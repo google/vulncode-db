@@ -14,6 +14,7 @@
 import enum
 import re
 import uuid
+from flask.helpers import url_for
 
 from sqlalchemy import Column, String, Integer, ForeignKey, Enum, Boolean, Table
 from sqlalchemy.orm import relationship
@@ -133,7 +134,12 @@ class User(MainBase):
     def to_json(self):
         """Serialize object properties as dict."""
         # TODO: Refactor how we will surface this.
-        return {'username': self.name, 'id': self.id}
+        return {
+            'name': self.name,
+            'id': self.id,
+            'profile_link': self.profile_link,
+            'avatar': self.avatar,
+        }
 
     def _has_role(self, role):
         for cur_role in self.roles:
@@ -166,6 +172,10 @@ class User(MainBase):
             self.state = self.state.next_state(UserState.FIRST_LOGIN)
         else:
             self.state = self.state.next_state(UserState.ACTIVE)
+
+    @property
+    def profile_link(self):
+        return url_for('profile.user_profile', user_id=self.id)
 
 
 # must be set after all definitions

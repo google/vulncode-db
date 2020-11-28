@@ -1,0 +1,3 @@
+{% macro print_user(user, class=None) %}
+<a href="{{ user.profile_link }}" {% if class %}class="{{class}}"{% endif %}>{{ user.name }}</a>
+{% endmacro %}

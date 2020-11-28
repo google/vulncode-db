@@ -64,6 +64,7 @@ def authorize(user: User, they: RuleList):
 
     if user is not None:
         they.can(MANAGE, User, id=user.id)
+        they.can(READ, User)
         they.can('READ_OWN', 'Proposal')
         if user.is_reviewer():
             # reviewers can see the list of proposals

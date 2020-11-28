@@ -1,3 +1,4 @@
+{% from "macros/user.html" import print_user %}
 {% extends "base.html" %}
 {% block main_content %}
 <div class="row">
@@ -84,7 +85,7 @@
                     <tr>
                       <td scope="row"><input type="checkbox" name="user" value="{{ user.id }}"></td>
                       <td>{{ user.id }}</td>
-                      <td><a href="{{ url_for("profile.index", user_id=user.id) }}">{{ user.name }}</a></td>
+                      <td>{{ print_user(user) }}</td>
                       <td>{{ user.state.name }}</td>
                       <td>{{ user.roles|join(', ') }}</td>
                       <td>

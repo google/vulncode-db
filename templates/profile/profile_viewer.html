@@ -7,31 +7,22 @@
 {% block main_content %}
 <div class="row">
     <div class="col-md-4 offset-md-4">
-        <h2 class="text-center">My Profile</h2>
+        <h2 class="text-center">{{ user.name }}'s Profile</h2>
     </div>
 </div>
 <div class="row my-3">
     <div class="col-sm-8 offset-md-2">
         <div class="card my-3">
             <div class="card-body">
-              <div class="form-group">
-                <label class="control-label">User ID</label>
-                <span class="form-control-plaintext">{{user.id}}</span>
+              <!-- the 90s called, they want their tables back -->
+              <div class="table-responsive">
+                <table class="table table-borderless table-hover">
+                  <tr>
+                    <th>Name:</th>
+                    <td>{{ user.name }}</td>
+                  </tr>
+                </table>
               </div>
-              <div class="form-group">
-                <label class="control-label">E-Mail</label>
-                <span class="form-control-plaintext">{{user.email}}</span>
-                <small class="form-text text-muted">Only you can see this address.</small>
-              </div>
-              <form method="POST" name="terms_form">
-                {{ form.hidden_tag() }}
-                {{ wtf.form_errors(form, hiddens="only") }}
-                {% for field in form.non_hidden_fields %}
-                  {{ wtf.form_field(field) }}
-                {% endfor %}
-
-                <button type="submit" class="btn btn-success">Save</button>
-              </form>
             </div>
         </div>
     </div>
