@@ -13,14 +13,16 @@
 # limitations under the License.
 
 import json
+import logging
 import os
 import re
 import sys
 import time
 
 from functools import wraps
-from typing import Optional, List, TYPE_CHECKING, Dict
+from typing import Optional, List, TYPE_CHECKING, Dict, Any, Tuple
 
+import dateutil.parser
 import werkzeug
 import werkzeug.routing
 
@@ -36,6 +38,8 @@ TRACING_PATH = "traces/"
 TRACING_ACTIVE = False
 TRACING_LOGGING = False
 TRACING_FILE_HANDLE = None
+
+log = logging.getLogger(__name__)
 
 
 def get_file_contents(path):
@@ -93,13 +97,21 @@ def filter_pagination_param(param):
     return filtered
 
 
-def parse_pagination_param(param_key):
+def parse_pagination_param(param_key) -> Tuple[Optional[List[Any]], bool]:
     pagination_param = request.args.get(param_key, None)
     if not pagination_param:
-        return False
+        return None, False
     sanitized_param = filter_pagination_param(pagination_param)
-    unserialized_pagination = unserialize_bookmark(sanitized_param)
-    return unserialized_pagination
+    try:
+        unserialized_pagination = unserialize_bookmark(sanitized_param)
+        return unserialized_pagination
+    except dateutil.parser.ParserError as err:  # type: ignore[attr-defined]
+        log.warning('parsing date field of %r failed: %s', sanitized_param,
+                    err)
+    except ValueError as err:
+        log.warning('unserializing pagination bookmark %r failed: %s',
+                    sanitized_param, err)
+    return None, False
 
 
 def function_hooking_wrap(original_function, hooking_function):
