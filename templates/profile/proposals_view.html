@@ -1,5 +1,30 @@
 {% extends "base.html" %}
 {% block main_content %}
+
+{% if not proposal_vulns.rows and not proposal_vulns_processed.rows %}
+<div class="row my-3">
+    <div class="col-md-4 offset-md-4">
+        <div class="card bg-info">
+            <div class="card-body">
+                <h5 class="card-title text-white">Looking for a way to create a proposal?</h5>
+                <div class="card-text text-white xs">
+                    You can create a new proposal by doing the following:
+
+                    <ol>
+                        <li>Search for/Choose an entry you would like to change on the <a href="{{ url_for("frontend.serve_index") }}">start page</a>.
+                        <li>Press the <b class="bg-dark p-1">Propose Changes</b> button</li>
+                        <li>Do your changes</li>
+                        <li>Press the <b class="bg-primary p-1">Propose Change</b> button</li>
+                    </ol>
+                    <p><b>Done!</b> Now a reviewer will take a look at your changes
+                        and approve them or might give you feedback if there is
+                        something to improve.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 <div class="row">
     <div class="col-md-4 offset-md-4">
         <h2 class="text-center">My proposals</h2>
