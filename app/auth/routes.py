@@ -27,7 +27,8 @@ from werkzeug import Response
 
 from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE
-from data.models.user import InviteCode, User, Role, PredefinedRoles, UserState
+from data.models.user import (InviteCode, User, Role, PredefinedRoles,
+                              UserState, LoginType)
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 db = DEFAULT_DATABASE.db
@@ -56,33 +57,30 @@ def login():
     if current_app.config["IS_LOCAL"] and as_user != "OAuth":
         if as_user in current_app.config["APPLICATION_ADMINS"]:
             session["user_info"] = {
-                'email':
-                as_user,
-                'name':
-                'Admin ' + as_user.split("@", 1)[0],
+                'email': as_user,
+                'name': 'Admin ' + as_user.split("@", 1)[0],
                 # https://de.wikipedia.org/wiki/Datei:User-admin.svg
                 'picture':
                 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/User-admin.svg/170px-User-admin.svg.png',  # pylint: disable=line-too-long
+                'type': LoginType.LOCAL,
             }
         elif as_user == 'reviewer@vulncode-db.com':
             session["user_info"] = {
-                'email':
-                as_user,
-                'name':
-                'Reviewer',
+                'email': as_user,
+                'name': 'Reviewer',
                 # https://de.wikipedia.org/wiki/Datei:Magnifying_glass_icon.svg
                 'picture':
                 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Magnifying_glass_icon.svg/240px-Magnifying_glass_icon.svg.png',  # pylint: disable=line-too-long
+                'type': LoginType.LOCAL,
             }
         elif as_user == 'user@vulncode-db.com':
             session["user_info"] = {
-                'email':
-                as_user,
-                'name':
-                'User 1',
+                'email': as_user,
+                'name': 'User 1',
                 # https://de.wikipedia.org/wiki/Datei:User_font_awesome.svg
                 'picture':
                 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/User_font_awesome.svg/240px-User_font_awesome.svg.png',  # pylint: disable=line-too-long
+                'type': LoginType.LOCAL,
             }
         else:
             return render_template(
@@ -129,6 +127,7 @@ def authorized():
     token = oauth.google.authorize_access_token()
     user = oauth.google.parse_id_token(token)
     session["user_info"] = user
+    session["user_info"]['type'] = LoginType.GOOGLE
 
     if User.query.filter_by(email=user['email']).one_or_none() is None:
         resp, _ = registration_required(user['email'])
@@ -246,8 +245,15 @@ def load_user():
 
     data = session["user_info"]
     email = data["email"]
+    login_type = LoginType(data["type"])
 
-    user = User.query.filter_by(email=email).one_or_none()
+    if login_type in (LoginType.GOOGLE, LoginType.LOCAL):
+        user = User.query.filter_by(email=email).one_or_none()
+    else:
+        log.error("Unsupported login type %r", login_type)
+        flash('Login unsupported.', 'danger')
+        logout()
+        return
     is_new = False
     is_changed = False
     if not user:
@@ -259,7 +265,8 @@ def load_user():
         log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
         user = User(email=email,
                     full_name=data.get("name", name),
-                    profile_picture=data.get("picture"))
+                    profile_picture=data.get("picture"),
+                    login_type=login_type)
         is_new = True
         if invite_code is not None:
             session.pop("invite_code")
@@ -277,6 +284,8 @@ def load_user():
         if 'picture' in data and user.profile_picture != data['picture']:
             user.profile_picture = data["picture"]
             is_changed = True
+        if user.login_type is None:
+            user.login_type = login_type
 
     # update automatic roles
     if is_new:

@@ -18,11 +18,13 @@
                 <label class="control-label">User ID</label>
                 <span class="form-control-plaintext">{{user.id}}</span>
               </div>
+              {% if user.email %}
               <div class="form-group">
                 <label class="control-label">E-Mail</label>
                 <span class="form-control-plaintext">{{user.email}}</span>
                 <small class="form-text text-muted">Only you can see this address.</small>
               </div>
+              {% endif %}
               <form method="POST" name="terms_form">
                 {{ form.hidden_tag() }}
                 {{ wtf.form_errors(form, hiddens="only") }}

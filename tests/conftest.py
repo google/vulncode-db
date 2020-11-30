@@ -25,7 +25,8 @@ import pytest
 import cfg
 
 from data.database import DEFAULT_DATABASE
-from data.models.user import User, Role, PredefinedRoles, UserState
+from data.models.user import (User, Role, PredefinedRoles, UserState,
+                              LoginType)
 from data.models.vulnerability import Vulnerability, VulnerabilityState
 from data.models.vulnerability import VulnerabilityGitCommits
 from data.models.nvd import Cpe
@@ -165,18 +166,21 @@ def _db(app):
                 full_name='Admin McAdmin',
                 roles=roles,
                 state=UserState.ACTIVE,
+                login_type=LoginType.LOCAL,
             ),
             User(
                 email='user@vulncode-db.com',
                 full_name='User McUser',
                 roles=[roles[1]],
                 state=UserState.ACTIVE,
+                login_type=LoginType.LOCAL,
             ),
             User(
                 email='blocked@vulncode-db.com',
                 full_name='Blocked User',
                 roles=[roles[1]],
                 state=UserState.BLOCKED,
+                login_type=LoginType.LOCAL,
             ),
         ]
         session.add_all(users)
@@ -260,6 +264,7 @@ def regular_user_info():
         'email': 'user@vulncode-db.com',
         'name': 'User McUser',
         'picture': 'https://google.com/',
+        'type': 'LOCAL',
     }
     return user_info
 
@@ -269,6 +274,7 @@ def admin_user_info():
         'email': 'admin@vulncode-db.com',
         'name': 'Admin McAdmin',
         'picture': 'https://google.com/',
+        'type': 'LOCAL',
     }
     return user_info
 
@@ -278,6 +284,7 @@ def blocked_user_info():
         'email': 'blocked@vulncode-db.com',
         'name': 'Blocked User',
         'picture': 'https://google.com/',
+        'type': 'LOCAL',
     }
     return user_info
 
