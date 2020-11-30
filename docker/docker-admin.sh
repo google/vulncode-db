@@ -168,11 +168,10 @@ function start_shell() {
 }
 
 function start_application() {
-  if [ "$#" -eq 1 ]
+  if [ "$#" -gt 0 ]
   then
     info "Starting individual service."
-    USE_SERVICE=$1
-    dock-comp up $USE_SERVICE
+    dock-comp up "$@"
     return
   fi
   info "Available resources when deployed:"

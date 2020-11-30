@@ -34,6 +34,15 @@ class PredefinedRoles(enum.Enum):
         return str(self.name)
 
 
+class LoginType(str, enum.Enum):
+    LOCAL = "LOCAL"
+    GOOGLE = "GOOGLE"
+    GITHUB = "GITHUB"
+
+    def __str__(self):
+        return str(self.name)
+
+
 class UserRole(BaseModel):
     role_id = Column(Integer,
                      ForeignKey('role.id'),
@@ -100,6 +109,7 @@ class User(MainBase):
     hide_picture = Column(Boolean, nullable=False, default=True)
     invite_code_id = Column(Integer, ForeignKey(InviteCode.id), nullable=True)
     invite_code = relationship(InviteCode, back_populates='users')
+    login_type = Column(Enum(LoginType), nullable=True)
 
     @property
     def name(self):

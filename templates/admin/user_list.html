@@ -74,6 +74,7 @@
                     <tr>
                       <th scope="col"><input id="global-checkbox" type="checkbox"></th>
                       <th scope="col">ID</th>
+                      <th scope="col">Type</th>
                       <th scope="col">Username</th>
                       <th scope="col">State</th>
                       <th scope="col">Roles</th>
@@ -85,6 +86,7 @@
                     <tr>
                       <td scope="row"><input type="checkbox" name="user" value="{{ user.id }}"></td>
                       <td>{{ user.id }}</td>
+                      <td>{{ user.login_type.name }}</td>
                       <td>{{ print_user(user) }}</td>
                       <td>{{ user.state.name }}</td>
                       <td>{{ user.roles|join(', ') }}</td>
