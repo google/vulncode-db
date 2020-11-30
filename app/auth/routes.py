@@ -245,6 +245,12 @@ def load_user():
 
     data = session["user_info"]
     email = data["email"]
+
+    # Make sure old and incompatible sessions get dropped.
+    if "type" not in data.keys():
+        logout()
+        return
+
     login_type = LoginType(data["type"])
 
     if login_type in (LoginType.GOOGLE, LoginType.LOCAL):

@@ -20,10 +20,12 @@
       {% if g.user %}
       <li class="nav-item">
         <span class="navbar-brand">
-        {% if g.user.profile_picture %}
-          <img src="{{ g.user.profile_picture_resized(30) }}" class="avatar_small d-inline-block align-top">
-        {% endif %}
-          <a href="{{ url_for("profile.index") }}">{{ g.user.full_name }}</a>
+          <a href="{{ url_for("profile.index") }}">
+            {% if g.user.profile_picture %}
+              <img src="{{ g.user.profile_picture_resized(30) }}" class="avatar_small d-inline-block align-top">
+            {% endif %}
+            {{ g.user.full_name }}
+          </a>
         </span>
       </li>
         {% if is_admin() %}

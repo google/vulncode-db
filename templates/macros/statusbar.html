@@ -34,7 +34,7 @@
                 <li class="{% if active_step >= 3 %}completed{% else %}active{% endif %}">
                     <a href="#!">
                         <span class="circle">{% if active_step >= 3 %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-paper-plane"></i>{% endif %}</span>
-                        <span class="label">Submission</span>
+                        <span class="label d-block">Submission</span>
                         {% if active_step < 3 %}<span class="label">Please {{ next_step }}</span>{% endif %}
                     </a>
                 </li>
@@ -43,7 +43,7 @@
                 <li class="{% if active_step >= 5 %}completed{% elif active_step >= 3 and active_step <= 5 %}active{% endif %}">
                     <a href="#!">
                         <span class="circle">{% if active_step >= 5 %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-clipboard-check"></i>{% endif %}</span>
-                        <span class="label">Review</span>
+                        <span class="label d-block">Review</span>
                         {% if active_step >= 3 and active_step < 5 %}<span class="label">Please {{ next_step }}</span>{% endif %}
                     </a>
                 </li>
@@ -52,7 +52,7 @@
                 <li class="{% if active_step >= 6 %}completed{% elif active_step == 5 %}active{% endif %}">
                     <a href="#!">
                         <span class="circle">{% if active_step >= 6 %}<i class="fas fa-check"></i>{% else %}<i class="far fa-check-circle"></i>{% endif %}</span>
-                        <span class="label">Publication</span>
+                        <span class="label d-block">Publication</span>
                         {% if active_step == 5 %}
                             <span class="label">Please {{ next_step }}</span>
                         {% elif active_step > 5 %}

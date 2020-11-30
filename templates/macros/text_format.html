@@ -13,7 +13,7 @@
   {% if cwes is iterable and cwes|length > 0 %}
     {% set data = [] %}
     {% for cwe in cwes %}
-      <b>{{ cwe.cwe_name or "?" }}</b> (<a href="http://cwe.mitre.org/data/definitions/{{ cwe.cwe_id | replace("CWE-", "") }}.html"
+      <b>{{ cwe.cwe_name or "?" }}</b> (<a href="https://cwe.mitre.org/data/definitions/{{ cwe.cwe_id | replace("CWE-", "") }}.html"
       class="text-info" target="_blank">{{ cwe.cwe_id }}</a>)<br />
     {% endfor %}
   {% endif %}
