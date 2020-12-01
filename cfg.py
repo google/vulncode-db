@@ -68,8 +68,8 @@ elif IS_QA:
     GCE_VCS_PROXY_URL = os.environ["VCS_PROXY_QA_URL"]
 elif IS_LOCAL:
     DEBUG = True
-    MYSQL_USER = os.getenv("MYSQL_LOCAL_USER", "")
-    MYSQL_PASS = os.getenv("MYSQL_LOCAL_PASS", "")
+    MYSQL_USER = os.getenv("MYSQL_LOCAL_USER", "root")
+    MYSQL_PASS = os.getenv("MYSQL_LOCAL_PASS", "pass")
     GCE_VCS_PROXY_URL = os.getenv("VCS_PROXY_LOCAL_URL", "")
 else:
     raise AssertionError("Invalid deployment mode detected.")
