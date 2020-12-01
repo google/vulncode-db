@@ -35,50 +35,48 @@ class PredefinedRoles(enum.Enum):
 
 
 class LoginType(str, enum.Enum):
-    LOCAL = 'LOCAL'
-    GOOGLE = 'GOOGLE'
-    GITHUB = 'GITHUB'
+    LOCAL = "LOCAL"
+    GOOGLE = "GOOGLE"
+    GITHUB = "GITHUB"
 
     def __str__(self):
         return str(self.name)
 
 
 class UserRole(BaseModel):
-    role_id = Column(Integer,
-                     ForeignKey('role.id'),
-                     nullable=False,
-                     primary_key=True)
-    user_id = Column(Integer,
-                     ForeignKey('user.id'),
-                     nullable=False,
-                     primary_key=True)
+    role_id = Column(Integer, ForeignKey("role.id"), nullable=False, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False, primary_key=True)
 
 
 class Role(MainBase):
     name = Column(String(256), nullable=False, unique=True)
-    users = relationship('User', secondary='user_role', back_populates='roles')
+    users = relationship("User", secondary="user_role", back_populates="roles")
 
     def __str__(self):
         return str(self.name)
 
 
 class InviteCode(MainBase):
-    code = Column(String(36),
-                  unique=True,
-                  nullable=False,
-                  index=True,
-                  default=lambda: str(uuid.uuid4()))
+    code = Column(
+        String(36),
+        unique=True,
+        nullable=False,
+        index=True,
+        default=lambda: str(uuid.uuid4()),
+    )
     remaining_uses = Column(Integer, nullable=False, default=1)
     description = Column(String(255), nullable=False)
-    roles = relationship(Role, secondary='invite_role')
-    users = relationship('User', back_populates='invite_code')
+    roles = relationship(Role, secondary="invite_role")
+    users = relationship("User", back_populates="invite_code")
 
 
 invite_roles = Table(
-    'invite_role', BaseModel.metadata,
-    Column('invite_id', ForeignKey(InviteCode.id), nullable=False),
-    Column('role_id', ForeignKey(Role.id), nullable=False),
-    PrimaryKeyConstraint('invite_id', 'role_id'))
+    "invite_role",
+    BaseModel.metadata,
+    Column("invite_id", ForeignKey(InviteCode.id), nullable=False),
+    Column("role_id", ForeignKey(Role.id), nullable=False),
+    PrimaryKeyConstraint("invite_id", "role_id"),
+)
 
 
 class UserState(StateMachine):
@@ -101,28 +99,26 @@ class User(MainBase):
     email = Column(String(256), unique=True, nullable=False)
     full_name = Column(String(256), nullable=True)
     profile_picture = Column(String(256), nullable=True)
-    roles = relationship(Role, secondary='user_role', back_populates='users')
-    state = Column(Enum(UserState),
-                   default=UserState.REGISTERED,
-                   nullable=False)
+    roles = relationship(Role, secondary="user_role", back_populates="users")
+    state = Column(Enum(UserState), default=UserState.REGISTERED, nullable=False)
     hide_name = Column(Boolean, nullable=False, default=True)
     hide_picture = Column(Boolean, nullable=False, default=True)
     invite_code_id = Column(Integer, ForeignKey(InviteCode.id), nullable=True)
-    invite_code = relationship(InviteCode, back_populates='users')
+    invite_code = relationship(InviteCode, back_populates="users")
     login_type = Column(Enum(LoginType), nullable=True)
 
     @property
     def name(self):
         if self.hide_name:
-            return f'User {self.id}'
+            return f"User {self.id}"
         if self.full_name:
             return self.full_name
-        return self.email.split('@', 1)[0]
+        return self.email.split("@", 1)[0]
 
     @property
     def avatar(self):
         if self.hide_picture or not self.profile_picture:
-            return ''
+            return ""
         return self.profile_picture
 
     def profile_picture_resized(self, px_sz):
@@ -136,19 +132,19 @@ class User(MainBase):
 
     @staticmethod
     def _resize(pic, px_sz):
-        if 'googleusercontent.com' in pic:
-            pic = re.sub(r'/photo', f'/s{px_sz}-cc-rw/photo', pic)
-            pic = re.sub(r'([=/])s\d+-', f'\\1s{px_sz}-', pic)
+        if "googleusercontent.com" in pic:
+            pic = re.sub(r"/photo", f"/s{px_sz}-cc-rw/photo", pic)
+            pic = re.sub(r"([=/])s\d+-", f"\\1s{px_sz}-", pic)
         return pic
 
     def to_json(self):
         """Serialize object properties as dict."""
         # TODO: Refactor how we will surface this.
         return {
-            'name': self.name,
-            'id': self.id,
-            'profile_link': self.profile_link,
-            'avatar': self.avatar,
+            "name": self.name,
+            "id": self.id,
+            "profile_link": self.profile_link,
+            "avatar": self.avatar,
         }
 
     def _has_role(self, role):
@@ -185,7 +181,7 @@ class User(MainBase):
 
     @property
     def profile_link(self):
-        return url_for('profile.user_profile', user_id=self.id)
+        return url_for("profile.user_profile", user_id=self.id)
 
 
 # must be set after all definitions

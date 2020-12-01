@@ -16,33 +16,33 @@ import pytest
 
 @pytest.mark.integration
 def test_existing_product_with_vulns(client):
-    resp = client.get('/product/Vendor 1/Product 1')
-    assert b'Vendor 1' in resp.data
-    assert b'Product 1' in resp.data
-    assert b'No results found' not in resp.data
-    assert b'Annotated' in resp.data
+    resp = client.get("/product/Vendor 1/Product 1")
+    assert b"Vendor 1" in resp.data
+    assert b"Product 1" in resp.data
+    assert b"No results found" not in resp.data
+    assert b"Annotated" in resp.data
 
 
 @pytest.mark.integration
 def test_existing_product_without_vulns(client):
-    resp = client.get('/product/Vendor 11/Product 1')
-    assert b'Vendor 11' in resp.data
-    assert b'Product 1' in resp.data
-    assert b'No results found' not in resp.data
-    assert b'Annotated' in resp.data
+    resp = client.get("/product/Vendor 11/Product 1")
+    assert b"Vendor 11" in resp.data
+    assert b"Product 1" in resp.data
+    assert b"No results found" not in resp.data
+    assert b"Annotated" in resp.data
 
 
 @pytest.mark.integration
 def test_non_existing_product(client):
-    resp = client.get('/product/Vendor 1/No Product')
-    assert b'Vendor 1' in resp.data
-    assert b'No Product' in resp.data
-    assert b'No results found' in resp.data
+    resp = client.get("/product/Vendor 1/No Product")
+    assert b"Vendor 1" in resp.data
+    assert b"No Product" in resp.data
+    assert b"No results found" in resp.data
 
 
 @pytest.mark.integration
 def test_non_existing_vendor(client):
-    resp = client.get('/product/No Vendor/Product 1')
-    assert b'No Vendor' in resp.data
-    assert b'Product 1' in resp.data
-    assert b'No results found' in resp.data
+    resp = client.get("/product/No Vendor/Product 1")
+    assert b"No Vendor" in resp.data
+    assert b"Product 1" in resp.data
+    assert b"No results found" in resp.data

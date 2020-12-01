@@ -10,25 +10,42 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fb11cb6a2398'
-down_revision = '4d799bc13b95'
+revision = "fb11cb6a2398"
+down_revision = "4d799bc13b95"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     op.alter_column(
-        table_name='vulnerability',
-        column_name='state',
-        type_=sa.Enum('NEW', 'NEEDS_IMPROVEMENT', 'READY', 'IN_REVIEW', 'REVIEWED', 'PUBLISHED', 'ARCHIVED', name='vulnerabilitystate'),
-        nullable=False
+        table_name="vulnerability",
+        column_name="state",
+        type_=sa.Enum(
+            "NEW",
+            "NEEDS_IMPROVEMENT",
+            "READY",
+            "IN_REVIEW",
+            "REVIEWED",
+            "PUBLISHED",
+            "ARCHIVED",
+            name="vulnerabilitystate",
+        ),
+        nullable=False,
     )
 
 
 def downgrade():
     op.alter_column(
-        table_name='vulnerability',
-        column_name='state',
-        type_=sa.Enum('NEW', 'READY', 'IN_REVIEW', 'REVIEWED', 'PUBLISHED', 'ARCHIVED', name='vulnerabilitystate'),
-        nullable=False
+        table_name="vulnerability",
+        column_name="state",
+        type_=sa.Enum(
+            "NEW",
+            "READY",
+            "IN_REVIEW",
+            "REVIEWED",
+            "PUBLISHED",
+            "ARCHIVED",
+            name="vulnerabilitystate",
+        ),
+        nullable=False,
     )

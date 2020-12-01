@@ -13,14 +13,18 @@
 # limitations under the License.
 
 from data.utils import populate_models
-from data.models.user import (User, InviteCode)
-from data.models.vulnerability import (RepositoryFileComments,
-                                       RepositoryFileMarkers, RepositoryFiles,
-                                       RepositoryFilesSchema, Vulnerability,
-                                       VulnerabilityGitCommits,
-                                       VulnerabilityResources,
-                                       VulnerabilityState, Product)
-from data.models.nvd import (Cpe, Description, Nvd, Reference,
-                             default_nvd_view_options)
+from data.models.user import User, InviteCode
+from data.models.vulnerability import (
+    RepositoryFileComments,
+    RepositoryFileMarkers,
+    RepositoryFiles,
+    RepositoryFilesSchema,
+    Vulnerability,
+    VulnerabilityGitCommits,
+    VulnerabilityResources,
+    VulnerabilityState,
+    Product,
+)
+from data.models.nvd import Cpe, Description, Nvd, Reference, default_nvd_view_options
 
 __all__ = populate_models(__name__)

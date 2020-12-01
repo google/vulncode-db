@@ -15,17 +15,17 @@ from data.utils import populate_models
 
 
 def test_populate_models_returns_empty_array_on_unknown_module():
-    assert populate_models('this_module_does_not_exist') == []
+    assert populate_models("this_module_does_not_exist") == []
 
 
 def test_populate_models_returns_empty_array_on_invalid_modules():
-    assert populate_models('sys') == []
-    assert populate_models('lib') == []
-    assert populate_models('data') == []
+    assert populate_models("sys") == []
+    assert populate_models("lib") == []
+    assert populate_models("data") == []
 
 
 def test_populate_models_returns_models():
-    models = populate_models('data.models')
+    models = populate_models("data.models")
     assert len(models) > 0
-    assert 'Vulnerability' in models
-    assert 'Nvd' in models
+    assert "Vulnerability" in models
+    assert "Nvd" in models

@@ -13,9 +13,9 @@
 # limitations under the License.
 from abc import abstractmethod, ABC
 
-HASH_PLACEHOLDER = '--ITEM_HASH--'
-PATH_PLACEHOLDER = '--PATH_PLACE--'
-VCDB_ID_PLACEHOLDER = '--ID_PLACE--'
+HASH_PLACEHOLDER = "--ITEM_HASH--"
+PATH_PLACEHOLDER = "--PATH_PLACE--"
+VCDB_ID_PLACEHOLDER = "--ID_PLACE--"
 
 
 class CommitStats:
@@ -34,8 +34,7 @@ class CommitFilesMetadata:
 
 
 class CommitMetadata:
-    def __init__(self, parent_commit_hash, date, message, stats,
-                 files_metadata):
+    def __init__(self, parent_commit_hash, date, message, stats, files_metadata):
         self.parent_commit_hash = parent_commit_hash
         self.date = date
         self.message = message
@@ -95,24 +94,20 @@ class VcsHandler(ABC):
         files = []
 
         commit_data = {
-            'message': commit_metadata.message,
-            'date': commit_metadata.date,
-            'parent_hash': commit_metadata.parent_commit_hash,
-            'stats': commit_metadata.stats.__dict__,
-            'files': [f.__dict__ for f in commit_metadata.files_metadata],
+            "message": commit_metadata.message,
+            "date": commit_metadata.date,
+            "parent_hash": commit_metadata.parent_commit_hash,
+            "stats": commit_metadata.stats.__dict__,
+            "files": [f.__dict__ for f in commit_metadata.files_metadata],
         }
 
         for root_file in git_tree:
             file = {
-                'path': root_file.path,
-                'sha': root_file.sha,
-                'type': root_file.type,
+                "path": root_file.path,
+                "sha": root_file.sha,
+                "type": root_file.type,
             }
             files.append(file)
 
-        data = {
-            'commit': commit_data,
-            'patched_files': patched_files,
-            'files': files
-        }
+        data = {"commit": commit_data, "patched_files": patched_files, "files": files}
         return data

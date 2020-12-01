@@ -28,7 +28,7 @@ from sqlalchemy.ext.declarative import AbstractConcreteBase
 
 
 class Affect(AbstractConcreteBase):
-    __tablename__ = 'affects'
+    __tablename__ = "affects"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -41,7 +41,7 @@ class Affect(AbstractConcreteBase):
 
 
 class Cert(AbstractConcreteBase):
-    __tablename__ = 'certs'
+    __tablename__ = "certs"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(DateTime)
@@ -54,7 +54,7 @@ class Cert(AbstractConcreteBase):
 
 
 class Cpe(AbstractConcreteBase):
-    __tablename__ = 'cpes'
+    __tablename__ = "cpes"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -84,7 +84,7 @@ class Cpe(AbstractConcreteBase):
 
 
 class CveDetail(AbstractConcreteBase):
-    __tablename__ = 'cve_details'
+    __tablename__ = "cve_details"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -94,7 +94,7 @@ class CveDetail(AbstractConcreteBase):
 
 
 class Cvss2(AbstractConcreteBase):
-    __tablename__ = 'cvss2'
+    __tablename__ = "cvss2"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -114,7 +114,7 @@ class Cvss2(AbstractConcreteBase):
 
 
 class Cvss2Extra(AbstractConcreteBase):
-    __tablename__ = 'cvss2_extras'
+    __tablename__ = "cvss2_extras"
 
     nvd_json_id = Column(INTEGER(10), index=True)
     id = Column(INTEGER(10), primary_key=True)
@@ -141,7 +141,7 @@ class Cvss2Extra(AbstractConcreteBase):
 
 
 class Cvss3(AbstractConcreteBase):
-    __tablename__ = 'cvss3'
+    __tablename__ = "cvss3"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -165,7 +165,7 @@ class Cvss3(AbstractConcreteBase):
 
 
 class Cwe(AbstractConcreteBase):
-    __tablename__ = 'cwes'
+    __tablename__ = "cwes"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -178,7 +178,7 @@ class Cwe(AbstractConcreteBase):
 
 
 class Description(AbstractConcreteBase):
-    __tablename__ = 'descriptions'
+    __tablename__ = "descriptions"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -190,7 +190,7 @@ class Description(AbstractConcreteBase):
 
 
 class EnvCpe(AbstractConcreteBase):
-    __tablename__ = 'env_cpes'
+    __tablename__ = "env_cpes"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -218,7 +218,7 @@ class EnvCpe(AbstractConcreteBase):
 
 
 class FeedMeta(AbstractConcreteBase):
-    __tablename__ = 'feed_meta'
+    __tablename__ = "feed_meta"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -230,7 +230,7 @@ class FeedMeta(AbstractConcreteBase):
 
 
 class Jvn(AbstractConcreteBase):
-    __tablename__ = 'jvns'
+    __tablename__ = "jvns"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -247,7 +247,7 @@ class Jvn(AbstractConcreteBase):
 
 
 class NvdJson(AbstractConcreteBase):
-    __tablename__ = 'nvd_jsons'
+    __tablename__ = "nvd_jsons"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -260,7 +260,7 @@ class NvdJson(AbstractConcreteBase):
 
 
 class NvdXml(AbstractConcreteBase):
-    __tablename__ = 'nvd_xmls'
+    __tablename__ = "nvd_xmls"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)
@@ -274,7 +274,7 @@ class NvdXml(AbstractConcreteBase):
 
 
 class Reference(AbstractConcreteBase):
-    __tablename__ = 'references'
+    __tablename__ = "references"
 
     id = Column(INTEGER(10), primary_key=True)
     created_at = Column(TIMESTAMP)

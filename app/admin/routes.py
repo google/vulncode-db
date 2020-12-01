@@ -19,7 +19,7 @@ from data.database import DEFAULT_DATABASE
 from data.models.user import InviteCode, User, UserState
 from data.models.user import Role
 
-bp = Blueprint('admin', __name__, url_prefix='/admin')
+bp = Blueprint("admin", __name__, url_prefix="/admin")
 db = DEFAULT_DATABASE
 
 
@@ -75,86 +75,88 @@ def _change_state(role_id, user_ids, new_state):
         yield user
 
 
-@bp.route('/users', methods=['GET', 'POST'])
+@bp.route("/users", methods=["GET", "POST"])
 @admin_required()
 def users():
-    if request.method == 'POST':
-        user_ids = request.form.getlist('user', type=int)
-        action = [
-            action for action in request.form.getlist('action') if action
-        ][0]
-        role_id = request.form.get('role')
-        new_state = request.form.get('state')
+    if request.method == "POST":
+        user_ids = request.form.getlist("user", type=int)
+        action = [action for action in request.form.getlist("action") if action][0]
+        role_id = request.form.get("role")
+        new_state = request.form.get("state")
         changed_users = []
         functions = {
-            'assign': _assign,
-            'unassign': _unassign,
-            'delete': _delete,
-            'enable': _enable,
-            'block': _block,
-            'state': _change_state,
+            "assign": _assign,
+            "unassign": _unassign,
+            "delete": _delete,
+            "enable": _enable,
+            "block": _block,
+            "state": _change_state,
         }
         if action in functions:
-            changed_users.extend(functions[action](role_id=role_id,
-                                                   user_ids=user_ids,
-                                                   new_state=new_state))
+            changed_users.extend(
+                functions[action](
+                    role_id=role_id, user_ids=user_ids, new_state=new_state
+                )
+            )
         else:
-            flash('Invalid action', 'danger')
+            flash("Invalid action", "danger")
 
         if changed_users:
             db.session.add_all(changed_users)
             db.session.commit()
-            flash(f'Modified {len(changed_users)} user(s)', 'success')
+            flash(f"Modified {len(changed_users)} user(s)", "success")
 
-    name = request.args.get('name', default='')
+    name = request.args.get("name", default="")
     if name:
-        query = f'%{name}%'
+        query = f"%{name}%"
         user_list = User.query.filter(
-            or_(User.email.like(query),
-                User.full_name.like(query))).paginate()
+            or_(User.email.like(query), User.full_name.like(query))
+        ).paginate()
     else:
         user_list = User.query.paginate()
     roles = Role.query.all()
 
-    return render_template('admin/user_list.html',
-                           users=user_list,
-                           roles=roles,
-                           states=list(UserState),
-                           filter=name)
+    return render_template(
+        "admin/user_list.html",
+        users=user_list,
+        roles=roles,
+        states=list(UserState),
+        filter=name,
+    )
 
 
 def _create_invite_token():
-    amount = request.form.get('amount', type=int)
+    amount = request.form.get("amount", type=int)
     if not amount or amount < 1:
-        flash('Invite codes have to be valid for at least one use', 'danger')
+        flash("Invite codes have to be valid for at least one use", "danger")
         return
-    roles = request.form.getlist('roles', type=int)
+    roles = request.form.getlist("roles", type=int)
     if not roles or len(roles) == 0:
-        flash('At least one role should be selected', 'danger')
+        flash("At least one role should be selected", "danger")
         return
-    desc = request.form.get('desc')
+    desc = request.form.get("desc")
     if not desc:
-        flash('Description required', 'danger')
+        flash("Description required", "danger")
         return
 
     num_roles = len(roles)
     roles = Role.query.filter(Role.id.in_(roles)).all()
     if len(roles) != num_roles:
-        flash('Unknown roles provided', 'danger')
+        flash("Unknown roles provided", "danger")
         return
 
-    db.session.add(
-        InviteCode(roles=roles, remaining_uses=amount, description=desc))
+    db.session.add(InviteCode(roles=roles, remaining_uses=amount, description=desc))
     db.session.commit()
 
 
-@bp.route('/invite_codes', methods=['GET', 'POST'])
+@bp.route("/invite_codes", methods=["GET", "POST"])
 @admin_required()
 def invite_codes():
-    if request.method == 'POST':
-        if request.form.get('expire_code'):
+    if request.method == "POST":
+        if request.form.get("expire_code"):
             icode = InviteCode.query.get_or_404(
-                request.form.get('expire_code', type=int))
+                request.form.get("expire_code", type=int)
+            )
             icode.remaining_uses = 0
             db.session.add(icode)
             db.session.commit()
@@ -162,6 +164,4 @@ def invite_codes():
             _create_invite_token()
     invites = InviteCode.query.all()
     roles = Role.query.all()
-    return render_template('admin/invite_codes.html',
-                           roles=roles,
-                           invite_codes=invites)
+    return render_template("admin/invite_codes.html", roles=roles, invite_codes=invites)

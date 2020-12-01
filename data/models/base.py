@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 class SQLAlchemy(SQLAlchemyBase):
     def apply_pool_defaults(self, app, options):
         super().apply_pool_defaults(app, options)
-        options['pool_pre_ping'] = True
+        options["pool_pre_ping"] = True
 
 
 db = SQLAlchemy()
@@ -70,12 +70,13 @@ class MainBase(BaseModel):
             a dictionary mapping the attributes to (new, old) tuples or a
             recursive version if the attribute is a list or reference.
         """
+
         def inner(current) -> Optional[Union[List[Any], Changes]]:
             if isinstance(current, list):
                 res = [inner(item) for item in current]
                 if any(res):
                     return res
-            elif hasattr(current, 'model_changes'):
+            elif hasattr(current, "model_changes"):
                 return current.model_changes(already_tested=already_tested)
             return None
 
@@ -112,21 +113,21 @@ class MainBase(BaseModel):
         already_tested.add(id(self))
         already_tested.add(id(other))
         if id(self) == id(other):  # identity cache
-            log.warning('Comparing the same instance (%r). Identity cache?',
-                        self)
+            log.warning("Comparing the same instance (%r). Identity cache?", self)
             return self.model_changes()
         clz = type(self)
         oclz = type(other)
         if not isinstance(other, clz):
-            raise TypeError('Instance of {} expected. Got {}'.format(
-                clz.__name__, oclz.__name__))
+            raise TypeError(
+                "Instance of {} expected. Got {}".format(clz.__name__, oclz.__name__)
+            )
 
         def innerdiff(current, other) -> Optional[ChangeUnion]:
             if current is None and other is None:
                 return None
             if current is None or other is None:
                 return (current, other)
-            if hasattr(current, 'diff'):
+            if hasattr(current, "diff"):
                 return current.diff(other, already_tested=already_tested)
             if isinstance(current, list) and isinstance(other, list):
                 res = []
@@ -168,7 +169,7 @@ class NvdBase(BaseModel):
     @declared_attr
     def __table_args__(cls):  # pylint: disable=no-self-argument
         indices = []
-        idx_format = 'idx_{tbl_name}_{col_name}'
+        idx_format = "idx_{tbl_name}_{col_name}"
         for key in cls.__dict__:
             attribute = cls.__dict__[key]
             # pylint: disable=no-member
@@ -180,13 +181,12 @@ class NvdBase(BaseModel):
             attribute.index = None
             # Create a custom index here.
             indices.append(
-                Index(
-                    idx_format.format(tbl_name=cls.__tablename__,
-                                      col_name=key), key))
-        indices.append({'schema': 'cve'})
+                Index(idx_format.format(tbl_name=cls.__tablename__, col_name=key), key)
+            )
+        indices.append({"schema": "cve"})
         return tuple(indices)
 
 
 class CweBase(BaseModel):
-    __table_args__ = {'schema': 'cwe'}
+    __table_args__ = {"schema": "cwe"}
     __abstract__ = True

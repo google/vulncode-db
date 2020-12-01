@@ -19,7 +19,7 @@ from data.utils import populate_models
 
 
 class CweData(CweBase):
-    __tablename__ = 'cwe_data'
+    __tablename__ = "cwe_data"
 
     cwe_id = Column(String(255), primary_key=True, index=True)
     cwe_name = Column(Text)

@@ -39,22 +39,12 @@ else
   error 'Please install eslint. Install node.js and run: npm install'
 fi
 
-if which yapf &>/dev/null
+if which black &>/dev/null
 then
-  info 'Formatting python files with yapf'
-  find . -maxdepth 1 -name "*.py" -print -exec yapf -i {} \; | awk '{print "Reformatting "$1}'
-  yapf -p -vv -i --recursive app lib data tests || fatal 'Error during formatting python files'
+  info 'Formatting python files with black'
+  black app lib data tests migrations tools *.py || fatal 'Error during formatting python files'
 else
-  fatal 'Please install yapf: pip3 install yapf'
+  fatal 'Please install black: pip3 install black'
 fi
-
-#if which black &>/dev/null
-#then
-#  info 'Formatting python files with black'
-#  find . -maxdepth 1 -name "*.py" -exec black {} \;
-#  black app lib data || fatal 'Error during formatting python files'
-#else
-#  fatal 'Please install black: pip3 install black'
-#fi
 
 success "Done. Happy coding :)"

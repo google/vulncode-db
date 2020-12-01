@@ -55,7 +55,7 @@ from data.models import Vulnerability
 
 def create_app(test_config=None):
     """Application factory."""
-    app = Flask('main', static_url_path='', template_folder=cfg.TEMPLATES_DIR)
+    app = Flask("main", static_url_path="", template_folder=cfg.TEMPLATES_DIR)
 
     # Load the Flask configuration parameters from a global config file.
     app.config.from_object(cfg)
@@ -88,16 +88,16 @@ def register_custom_helpers(app):
         return urljoin(full_url, urlparse(full_url).path)
 
     def is_admin_user():
-        return bool(getattr(g, 'user') and g.user.is_admin())
+        return bool(getattr(g, "user") and g.user.is_admin())
 
     def is_reviewer():
-        return getattr(g, 'user') and g.user.is_reviewer()
+        return getattr(g, "user") and g.user.is_reviewer()
 
-    def highlight(value, language='python'):
-        formatter = pygments.formatters.HtmlFormatter(style='colorful')
+    def highlight(value, language="python"):
+        formatter = pygments.formatters.HtmlFormatter(style="colorful")
         lexer = pygments.lexers.get_lexer_by_name(language)
         result = pygments.highlight(value, lexer, formatter)
-        result += '<style>{}</style>'.format(formatter.get_style_defs())
+        result += "<style>{}</style>".format(formatter.get_style_defs())
         result = jinja2.Markup(result)
         return result
 
@@ -107,28 +107,28 @@ def register_custom_helpers(app):
     def template_exists(name):
         return name in app.jinja_loader.list_templates()
 
-    app.jinja_env.globals['url_for_self'] = url_for_self
-    app.jinja_env.globals['template_exists'] = template_exists
-    app.jinja_env.globals['is_admin'] = is_admin_user
-    app.jinja_env.globals['is_reviewer'] = is_reviewer
-    app.jinja_env.globals['url_for_no_querystring'] = url_for_no_querystring
-    app.jinja_env.globals['vuln_helper'] = Vulnerability
-    app.jinja_env.globals['can'] = can_do
-    app.jinja_env.filters['highlight'] = highlight
+    app.jinja_env.globals["url_for_self"] = url_for_self
+    app.jinja_env.globals["template_exists"] = template_exists
+    app.jinja_env.globals["is_admin"] = is_admin_user
+    app.jinja_env.globals["is_reviewer"] = is_reviewer
+    app.jinja_env.globals["url_for_no_querystring"] = url_for_no_querystring
+    app.jinja_env.globals["vuln_helper"] = Vulnerability
+    app.jinja_env.globals["can"] = can_do
+    app.jinja_env.filters["highlight"] = highlight
 
 
 def register_route_checks(app):
     def maintenance_check():
         if not cfg.MAINTENANCE_MODE:
             return None
-        allowed_prefixes = ['/about', '/static', '/auth']
+        allowed_prefixes = ["/about", "/static", "/auth"]
         for prefix in allowed_prefixes:
             if request.path.startswith(prefix):
                 return None
         if is_admin():
             return None
-        if request.path != url_for('frontend.maintenance'):
-            return redirect(url_for('frontend.maintenance'))
+        if request.path != url_for("frontend.maintenance"):
+            return redirect(url_for("frontend.maintenance"))
 
     @app.before_request
     def before_request():  # pylint: disable=unused-variable
@@ -144,7 +144,7 @@ def register_extensions(app, test_config=None):
     # Note: no JS/CSS or other resources are used from this package though.
     Bootstrap(app)
 
-    public_paths = ['/favicon.ico', '/static/']
+    public_paths = ["/favicon.ico", "/static/"]
 
     # Setup CSRF protection.
     csrf = CSRFProtect()
@@ -160,13 +160,14 @@ def register_extensions(app, test_config=None):
         # See: https://flask-debugtoolbar.readthedocs.io/en/latest/
         DebugToolbarExtension(app)
         csrf.exempt(debug_toolbar_bp)
-        public_paths.append('/_debug_toolbar/')
+        public_paths.append("/_debug_toolbar/")
 
     def always_authorize():
         for path in public_paths:
             if request.path.startswith(path):
-                logging.warning('Bypassing ACL check for %s (matches %s)',
-                                request.path, path)
+                logging.warning(
+                    "Bypassing ACL check for %s (matches %s)", request.path, path
+                )
                 request._authorized = True  # pylint: disable=protected-access
                 return
 
@@ -180,8 +181,11 @@ def register_extensions(app, test_config=None):
         try:
             return bouncer.check_authorization(response)
         except Forbidden:
-            logging.warning('Automatically denied access to response %d of %s',
-                            response.status_code, request.path)
+            logging.warning(
+                "Automatically denied access to response %d of %s",
+                response.status_code,
+                request.path,
+            )
             raise
 
     app.after_request(check_or_404)

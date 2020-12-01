@@ -14,12 +14,12 @@
 
 from flask import Blueprint
 
-bp = Blueprint('vcs_proxy', __name__)
+bp = Blueprint("vcs_proxy", __name__)
 
 
 # TODO: Refactor this to be automatically determined for the VCS proxy and
 #  main application.
 # Note: Keep this in sync with the route in gce_vcs_proxy.py.
-@bp.route('/main_api')
+@bp.route("/main_api")
 def main_api():
     pass

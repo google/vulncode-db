@@ -26,12 +26,12 @@ from lib.vcs_handler.vcs_handler import (
 from app.exceptions import InvalidIdentifierException
 
 __all__ = [
-    'VCDB_ID_PLACEHOLDER',
-    'HASH_PLACEHOLDER',
-    'PATH_PLACEHOLDER',
+    "VCDB_ID_PLACEHOLDER",
+    "HASH_PLACEHOLDER",
+    "PATH_PLACEHOLDER",
 ]
 
-T = TypeVar('T')  # pylint: disable=invalid-name
+T = TypeVar("T")  # pylint: disable=invalid-name
 
 
 # https://github.com/python/mypy/issues/4717#issuecomment-582273171
@@ -83,19 +83,21 @@ def get_vcs_handler(app, resource_url: str) -> Optional[VcsHandler]:
         try:
             new_handler = vcs_handler(app, resource_url)
             logging.debug(
-                'Parsing %s with %s succeeded',
+                "Parsing %s with %s succeeded",
                 resource_url,
                 vcs_handler.__name__,
             )
             break
         except InvalidIdentifierException as ex:
-            logging.debug('Parsing %s with %s failed: %s', resource_url,
-                          vcs_handler.__name__, ex)
+            logging.debug(
+                "Parsing %s with %s failed: %s", resource_url, vcs_handler.__name__, ex
+            )
     return new_handler
 
 
-def get_vcs_handler_by_repo_hash(app, repo_url: str,
-                                 commit_hash: str) -> Optional[VcsHandler]:
+def get_vcs_handler_by_repo_hash(
+    app, repo_url: str, commit_hash: str
+) -> Optional[VcsHandler]:
     """
     Tries to instantiate a vcs handler with the given repo url and hash.
 
@@ -114,13 +116,18 @@ def get_vcs_handler_by_repo_hash(app, repo_url: str,
             new_handler = vcs_handler(app)
             new_handler.parse_url_and_hash(repo_url, commit_hash)
             logging.debug(
-                'Parsing %s+%s with %s succeeded',
+                "Parsing %s+%s with %s succeeded",
                 repo_url,
                 commit_hash,
                 vcs_handler.__name__,
             )
             break
         except InvalidIdentifierException as ex:
-            logging.debug('Parsing %s+%s with %s failed: %s', repo_url,
-                          commit_hash, vcs_handler.__name__, ex)
+            logging.debug(
+                "Parsing %s+%s with %s failed: %s",
+                repo_url,
+                commit_hash,
+                vcs_handler.__name__,
+                ex,
+            )
     return new_handler

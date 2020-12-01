@@ -13,15 +13,14 @@
 # limitations under the License.
 import logging
 
-from flask_bouncer import (  # type: ignore
-    Bouncer, requires, ensure, skip_authorization)
+from flask_bouncer import Bouncer, requires, ensure, skip_authorization  # type: ignore
 from bouncer.models import RuleList  # type: ignore
 from bouncer.constants import ALL, MANAGE, READ  # type: ignore
 from werkzeug.exceptions import Forbidden
 
 from data.models.user import User
 
-__all__ = ['skip_authorization', 'bouncer', 'requires', 'ensure']
+__all__ = ["skip_authorization", "bouncer", "requires", "ensure"]
 
 bouncer = Bouncer()
 log = logging.getLogger(__name__)
@@ -31,7 +30,7 @@ log = logging.getLogger(__name__)
 def authorize(user: User, they: RuleList):
     def per_role(cls):
         """Reads _permissions from the given class and creates rules from it."""
-        perms = getattr(cls, '_permissions')
+        perms = getattr(cls, "_permissions")
         if perms is None or user is None:
             return
 
@@ -50,7 +49,7 @@ def authorize(user: User, they: RuleList):
                 elif isinstance(check, dict):
                     they.can(action, cls, **check)
                 # based on check function
-                elif hasattr(check, '__call__'):
+                elif hasattr(check, "__call__"):
 
                     def gen_wrapper(check):
                         def wrapper(subject):
@@ -65,19 +64,23 @@ def authorize(user: User, they: RuleList):
     if user is not None:
         they.can(MANAGE, User, id=user.id)
         they.can(READ, User)
-        they.can('READ_OWN', 'Proposal')
+        they.can("READ_OWN", "Proposal")
         if user.is_reviewer():
             # reviewers can see the list of proposals
-            they.can(READ, 'Proposal')
+            they.can(READ, "Proposal")
         if user.is_admin():
             # admins can do everything
             they.can(MANAGE, ALL)
 
+    # pylint: disable=import-outside-toplevel
     # import locally to avoid import cycle
-    from data.models.vulnerability import Vulnerability  # pylint: disable=import-outside-toplevel
+    from data.models.vulnerability import Vulnerability
+
+    # pylint: enable=import-outside-toplevel
+
     per_role(Vulnerability)
 
-    log.debug('%s can %s', user, they)
+    log.debug("%s can %s", user, they)
 
 
 def login_required(do_redirect=True):
@@ -93,5 +96,5 @@ def admin_required(do_redirect=False):
     try:
         return requires(MANAGE, ALL)
     except Forbidden as ex:
-        log.warning('Denied admin access: %s', ex.description)
+        log.warning("Denied admin access: %s", ex.description)
         raise
