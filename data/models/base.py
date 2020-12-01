@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 class SQLAlchemy(SQLAlchemyBase):
     def apply_pool_defaults(self, app, options):
         super().apply_pool_defaults(app, options)
-        options["pool_pre_ping"] = True
+        options['pool_pre_ping'] = True
 
 
 db = SQLAlchemy()
@@ -118,7 +118,7 @@ class MainBase(BaseModel):
         clz = type(self)
         oclz = type(other)
         if not isinstance(other, clz):
-            raise TypeError("Instance of {} expected. Got {}".format(
+            raise TypeError('Instance of {} expected. Got {}'.format(
                 clz.__name__, oclz.__name__))
 
         def innerdiff(current, other) -> Optional[ChangeUnion]:
@@ -168,7 +168,7 @@ class NvdBase(BaseModel):
     @declared_attr
     def __table_args__(cls):  # pylint: disable=no-self-argument
         indices = []
-        idx_format = "idx_{tbl_name}_{col_name}"
+        idx_format = 'idx_{tbl_name}_{col_name}'
         for key in cls.__dict__:
             attribute = cls.__dict__[key]
             # pylint: disable=no-member
@@ -183,10 +183,10 @@ class NvdBase(BaseModel):
                 Index(
                     idx_format.format(tbl_name=cls.__tablename__,
                                       col_name=key), key))
-        indices.append({"schema": "cve"})
+        indices.append({'schema': 'cve'})
         return tuple(indices)
 
 
 class CweBase(BaseModel):
-    __table_args__ = {"schema": "cwe"}
+    __table_args__ = {'schema': 'cwe'}
     __abstract__ = True

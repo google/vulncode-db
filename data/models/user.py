@@ -35,9 +35,9 @@ class PredefinedRoles(enum.Enum):
 
 
 class LoginType(str, enum.Enum):
-    LOCAL = "LOCAL"
-    GOOGLE = "GOOGLE"
-    GITHUB = "GITHUB"
+    LOCAL = 'LOCAL'
+    GOOGLE = 'GOOGLE'
+    GITHUB = 'GITHUB'
 
     def __str__(self):
         return str(self.name)
@@ -117,7 +117,7 @@ class User(MainBase):
             return f'User {self.id}'
         if self.full_name:
             return self.full_name
-        return self.email.split("@", 1)[0]
+        return self.email.split('@', 1)[0]
 
     @property
     def avatar(self):

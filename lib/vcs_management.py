@@ -83,13 +83,13 @@ def get_vcs_handler(app, resource_url: str) -> Optional[VcsHandler]:
         try:
             new_handler = vcs_handler(app, resource_url)
             logging.debug(
-                "Parsing %s with %s succeeded",
+                'Parsing %s with %s succeeded',
                 resource_url,
                 vcs_handler.__name__,
             )
             break
         except InvalidIdentifierException as ex:
-            logging.debug("Parsing %s with %s failed: %s", resource_url,
+            logging.debug('Parsing %s with %s failed: %s', resource_url,
                           vcs_handler.__name__, ex)
     return new_handler
 
@@ -114,13 +114,13 @@ def get_vcs_handler_by_repo_hash(app, repo_url: str,
             new_handler = vcs_handler(app)
             new_handler.parse_url_and_hash(repo_url, commit_hash)
             logging.debug(
-                "Parsing %s+%s with %s succeeded",
+                'Parsing %s+%s with %s succeeded',
                 repo_url,
                 commit_hash,
                 vcs_handler.__name__,
             )
             break
         except InvalidIdentifierException as ex:
-            logging.debug("Parsing %s+%s with %s failed: %s", repo_url,
+            logging.debug('Parsing %s+%s with %s failed: %s', repo_url,
                           commit_hash, vcs_handler.__name__, ex)
     return new_handler

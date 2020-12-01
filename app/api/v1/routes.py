@@ -19,7 +19,7 @@ from app.auth.acls import skip_authorization
 from data.database import DEFAULT_DATABASE as db
 from data.models import Vulnerability, Nvd, Description, Cpe
 
-bp = Blueprint("api_v1", __name__, url_prefix="/api/v1")
+bp = Blueprint('api_v1', __name__, url_prefix='/api/v1')
 
 
 @bp.errorhandler(403)
@@ -47,7 +47,7 @@ def api_500(ex=None):
         }), 500)
 
 
-@bp.route("/product/<vendor_id>/<product_id>")
+@bp.route('/product/<vendor_id>/<product_id>')
 @skip_authorization
 def vulns_by_product(vendor_id=None, product_id=None):
     """View vulns associated to product."""
@@ -58,64 +58,64 @@ def vulns_by_product(vendor_id=None, product_id=None):
              Cpe.product == product_id)).distinct().all()
     count = len(nvd_ids)
     cve = db.session.query(Nvd.cve_id).filter(Nvd.id.in_(nvd_ids)).all()
-    return jsonify({"count": count, "cve_ids": [x for x, in cve]})
+    return jsonify({'count': count, 'cve_ids': [x for x, in cve]})
 
 
 def _cpes_to_json(products):
     """Jsonify Cpes for API routes."""
     count = len(products)
     return jsonify({
-        "count": count,
-        "products": [{
+        'count': count,
+        'products': [{
             'product': x,
             'vendor': y
         } for x, y, in products]
     })  # yapf: disable
 
 
-@bp.route("/search/product:<name>")
+@bp.route('/search/product:<name>')
 @skip_authorization
 def search_product(name=None):
     """Return list of products matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        Cpe.product.like(f"%{name}%")).distinct().all()
+        Cpe.product.like(f'%{name}%')).distinct().all()
     return _cpes_to_json(products)
 
 
-@bp.route("/search/vendor:<name>")
+@bp.route('/search/vendor:<name>')
 @skip_authorization
 def search_vendor(name=None):
     """Return list of vendors matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        Cpe.vendor.like(f"%{name}%")).distinct().all()
+        Cpe.vendor.like(f'%{name}%')).distinct().all()
     return _cpes_to_json(products)
 
 
-@bp.route("/search/vendor_or_product:<name>")
-@bp.route("/search/product_or_vendor:<name>")
+@bp.route('/search/vendor_or_product:<name>')
+@bp.route('/search/product_or_vendor:<name>')
 @skip_authorization
 def search_product_or_vendor(name=None):
     """Return list of products and vendor matching name."""
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        or_(Cpe.product.like(f"%{name}%"),
-            Cpe.vendor.like(f"%{name}%"))).distinct().all()
+        or_(Cpe.product.like(f'%{name}%'),
+            Cpe.vendor.like(f'%{name}%'))).distinct().all()
     return _cpes_to_json(products)
 
 
-@bp.route("/search/vendor:<vendor>/product:<product>")
-@bp.route("/search/product:<product>/vendor:<vendor>")
+@bp.route('/search/vendor:<vendor>/product:<product>')
+@bp.route('/search/product:<product>/vendor:<vendor>')
 @skip_authorization
 def search_product_vendor(vendor=None, product=None):
     """Return list of products matching product and vendors matching vendor."""
     if product is None or vendor is None:
         return abort(404)
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        and_(Cpe.product.like(f"%{product}%"),
-             Cpe.vendor.like(f"%{vendor}%"))).distinct().all()
+        and_(Cpe.product.like(f'%{product}%'),
+             Cpe.vendor.like(f'%{vendor}%'))).distinct().all()
     return _cpes_to_json(products)
 
 
-@bp.route("/search/description:<description>")
+@bp.route('/search/description:<description>')
 @skip_authorization
 def vulns_for_description(description=None):
     """View vulns associated to description."""
@@ -125,10 +125,10 @@ def vulns_for_description(description=None):
         Description.value.like(f'%{description}%')).distinct().all()
     count = len(nvd_ids)
     cve = db.session.query(Nvd.cve_id).filter(Nvd.id.in_(nvd_ids)).all()
-    return jsonify({"count": count, "cve_ids": [x for x, in cve]})
+    return jsonify({'count': count, 'cve_ids': [x for x, in cve]})
 
 
-@bp.route("/<cve_id>")
+@bp.route('/<cve_id>')
 @skip_authorization
 def vuln_view(cve_id=None):
     if cve_id is None:
@@ -141,7 +141,7 @@ def vuln_view(cve_id=None):
     return jsonify(vuln.to_json())
 
 
-@bp.route("/details/<cve_id>")
+@bp.route('/details/<cve_id>')
 @skip_authorization
 def vuln_view_detailed(cve_id=None):
     if cve_id is None:

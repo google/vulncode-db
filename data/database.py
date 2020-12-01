@@ -54,7 +54,7 @@ class Database:
         for name in insp.get_table_names():
             for index in insp.get_indexes(name):
                 self.db.engine.execute(f"DROP INDEX IF EXISTS {index['name']}")
-        self.app.logger.warning("!!! Attention !!! FLUSHED the main database.")
+        self.app.logger.warning('!!! Attention !!! FLUSHED the main database.')
 
         # Create the database from all model definitions.
         self.db.create_all()
@@ -69,7 +69,7 @@ class Database:
         return self.db.session.query(*args, **kwargs)
 
 
-Database.manager.add_command("db", MigrateCommand)
+Database.manager.add_command('db', MigrateCommand)
 
 DEFAULT_DATABASE = Database()
 

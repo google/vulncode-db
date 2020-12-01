@@ -21,7 +21,7 @@ from werkzeug.exceptions import Forbidden
 
 from data.models.user import User
 
-__all__ = ["skip_authorization", "bouncer", "requires", "ensure"]
+__all__ = ['skip_authorization', 'bouncer', 'requires', 'ensure']
 
 bouncer = Bouncer()
 log = logging.getLogger(__name__)

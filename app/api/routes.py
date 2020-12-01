@@ -27,7 +27,7 @@ from data.models import (
 from data.models.vulnerability import ANNOTATE
 from lib.utils import create_json_response
 
-bp = Blueprint("api", __name__, url_prefix="/api")
+bp = Blueprint('api', __name__, url_prefix='/api')
 
 
 @bp.errorhandler(403)
@@ -63,13 +63,13 @@ def calculate_revision_updates(wrapper, old, new, attrs):
     new_keys = frozenset(list(new_dict.keys()))
 
     intersection = old_keys & new_keys
-    current_app.logger.debug(f"{len(old_keys)} old, {len(new_keys)} new, "
-                             f"{len(intersection)} intersecting")
+    current_app.logger.debug(f'{len(old_keys)} old, {len(new_keys)} new, '
+                             f'{len(intersection)} intersecting')
 
     # archive removed comments
     for k in old_keys - new_keys:
         old = old_dict[k]
-        current_app.logger.debug(f"Archiving {k!s}")
+        current_app.logger.debug(f'Archiving {k!s}')
         old.archive()
 
     # filter new comments
@@ -83,10 +83,10 @@ def calculate_revision_updates(wrapper, old, new, attrs):
             if getattr(old, attr) != getattr(new, attr):
                 break
         else:
-            current_app.logger.debug(f"No changes for {k!s}")
+            current_app.logger.debug(f'No changes for {k!s}')
             continue
         # archive old version
-        current_app.logger.debug(f"Archiving {k!s}")
+        current_app.logger.debug(f'Archiving {k!s}')
         old.archive()
         new.revision = old.revision + 1
         updated_comments.append(new)
@@ -109,7 +109,7 @@ class Hashable:
         return hash(self.value)
 
     def __repr__(self):
-        return f"{str(self)} ({hash(self)})"
+        return f'{str(self)} ({hash(self)})'
 
 
 class HashableComment(Hashable):
@@ -117,7 +117,7 @@ class HashableComment(Hashable):
         super().__init__(comment, lambda c: (c.row_from, c.row_to))
 
     def __str__(self):
-        return f"comment @ {self.value}"
+        return f'comment @ {self.value}'
 
 
 class HashableMarker(Hashable):
@@ -127,7 +127,7 @@ class HashableMarker(Hashable):
             (m.row_from, m.row_to, m.column_from, m.column_to))
 
     def __str__(self):
-        msg = "marker @ {0.row_from}:{0.column_from} - {0.row_to}:{0.column_to}"
+        msg = 'marker @ {0.row_from}:{0.column_from} - {0.row_to}:{0.column_to}'
         return msg.format(self.item)
 
 
@@ -136,7 +136,7 @@ def update_file_comments(file_obj, new_comments):
     updated_comments = calculate_revision_updates(HashableComment,
                                                   file_obj.comments,
                                                   new_comments,
-                                                  ["text", "sort_pos"])
+                                                  ['text', 'sort_pos'])
     # add updated comments
     file_obj.comments += updated_comments
 
@@ -145,16 +145,16 @@ def update_file_markers(file_obj, new_markers):
 
     updated_markers = calculate_revision_updates(HashableMarker,
                                                  file_obj.markers, new_markers,
-                                                 ["marker_class"])
+                                                 ['marker_class'])
     # add updated comments
     file_obj.markers += updated_markers
 
 
-@bp.route("/save_editor_data", methods=["POST"])
+@bp.route('/save_editor_data', methods=['POST'])
 @admin_required()
 def bug_save_editor_data():
-    if request.method != "POST":
-        return create_json_response("Accepting only POST requests.", 400)
+    if request.method != 'POST':
+        return create_json_response('Accepting only POST requests.', 400)
 
     try:
         vulnerability_details = VulnerabilityDetails()
@@ -164,70 +164,70 @@ def bug_save_editor_data():
     vuln_view = vulnerability_details.vulnerability_view
 
     if not vuln_view:
-        return create_json_response("Please create an entry first", 404)
+        return create_json_response('Please create an entry first', 404)
 
     if not vuln_view.master_commit:
         current_app.logger.error(
-            f"Vuln (id: {vuln_view.id}) has no linked Git commits!")
-        return create_json_response("Entry has no linked Git link!", 404)
+            f'Vuln (id: {vuln_view.id}) has no linked Git commits!')
+        return create_json_response('Entry has no linked Git link!', 404)
 
     ensure(ANNOTATE, vulnerability_details.get_vulnerability())
 
     master_commit = vulnerability_details.get_master_commit()
 
     old_files = master_commit.repository_files
-    current_app.logger.debug("%d old files", len(old_files))
+    current_app.logger.debug('%d old files', len(old_files))
     # Flush any old custom content of this vulnerability first.
     new_files = []
     for file in request.get_json():
         for old_file in old_files:
-            if old_file.file_path == file["path"] or \
-                old_file.file_hash == file["hash"]:
+            if old_file.file_path == file['path'] or \
+                old_file.file_hash == file['hash']:
                 current_app.logger.debug(
-                    "Found old file: %s",
-                    (file["path"], file["hash"], file["name"]))
+                    'Found old file: %s',
+                    (file['path'], file['hash'], file['name']))
                 file_obj = old_file
                 break
         else:
             current_app.logger.debug(
-                "Creating new file: %s",
-                (file["path"], file["hash"], file["name"]))
+                'Creating new file: %s',
+                (file['path'], file['hash'], file['name']))
             file_obj = RepositoryFiles(
-                file_name=file["name"],
-                file_path=file["path"],
-                file_patch="DEPRECATED",
-                file_hash=file["hash"],
+                file_name=file['name'],
+                file_path=file['path'],
+                file_patch='DEPRECATED',
+                file_hash=file['hash'],
             )
         # Create comment objects.
         new_comments = []
-        for comment in file["comments"]:
+        for comment in file['comments']:
             comment_obj = RepositoryFileComments(
-                row_from=comment["row_from"],
-                row_to=comment["row_to"],
-                text=comment["text"],
-                sort_pos=comment["sort_pos"],
+                row_from=comment['row_from'],
+                row_to=comment['row_to'],
+                text=comment['text'],
+                sort_pos=comment['sort_pos'],
                 creator=g.user,
             )
             new_comments.append(comment_obj)
         update_file_comments(file_obj, new_comments)
         # Create marker objects.
         new_markers = []
-        for marker in file["markers"]:
+        for marker in file['markers']:
             marker_obj = RepositoryFileMarkers(
-                row_from=marker["row_from"],
-                row_to=marker["row_to"],
-                column_from=marker["column_from"],
-                column_to=marker["column_to"],
-                marker_class=marker["class"],
+                row_from=marker['row_from'],
+                row_to=marker['row_to'],
+                column_from=marker['column_from'],
+                column_to=marker['column_to'],
+                marker_class=marker['class'],
                 creator=g.user,
             )
             new_markers.append(marker_obj)
         update_file_markers(file_obj, new_markers)
         new_files.append(file_obj)
 
-    current_app.logger.debug("Setting %d files", len(new_files))
+    current_app.logger.debug('Setting %d files', len(new_files))
     master_commit.repository_files = new_files
 
     # Update / Insert entries into the database.
     db.session.commit()
-    return create_json_response("Update successful.")
+    return create_json_response('Update successful.')

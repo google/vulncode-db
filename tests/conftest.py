@@ -126,7 +126,7 @@ class RequestsClient(requests.Session):
 @pytest.fixture
 def client(request, db_session, client_without_db):
     #request.fixturenames.append('db_session')
-    if request.config.getoption("-m") == 'production':
+    if request.config.getoption('-m') == 'production':
         # Run production tests against the production service.
         requests_client = RequestsClient(PROD_SERVER_URL)
         yield requests_client
@@ -135,7 +135,7 @@ def client(request, db_session, client_without_db):
         yield client_without_db
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def _db(app):
     """Returns session-wide initialised database."""
     db = app.extensions['sqlalchemy'].db

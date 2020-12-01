@@ -26,7 +26,7 @@ def populate_models(modname):
 
     for name, clazz in inspect.getmembers(mod, inspect.isclass):
         # getattr can't be used here as it also looks into superclasses
-        is_abstract = clazz.__dict__.get("__abstract__", False)
+        is_abstract = clazz.__dict__.get('__abstract__', False)
         if issubclass(clazz, (db.Model, ma.ModelSchema)) and not is_abstract:
             names.append(name)
     return names

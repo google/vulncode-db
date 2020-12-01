@@ -25,7 +25,7 @@ from data.models.vulnerability import Vulnerability
 from data.database import DEFAULT_DATABASE
 from lib.utils import parse_pagination_param
 
-bp = Blueprint("product", __name__, url_prefix="/product")
+bp = Blueprint('product', __name__, url_prefix='/product')
 db = DEFAULT_DATABASE
 
 
@@ -70,7 +70,7 @@ def get_entries_commits(full_base_query):
 
 
 # Create a catch all route for product identifiers.
-@bp.route("/<vendor>/<product>")
+@bp.route('/<vendor>/<product>')
 @skip_authorization
 def product_view(vendor: str = None, product: str = None):
     sub_query = db.session.query(Cpe.nvd_json_id).filter(
@@ -83,7 +83,7 @@ def product_view(vendor: str = None, product: str = None):
                                 Nvd.cve_id == Vulnerability.cve_id)
     entries = entries.order_by(desc(Nvd.id))
 
-    bookmarked_page = parse_pagination_param("product_p")
+    bookmarked_page = parse_pagination_param('product_p')
 
     per_page = 10
     entries_full = entries.options(default_nvd_view_options)
@@ -94,7 +94,7 @@ def product_view(vendor: str = None, product: str = None):
     entries_commits = get_entries_commits(entries)
     repo_urls = get_unique_repo_urls(entries_commits)
 
-    return render_template("product/view.html",
+    return render_template('product/view.html',
                            vendor=vendor,
                            product=product,
                            product_vulns=product_vulns,
@@ -103,12 +103,12 @@ def product_view(vendor: str = None, product: str = None):
 
 
 # Used for autocomplete forms supports filtering.
-@bp.route("/list:<filter_term>")
+@bp.route('/list:<filter_term>')
 @skip_authorization
 def list_all(filter_term: str = None):
     if not filter_term or len(filter_term) < 3:
         return '{}'
     # Only search the product name for now.
     products = db.session.query(Cpe.product, Cpe.vendor).filter(
-        Cpe.product.like(f"%{filter_term}%")).distinct().all()
+        Cpe.product.like(f'%{filter_term}%')).distinct().all()
     return jsonify(products)

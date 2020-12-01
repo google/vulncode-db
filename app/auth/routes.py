@@ -30,7 +30,7 @@ from data.database import DEFAULT_DATABASE
 from data.models.user import (InviteCode, User, Role, PredefinedRoles,
                               UserState, LoginType)
 
-bp = Blueprint("auth", __name__, url_prefix="/auth")
+bp = Blueprint('auth', __name__, url_prefix='/auth')
 db = DEFAULT_DATABASE.db
 log = logging.getLogger(__name__)
 
@@ -46,26 +46,26 @@ oauth.register(
     client_kwargs={'scope': MINIMAL_SCOPES})
 
 
-@bp.route("/login", methods=["GET", "POST"])
+@bp.route('/login', methods=['GET', 'POST'])
 @skip_authorization
 def login():
     if is_authenticated():
-        return redirect("/")
+        return redirect('/')
 
     # Allow OAuth bypass on local dev environment.
-    as_user = request.args.get("as_user", None, type=str)
-    if current_app.config["IS_LOCAL"] and as_user != "OAuth":
-        if as_user in current_app.config["APPLICATION_ADMINS"]:
-            session["user_info"] = {
+    as_user = request.args.get('as_user', None, type=str)
+    if current_app.config['IS_LOCAL'] and as_user != 'OAuth':
+        if as_user in current_app.config['APPLICATION_ADMINS']:
+            session['user_info'] = {
                 'email': as_user,
-                'name': 'Admin ' + as_user.split("@", 1)[0],
+                'name': 'Admin ' + as_user.split('@', 1)[0],
                 # https://de.wikipedia.org/wiki/Datei:User-admin.svg
                 'picture':
                 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/User-admin.svg/170px-User-admin.svg.png',  # pylint: disable=line-too-long
                 'type': LoginType.LOCAL,
             }
         elif as_user == 'reviewer@vulncode-db.com':
-            session["user_info"] = {
+            session['user_info'] = {
                 'email': as_user,
                 'name': 'Reviewer',
                 # https://de.wikipedia.org/wiki/Datei:Magnifying_glass_icon.svg
@@ -74,7 +74,7 @@ def login():
                 'type': LoginType.LOCAL,
             }
         elif as_user == 'user@vulncode-db.com':
-            session["user_info"] = {
+            session['user_info'] = {
                 'email': as_user,
                 'name': 'User 1',
                 # https://de.wikipedia.org/wiki/Datei:User_font_awesome.svg
@@ -84,57 +84,57 @@ def login():
             }
         else:
             return render_template(
-                "local_login.html",
-                users=current_app.config["APPLICATION_ADMINS"])
+                'local_login.html',
+                users=current_app.config['APPLICATION_ADMINS'])
 
-        flash("Bypassed OAuth on local dev environment.", 'info')
-        return redirect(session.pop("redirect_path", "/"))
+        flash('Bypassed OAuth on local dev environment.', 'info')
+        return redirect(session.pop('redirect_path', '/'))
     if as_user == 'OAuth':
         if request.form.get('fetch_profile') != 'true':
             return oauth.google.authorize_redirect(
-                redirect_uri=url_for("auth.authorized", _external=True))
+                redirect_uri=url_for('auth.authorized', _external=True))
 
         return oauth.google.authorize_redirect(redirect_uri=url_for(
-            "auth.authorized", _external=True),
+            'auth.authorized', _external=True),
                                                scope=FULL_SCOPES)
     return render_template('login.html')
 
 
-@bp.route("/invite/<invite_code>", methods=["GET"])
+@bp.route('/invite/<invite_code>', methods=['GET'])
 @skip_authorization
 def invite(invite_code: str):
-    session["invite_code"] = invite_code
-    return redirect(url_for("auth.login"))
+    session['invite_code'] = invite_code
+    return redirect(url_for('auth.login'))
 
 
-@bp.route("/logout", methods=["GET"])
+@bp.route('/logout', methods=['GET'])
 @skip_authorization
 def logout():
     session.clear()
     g.user = None
-    return redirect("/")
+    return redirect('/')
 
 
-@bp.route("/authorized")
+@bp.route('/authorized')
 @skip_authorization
 def authorized():
-    if "error_reason" in request.args:
-        error_message = "Access denied"
+    if 'error_reason' in request.args:
+        error_message = 'Access denied'
         error_message += f": reason={request.args['error_reason']}"
         error_message += f" error={request.args['error_description']}"
         return error_message
 
     token = oauth.google.authorize_access_token()
     user = oauth.google.parse_id_token(token)
-    session["user_info"] = user
-    session["user_info"]['type'] = LoginType.GOOGLE
+    session['user_info'] = user
+    session['user_info']['type'] = LoginType.GOOGLE
 
     if User.query.filter_by(email=user['email']).one_or_none() is None:
         resp, _ = registration_required(user['email'])
         if resp is not None:
             return resp
 
-    do_redirect = session.pop("redirect_path", '/')
+    do_redirect = session.pop('redirect_path', '/')
     return redirect(do_redirect)
 
 
@@ -144,7 +144,7 @@ class TermsAndConditionsForm(FlaskForm):
     # conditions = BooleanField('', validators=[DataRequired()])
 
 
-@bp.route("/terms", methods=['GET', 'POST'])
+@bp.route('/terms', methods=['GET', 'POST'])
 @skip_authorization
 def terms():
     if request.args.get(
@@ -155,15 +155,15 @@ def terms():
     if form.validate_on_submit():
         session['terms_accepted'] = True
 
-        do_redirect = session.pop("redirect_path", '/')
+        do_redirect = session.pop('redirect_path', '/')
         return redirect(do_redirect)
     return render_template('terms.html', form=form)
 
 
 def is_admin():
     if is_authenticated():
-        email = session["user_info"]["email"]
-        if email in current_app.config["APPLICATION_ADMINS"]:
+        email = session['user_info']['email']
+        if email in current_app.config['APPLICATION_ADMINS']:
             return True
     return False
 
@@ -179,27 +179,27 @@ def get_or_create_role(name) -> Role:
 def registration_required(
         email=None) -> Tuple[Optional[Response], Optional[InviteCode]]:
     # pylint: disable=too-many-return-statements
-    if current_app.config["REGISTRATION_MODE"] == "CLOSED":
+    if current_app.config['REGISTRATION_MODE'] == 'CLOSED':
         if email and email in current_app.config['APPLICATION_ADMINS']:
             return None, None
         logout()
-        flash("Registration is closed", "danger")
-        return redirect("/"), None
+        flash('Registration is closed', 'danger')
+        return redirect('/'), None
 
     invite_code = None
-    if current_app.config["REGISTRATION_MODE"] == "INVITE_ONLY":
+    if current_app.config['REGISTRATION_MODE'] == 'INVITE_ONLY':
         invite_code = InviteCode.query.filter_by(
             code=session.get('invite_code')).one_or_none()
         if not invite_code:
             if email and email in current_app.config['APPLICATION_ADMINS']:
                 return None, None
             logout()
-            flash("Registration is invite only", "danger")
-            return redirect("/"), None
+            flash('Registration is invite only', 'danger')
+            return redirect('/'), None
         if invite_code.remaining_uses < 1:
             logout()
-            flash("Invitation code has expired", "danger")
-            return redirect("/"), None
+            flash('Invitation code has expired', 'danger')
+            return redirect('/'), None
 
     if not session.get('terms_accepted'):
         log.warning('Terms not accepted yet')
@@ -231,7 +231,7 @@ def load_user():
     log.debug('Loading user')
 
     # Ignore all non-admin users during maintenance or restricted mode.
-    if (current_app.config["MAINTENANCE_MODE"]
+    if (current_app.config['MAINTENANCE_MODE']
             or current_app.config['RESTRICT_LOGIN']
             and not current_app.config['IS_LOCAL']) and not is_admin():
         logout()
@@ -243,20 +243,20 @@ def load_user():
         log.debug('Reusing existing user %s', g.user)
         return
 
-    data = session["user_info"]
-    email = data["email"]
+    data = session['user_info']
+    email = data['email']
 
     # Make sure old and incompatible sessions get dropped.
-    if "type" not in data.keys():
+    if 'type' not in data.keys():
         logout()
         return
 
-    login_type = LoginType(data["type"])
+    login_type = LoginType(data['type'])
 
     if login_type in (LoginType.GOOGLE, LoginType.LOCAL):
         user = User.query.filter_by(email=email).one_or_none()
     else:
-        log.error("Unsupported login type %r", login_type)
+        log.error('Unsupported login type %r', login_type)
         flash('Login unsupported.', 'danger')
         logout()
         return
@@ -270,25 +270,25 @@ def load_user():
         name, host = email.rsplit('@', 1)
         log.info('Creating new user %s...%s@%s', name[0], name[-1], host)
         user = User(email=email,
-                    full_name=data.get("name", name),
-                    profile_picture=data.get("picture"),
+                    full_name=data.get('name', name),
+                    profile_picture=data.get('picture'),
                     login_type=login_type)
         is_new = True
         if invite_code is not None:
-            session.pop("invite_code")
+            session.pop('invite_code')
             user.roles = invite_code.roles
             user.invite_code = invite_code
             invite_code.remaining_uses -= 1
-            if current_app.config["AUTO_ENABLE_INVITED_USERS"]:
+            if current_app.config['AUTO_ENABLE_INVITED_USERS']:
                 user.enable()
             db.session.add(invite_code)
     else:
         log.info('Updating user %s', user)
         if 'name' in data and user.full_name != data['name']:
-            user.full_name = data["name"]
+            user.full_name = data['name']
             is_changed = True
         if 'picture' in data and user.profile_picture != data['picture']:
-            user.profile_picture = data["picture"]
+            user.profile_picture = data['picture']
             is_changed = True
         if user.login_type is None:
             user.login_type = login_type
@@ -297,7 +297,7 @@ def load_user():
     if is_new:
         user.roles.append(get_or_create_role(PredefinedRoles.USER))
 
-    if email in current_app.config["APPLICATION_ADMINS"]:
+    if email in current_app.config['APPLICATION_ADMINS']:
         user.roles.append(get_or_create_role(PredefinedRoles.ADMIN))
         user.roles.append(get_or_create_role(PredefinedRoles.REVIEWER))
         if is_new:
