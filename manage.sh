@@ -16,7 +16,7 @@
 
 if ! which flask &>/dev/null
 then
-  echo -e "\e[91mflask not found. Rerun this script within the virtual environment.\e[m"
+  echo -e "\033[91mflask not found. Rerun this script within the virtual environment.\033[m"
   exit 1
 fi
 
