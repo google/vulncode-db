@@ -112,6 +112,30 @@ def main_api():
 app.register_blueprint(bp)
 
 
+def enable_cloud_logging():
+    import google.cloud.logging  # pylint: disable=import-outside-toplevel
+    import google.auth.exceptions  # pylint: disable=import-outside-toplevel
+
+    print('[*] Enabling cloud logging')
+    # Instantiates a client
+    try:
+        client = google.cloud.logging.Client()
+
+        # Retrieves a Cloud Logging handler based on the environment
+        # you're running in and integrates the handler with the
+        # Python logging module. By default this captures all logs
+        # at INFO level and higher
+        print('Default handler:', client.get_default_handler())
+        client.setup_logging(log_level='WARNING')
+        print('[+] Cloud logging enabled:', logging.getLogger().handlers)
+    except google.auth.exceptions.DefaultCredentialsError:
+        print('[!] Cloud logging not enabled due to missing credentials')
+
+
+if IS_PROD:
+    enable_cloud_logging()
+
+
 def start():
     root_dir = os.path.dirname(os.path.realpath(__file__))
     error_file = os.path.join(root_dir, 'vcs_error.log')

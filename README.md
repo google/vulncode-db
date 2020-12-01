@@ -53,7 +53,7 @@ cd vulncode-db
 # Setup configuration files, the Docker images and containers.
 ./setup.sh
 # Initialize the application and run an empty version of it.
-./docker/docker-admin.sh run
+./docker/docker-admin.sh start
 ```
 
 Additionally, if you intend to add some data consider running:
@@ -63,7 +63,7 @@ Additionally, if you intend to add some data consider running:
 # Search for entries with patch links and add additional application entries for them.
 ./docker/docker-admin.sh crawl_patches
 # Run the application.
-./docker/docker-admin.sh run
+./docker/docker-admin.sh start
 ```
 The main application should then be available at `http://localhost:8080`.
 

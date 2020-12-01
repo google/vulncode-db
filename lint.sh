@@ -15,15 +15,15 @@
 
 
 function info() {
-  echo -e "[\e[94m*\e[0m]" "$@"
+  echo -e "[\033[94m*\033[0m]" "$@"
 }
 
 function error() {
-  echo -e "[\e[91m!\e[0m]" "$@"
+  echo -e "[\033[91m!\033[0m]" "$@"
 }
 
 function success() {
-  echo -e "[\e[92m+\e[0m]" "$@"
+  echo -e "[\033[92m+\033[0m]" "$@"
 }
 
 function fatal() {

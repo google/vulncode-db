@@ -33,6 +33,7 @@
                 {% endfor %}
 
                 <button type="submit" class="btn btn-success">Save</button>
+                <a href="{{ url_for("profile.user_profile", user_id=user.id) }}">See public version</a>
               </form>
             </div>
         </div>
