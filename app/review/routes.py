@@ -27,7 +27,7 @@ from data.models.vulnerability import VulnerabilityState
 from data.database import DEFAULT_DATABASE
 from lib.utils import parse_pagination_param
 
-bp = Blueprint("review", __name__, url_prefix="/review")
+bp = Blueprint('review', __name__, url_prefix='/review')
 db = DEFAULT_DATABASE
 
 
@@ -52,7 +52,7 @@ def get_pending_proposals_paged():
     entries = entries.outerjoin(Vulnerability,
                                 Nvd.cve_id == Vulnerability.cve_id)
     entries = entries.order_by(asc(Vulnerability.state), desc(Nvd.id))
-    bookmarked_page = parse_pagination_param("review_p")
+    bookmarked_page = parse_pagination_param('review_p')
     per_page = 10
     entries_full = entries.options(default_nvd_view_options)
     review_vulns = get_page(entries_full, per_page, page=bookmarked_page)
@@ -70,7 +70,7 @@ def get_reviewed_proposals_paged():
     entries = entries.outerjoin(Vulnerability,
                                 Nvd.cve_id == Vulnerability.cve_id)
     entries = entries.order_by(asc(Vulnerability.state), desc(Nvd.id))
-    bookmarked_page = parse_pagination_param("reviewed_p")
+    bookmarked_page = parse_pagination_param('reviewed_p')
     per_page = 10
     entries_full = entries.options(default_nvd_view_options)
     review_vulns = get_page(entries_full, per_page, page=bookmarked_page)
@@ -79,11 +79,11 @@ def get_reviewed_proposals_paged():
 
 
 # Create a catch all route for profile identifiers.
-@bp.route("/list")
+@bp.route('/list')
 @requires(READ, 'Proposal')
 def review_list():
     review_vulns = get_pending_proposals_paged()
     reviewed_vulns = get_reviewed_proposals_paged()
-    return render_template("review/list.html",
+    return render_template('review/list.html',
                            review_vulns=review_vulns,
                            reviewed_vulns=reviewed_vulns)

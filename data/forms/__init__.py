@@ -33,10 +33,10 @@ class BaseForm(FlaskForm):
 
 class ModelFieldList(FieldList):
     def __init__(self, *args, **kwargs):
-        self.model = kwargs.pop("model", None)
+        self.model = kwargs.pop('model', None)
         super().__init__(*args, **kwargs)
         if not self.model:
-            raise ValueError("ModelFieldList requires model to be set")
+            raise ValueError('ModelFieldList requires model to be set')
 
     def populate_obj(self, obj, name):
         if not hasattr(obj, name):
@@ -52,16 +52,16 @@ class ModelFieldList(FieldList):
 
 class CommitLinksForm(FlaskForm):
     repo_url = StringField(
-        "Git Repo URL", validators=[validators.Optional(),
+        'Git Repo URL', validators=[validators.Optional(),
                                     validators.URL()])
-    commit_hash = StringField("Commit Hash", validators=[])
+    commit_hash = StringField('Commit Hash', validators=[])
 
     # Commit data is optional -> otherwise use: validators.DataRequired(),
     commit_link = StringField(
-        "Main commit link",
+        'Main commit link',
         validators=[validators.Optional(),
                     validators.URL()])
-    repo_name = StringField("Repository Name", validators=[])
+    repo_name = StringField('Repository Name', validators=[])
 
     class Meta:
         csrf = False
@@ -69,7 +69,7 @@ class CommitLinksForm(FlaskForm):
 
 class VulnerabilityResourcesForm(FlaskForm):
     link = StringField(
-        "Link", validators=[validators.DataRequired(),
+        'Link', validators=[validators.DataRequired(),
                             validators.URL()])
 
     class Meta:
@@ -96,45 +96,45 @@ class VulnerabilityDetailsForm(FlaskForm):
     #     ],
     # )
 
-    comment = TextAreaField("High-Level Bug Overview",
+    comment = TextAreaField('High-Level Bug Overview',
                             validators=[validators.DataRequired()])
     resources = ModelFieldList(FormField(VulnerabilityResourcesForm),
                                model=VulnerabilityResources)
-    submit = SubmitField("Propose change")
+    submit = SubmitField('Propose change')
 
 
 class VulnerabilityProposalReject(FlaskForm):
-    review_feedback = TextAreaField("Feedback what should be changed",
+    review_feedback = TextAreaField('Feedback what should be changed',
                                     validators=[validators.DataRequired()])
-    submit_reject = SubmitField("Ask for improvements")
+    submit_reject = SubmitField('Ask for improvements')
 
 
 class VulnerabilityProposalApprove(FlaskForm):
-    submit_approve = SubmitField("Approve proposal")
+    submit_approve = SubmitField('Approve proposal')
 
 
 class VulnerabilityProposalAssign(FlaskForm):
-    submit_assign = SubmitField("Take review")
+    submit_assign = SubmitField('Take review')
 
 
 class VulnerabilityProposalUnassign(FlaskForm):
-    submit_unassign = SubmitField("Unassign from this review")
+    submit_unassign = SubmitField('Unassign from this review')
 
 
 class VulnerabilityProposalPublish(FlaskForm):
-    submit_publish = SubmitField("Publish entry")
+    submit_publish = SubmitField('Publish entry')
 
 
 class VulnerabilityDeleteForm(FlaskForm):
-    delete_entry = IntegerField("Delete entry", [validators.required()])
+    delete_entry = IntegerField('Delete entry', [validators.required()])
     submit = SubmitField()
 
 
 class UserProfileForm(BaseForm):
-    full_name = StringField("Full Name")
+    full_name = StringField('Full Name')
     profile_picture = StringField(
-        "Profile Picture URL",
+        'Profile Picture URL',
         validators=[validators.Optional(),
                     validators.URL()])
-    hide_name = BooleanField("Hide Name")
-    hide_picture = BooleanField("Hide Profile Picture")
+    hide_name = BooleanField('Hide Name')
+    hide_picture = BooleanField('Hide Profile Picture')

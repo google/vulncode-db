@@ -36,7 +36,7 @@ from lib.vcs_handler.vcs_handler import (
     CommitMetadata,
 )
 
-CACHE_DIR = "cache/"
+CACHE_DIR = 'cache/'
 """
 def get_github_archive_link(owner, repo, hash):
 
@@ -55,8 +55,8 @@ class GithubHandler(VcsHandler):
         self.use_cache = False
 
         use_token = None
-        if app and "GITHUB_API_ACCESS_TOKEN" in app.config:
-            use_token = app.config["GITHUB_API_ACCESS_TOKEN"]
+        if app and 'GITHUB_API_ACCESS_TOKEN' in app.config:
+            use_token = app.config['GITHUB_API_ACCESS_TOKEN']
 
         self.github = Github(login_or_token=use_token)
         if resource_url is not None:
@@ -65,16 +65,16 @@ class GithubHandler(VcsHandler):
     def parse_resource_url(self, resource_url):
         if not resource_url:
             raise InvalidIdentifierException(
-                "Please provide a Github commit link.")
+                'Please provide a Github commit link.')
         url_data = urlparse(resource_url)
         git_path = url_data.path
-        matches = re.match(r"/([^/]+)/([^/]+)/commit/([^/]+)/?$", git_path)
-        if (not url_data.hostname or "github.com" not in url_data.hostname
+        matches = re.match(r'/([^/]+)/([^/]+)/commit/([^/]+)/?$', git_path)
+        if (not url_data.hostname or 'github.com' not in url_data.hostname
                 or not matches):
             raise InvalidIdentifierException(
-                "Please provide a valid "
-                "(https://github.com/{owner}/{repo}/commit/{hash})"
-                " commit link.")
+                'Please provide a valid '
+                '(https://github.com/{owner}/{repo}/commit/{hash})'
+                ' commit link.')
         self.repo_owner, self.repo_name, self.commit_hash = matches.groups()
         self.repo_url = f'https://github.com/{self.repo_owner}/{self.repo_name}'
         self.commit_link = resource_url
@@ -82,20 +82,20 @@ class GithubHandler(VcsHandler):
     def parse_url_and_hash(self, repo_url, commit_hash):
         if not repo_url or not commit_hash:
             raise InvalidIdentifierException(
-                "Please provide a Github url and hash.")
+                'Please provide a Github url and hash.')
         url_data = urlparse(repo_url)
         git_path = url_data.path
-        matches = re.match(r"/([^/]+)/([^/]+)/?$", git_path)
-        if (not url_data.hostname or "github.com" not in url_data.hostname
+        matches = re.match(r'/([^/]+)/([^/]+)/?$', git_path)
+        if (not url_data.hostname or 'github.com' not in url_data.hostname
                 or not matches):
             raise InvalidIdentifierException(
-                "Please provide a valid "
-                "(https://github.com/{owner}/{repo})"
-                " repository url.")
-        if not re.match(r"[a-fA-F0-9]{5,}$", commit_hash):
+                'Please provide a valid '
+                '(https://github.com/{owner}/{repo})'
+                ' repository url.')
+        if not re.match(r'[a-fA-F0-9]{5,}$', commit_hash):
             raise InvalidIdentifierException(
-                "Please provide a valid "
-                "git commit hash (min 5 characters)")
+                'Please provide a valid '
+                'git commit hash (min 5 characters)')
         self.repo_owner, self.repo_name = matches.groups()
         self.repo_url = repo_url
         self.commit_hash = commit_hash
@@ -108,24 +108,24 @@ class GithubHandler(VcsHandler):
         # file per line representation.
         for patched_file in files:
             patched_files[patched_file.filename] = {
-                "status": patched_file.status,
-                "sha": patched_file.sha,
-                "deltas": [],
+                'status': patched_file.status,
+                'sha': patched_file.sha,
+                'deltas': [],
             }
 
             patch_str = io.StringIO()
-            patch_str.write("--- a\n+++ b\n")
+            patch_str.write('--- a\n+++ b\n')
             if patched_file.patch is not None:
                 patch_str.write(patched_file.patch)
             patch_str.seek(0)
-            logging.debug("Parsing diff\n%s", patch_str.getvalue())
+            logging.debug('Parsing diff\n%s', patch_str.getvalue())
             patch = PatchSet(patch_str, encoding=None)
 
             for hunk in patch[0]:
                 for line in hunk:
                     if line.is_context:
                         continue
-                    patched_files[patched_file.filename]["deltas"].append(
+                    patched_files[patched_file.filename]['deltas'].append(
                         vars(line))
 
         return patched_files
@@ -133,26 +133,26 @@ class GithubHandler(VcsHandler):
     def get_file_provider_url(self):
         owner = self.repo_owner
         repo = self.repo_name
-        return f"https://api.github.com/repos/{owner}/{repo}/git/" + \
-               f"blobs/{HASH_PLACEHOLDER}"
+        return f'https://api.github.com/repos/{owner}/{repo}/git/' + \
+               f'blobs/{HASH_PLACEHOLDER}'
 
     def get_ref_file_provider_url(self):
         owner = self.repo_owner
         repo = self.repo_name
-        return f"https://api.github.com/repos/{owner}/{repo}/contents/" + \
-               f"{PATH_PLACEHOLDER}?ref={HASH_PLACEHOLDER}"
+        return f'https://api.github.com/repos/{owner}/{repo}/contents/' + \
+               f'{PATH_PLACEHOLDER}?ref={HASH_PLACEHOLDER}'
 
     def get_file_url(self):
         owner = self.repo_owner
         repo = self.repo_name
         commit_hash = self.commit_hash
-        return f"https://github.com/{owner}/{repo}/blob/{commit_hash}/"
+        return f'https://github.com/{owner}/{repo}/blob/{commit_hash}/'
 
     def get_tree_url(self):
         owner = self.repo_owner
         repo = self.repo_name
         commit_hash = self.commit_hash
-        return f"https://github.com/{owner}/{repo}/tree/{commit_hash}/"
+        return f'https://github.com/{owner}/{repo}/tree/{commit_hash}/'
 
     @staticmethod
     def _get_files_metadata(github_files_metadata):
@@ -177,14 +177,14 @@ class GithubHandler(VcsHandler):
         if not commit_hash:
             commit_hash = self.commit_hash
 
-        cache_file = CACHE_DIR + commit_hash + ".json"
+        cache_file = CACHE_DIR + commit_hash + '.json'
         if self.use_cache and os.path.exists(cache_file):
             cache_content = lib.utils.get_file_contents(cache_file)
             return cache_content
 
         # Fetch relevant information from Github.
         github_repo = self.github.get_repo(
-            f"{self.repo_owner}/{self.repo_name}")
+            f'{self.repo_owner}/{self.repo_name}')
         commit = github_repo.get_commit(commit_hash)
         commit_parents = commit.commit.parents
         parent_commit_hash = commit_hash

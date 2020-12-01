@@ -33,7 +33,7 @@ from data.models.vulnerability import VulnerabilityState
 from lib.utils import (parse_pagination_param, update_products,
                        get_vulnerability_details, clean_vulnerability_changes)
 
-bp = Blueprint("profile", __name__, url_prefix="/profile")
+bp = Blueprint('profile', __name__, url_prefix='/profile')
 log = logging.getLogger(__name__)
 
 
@@ -51,8 +51,8 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     # ignore metadata
     clean_vulnerability_changes(changes)
     if not changes:
-        flash_error("No changes detected. "
-                    "Please modify the entry first to propose a change")
+        flash_error('No changes detected. '
+                    'Please modify the entry first to propose a change')
         return None
     log.debug('Detected changes: %r', changes)
 
@@ -61,13 +61,13 @@ def update_proposal(vuln: Vulnerability, form: VulnerabilityDetailsForm):
     db.session.commit()
 
     flash(
-        "Your proposal is in the review queue. "
-        "You can monitor progress in your Proposals Section.", "success")
+        'Your proposal is in the review queue. '
+        'You can monitor progress in your Proposals Section.', 'success')
     return new_products
 
 
 # Create a catch all route for profile identifiers.
-@bp.route("/proposal/<vuln_id>/edit", methods=["GET", "POST"])
+@bp.route('/proposal/<vuln_id>/edit', methods=['GET', 'POST'])
 @requires(EDIT, Vulnerability)
 def edit_proposal(vuln_id: str = None):
     vulnerability_details = get_vulnerability_details(None,
@@ -79,11 +79,11 @@ def edit_proposal(vuln_id: str = None):
     form = VulnerabilityDetailsForm(obj=vuln)
 
     # Populate the form data from the vulnerability view if necessary.
-    if form.comment.data == "":
+    if form.comment.data == '':
         form.comment.data = view.comment
 
     if request.method == 'POST' and not form.validate():
-        flash_error("Your proposal contains invalid data, please correct.")
+        flash_error('Your proposal contains invalid data, please correct.')
 
     form_submitted = form.validate_on_submit()
     if form_submitted and view.is_creator():
@@ -91,13 +91,13 @@ def edit_proposal(vuln_id: str = None):
         if new_products is not None:
             view.products = [(p.vendor, p.product) for p in new_products]
 
-    return render_template("profile/edit_proposal.html",
+    return render_template('profile/edit_proposal.html',
                            vulnerability_details=vulnerability_details,
                            form=form)
 
 
 # Create a catch all route for profile identifiers.
-@bp.route("/proposals")
+@bp.route('/proposals')
 @requires('READ_OWN', 'Proposal')
 def view_proposals():
     entries = db.session.query(Vulnerability, Nvd)
@@ -106,7 +106,7 @@ def view_proposals():
                                 Nvd.cve_id == Vulnerability.cve_id)
     entries = entries.order_by(desc(Nvd.id))
 
-    bookmarked_page = parse_pagination_param("proposal_p")
+    bookmarked_page = parse_pagination_param('proposal_p')
     per_page = 10
     entries_non_processed = entries.filter(~Vulnerability.state.in_(
         [VulnerabilityState.ARCHIVED, VulnerabilityState.PUBLISHED]))
@@ -118,7 +118,7 @@ def view_proposals():
     entries_processed = entries.filter(
         Vulnerability.state.in_(
             [VulnerabilityState.ARCHIVED, VulnerabilityState.PUBLISHED]))
-    bookmarked_page_processed = parse_pagination_param("proposal_processed_p")
+    bookmarked_page_processed = parse_pagination_param('proposal_processed_p')
     entries_processed_full = entries_processed.options(
         default_nvd_view_options)
     proposal_vulns_processed = get_page(entries_processed_full,
@@ -128,13 +128,13 @@ def view_proposals():
         proposal_vulns_processed.paging)
 
     return render_template(
-        "profile/proposals_view.html",
+        'profile/proposals_view.html',
         proposal_vulns=proposal_vulns,
         proposal_vulns_processed=proposal_vulns_processed,
     )
 
 
-@bp.route("/<int:user_id>", methods=["GET"])
+@bp.route('/<int:user_id>', methods=['GET'])
 def user_profile(user_id=None):
     user: User = User.query.get_or_404(user_id)
     ensure(READ, user)
@@ -144,15 +144,15 @@ def user_profile(user_id=None):
         Vulnerability.state.in_(
             [VulnerabilityState.PUBLISHED,
              VulnerabilityState.ARCHIVED])).all()
-    return render_template("profile/profile_viewer.html",
+    return render_template('profile/profile_viewer.html',
                            user=user,
                            vulns=vulns)
 
 
-@bp.route("/", methods=["GET", "POST"])
+@bp.route('/', methods=['GET', 'POST'])
 def index():
     user = g.user
-    if request.method == "GET":
+    if request.method == 'GET':
         ensure(READ, user)
     else:
         ensure(EDIT, user)
@@ -166,13 +166,13 @@ def index():
         Vulnerability.state.in_(
             [VulnerabilityState.PUBLISHED,
              VulnerabilityState.ARCHIVED])).all()
-    return render_template("profile/index.html",
+    return render_template('profile/index.html',
                            form=form,
                            user=user,
                            vulns=vulns)
 
 
-@bp.route("/proposal/<vuln_id>/delete", methods=["GET", "POST"])
+@bp.route('/proposal/<vuln_id>/delete', methods=['GET', 'POST'])
 @requires(DELETE, Vulnerability)
 def delete_proposal(vuln_id: str = None):
     vulnerability_details = get_vulnerability_details(None,
@@ -192,11 +192,11 @@ def delete_proposal(vuln_id: str = None):
 
     ensure(DELETE, vuln)
 
-    if (request.method != "GET"
-            and request.form.get("confirm", "false").lower() == "true"):
+    if (request.method != 'GET'
+            and request.form.get('confirm', 'false').lower() == 'true'):
         db.session.delete(vuln)
         db.session.commit()
-        flash("Entry deleted", "success")
+        flash('Entry deleted', 'success')
         return redirect(url_for('profile.view_proposals'))
-    return render_template("vulnerability/delete.html",
+    return render_template('vulnerability/delete.html',
                            vuln_view=vulnerability_details.vulnerability_view)

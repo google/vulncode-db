@@ -18,36 +18,36 @@ from flask import send_from_directory
 from app.vulnerability.views.vulncode_db import VulncodeDB
 from app.auth.acls import skip_authorization
 
-bp = Blueprint("frontend", __name__)
+bp = Blueprint('frontend', __name__)
 
 
-@bp.route("/static/<path:path>")
+@bp.route('/static/<path:path>')
 @skip_authorization
 def serve_static(path):
-    return send_from_directory("static", path)
+    return send_from_directory('static', path)
 
 
-@bp.route("/")
+@bp.route('/')
 @skip_authorization
 def serve_index():
     vcdb = VulncodeDB()
-    return render_template("index.html", vcdb=vcdb)
+    return render_template('index.html', vcdb=vcdb)
 
 
-@bp.route("/maintenance")
+@bp.route('/maintenance')
 @skip_authorization
 def maintenance():
-    return render_template("maintenance.html")
+    return render_template('maintenance.html')
 
 
-@bp.route("/list_entries")
+@bp.route('/list_entries')
 @skip_authorization
 def list_entries():
     vcdb = VulncodeDB()
-    return render_template("list_vuln_entries.html", vcdb=vcdb)
+    return render_template('list_vuln_entries.html', vcdb=vcdb)
 
 
-@bp.route("/terms")
+@bp.route('/terms')
 @skip_authorization
 def terms():
-    return render_template("terms_text.html")
+    return render_template('terms_text.html')

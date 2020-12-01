@@ -165,7 +165,7 @@ def register_extensions(app, test_config=None):
     def always_authorize():
         for path in public_paths:
             if request.path.startswith(path):
-                logging.warning("Bypassing ACL check for %s (matches %s)",
+                logging.warning('Bypassing ACL check for %s (matches %s)',
                                 request.path, path)
                 request._authorized = True  # pylint: disable=protected-access
                 return

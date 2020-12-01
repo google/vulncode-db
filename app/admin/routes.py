@@ -124,23 +124,23 @@ def users():
 
 
 def _create_invite_token():
-    amount = request.form.get("amount", type=int)
+    amount = request.form.get('amount', type=int)
     if not amount or amount < 1:
-        flash("Invite codes have to be valid for at least one use", "danger")
+        flash('Invite codes have to be valid for at least one use', 'danger')
         return
-    roles = request.form.getlist("roles", type=int)
+    roles = request.form.getlist('roles', type=int)
     if not roles or len(roles) == 0:
-        flash("At least one role should be selected", "danger")
+        flash('At least one role should be selected', 'danger')
         return
-    desc = request.form.get("desc")
+    desc = request.form.get('desc')
     if not desc:
-        flash("Description required", "danger")
+        flash('Description required', 'danger')
         return
 
     num_roles = len(roles)
     roles = Role.query.filter(Role.id.in_(roles)).all()
     if len(roles) != num_roles:
-        flash("Unknown roles provided", "danger")
+        flash('Unknown roles provided', 'danger')
         return
 
     db.session.add(
@@ -151,10 +151,10 @@ def _create_invite_token():
 @bp.route('/invite_codes', methods=['GET', 'POST'])
 @admin_required()
 def invite_codes():
-    if request.method == "POST":
-        if request.form.get("expire_code"):
+    if request.method == 'POST':
+        if request.form.get('expire_code'):
             icode = InviteCode.query.get_or_404(
-                request.form.get("expire_code", type=int))
+                request.form.get('expire_code', type=int))
             icode.remaining_uses = 0
             db.session.add(icode)
             db.session.commit()

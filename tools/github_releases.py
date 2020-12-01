@@ -37,9 +37,9 @@ class Release:
     def __init__(self, **kwargs):
         self._original = kwargs
         self.created_at = datetime.datetime.strptime(kwargs['created_at'],
-                                                     "%Y-%m-%dT%H:%M:%SZ")
+                                                     '%Y-%m-%dT%H:%M:%SZ')
         self.published_at = datetime.datetime.strptime(kwargs['published_at'],
-                                                       "%Y-%m-%dT%H:%M:%SZ")
+                                                       '%Y-%m-%dT%H:%M:%SZ')
 
     def __getattr__(self, name):
         return self._original[name]
@@ -49,13 +49,13 @@ class Release:
 
     def to_html(self):
         if pycmarkgfm:
-            print("Using pycmarkgfm", file=sys.stderr)
+            print('Using pycmarkgfm', file=sys.stderr)
             description = pycmarkgfm.gfm_to_html(self.body)
         elif markdown:
-            print("Using markdown", file=sys.stderr)
+            print('Using markdown', file=sys.stderr)
             description = markdown.markdown(self.body)
         else:
-            print("Using plain", file=sys.stderr)
+            print('Using plain', file=sys.stderr)
             description = f'<pre id="desc-{self.id}"></pre><script>document.getElementById("desc-{self.id}").textContent = {json.dumps(self.body)};</script>'
         return f'''<div class="release" id="release-{self.id}">
     <h1>{self.name}</h1>

@@ -28,8 +28,8 @@ from werkzeug.utils import redirect
 from app import flash_error
 from lib.utils import manually_read_app_config
 
-if "MYSQL_CONNECTION_NAME" not in os.environ:
-    print("[~] Executed outside AppEngine context. Manually loading config.")
+if 'MYSQL_CONNECTION_NAME' not in os.environ:
+    print('[~] Executed outside AppEngine context. Manually loading config.')
     manually_read_app_config()
 
 # pylint: disable=wrong-import-position
@@ -64,7 +64,7 @@ def enable_sql_logs():
 
 def generic_error_page(title, err):
     tback = traceback.TracebackException.from_exception(err)
-    return render_template("error_generic.html",
+    return render_template('error_generic.html',
                            error_name=title,
                            traceback=''.join(tback.format()),
                            exception=err)
@@ -72,12 +72,12 @@ def generic_error_page(title, err):
 
 @app.errorhandler(500)
 def internal_error(err):
-    return generic_error_page("Internal Server Error", err), 500
+    return generic_error_page('Internal Server Error', err), 500
 
 
 @app.errorhandler(404)
 def not_found_error(err):
-    return generic_error_page("Not Found", err), 404
+    return generic_error_page('Not Found', err), 404
 
 
 @app.errorhandler(403)
@@ -85,12 +85,12 @@ def forbidden_error(err):
     if g.user is None:
         return unauthorized_error(err)
     if cfg.DEBUG and not request.args.get('prod') == 'true':
-        return generic_error_page("Forbidden", err), 403
+        return generic_error_page('Forbidden', err), 403
 
     location = request.referrer
     if not location or not location.startswith(request.url_root):
         location = '/'
-    flash_error("This action is not allowed")
+    flash_error('This action is not allowed')
     return redirect(location)
 
 
@@ -103,17 +103,17 @@ def unauthorized_error(err):
 
 @app.errorhandler(400)
 def invalid_request_error(err):
-    return generic_error_page("Invalid Request", err), 400
+    return generic_error_page('Invalid Request', err), 400
 
 
 @app.errorhandler(405)
 def method_not_allowed_error(err):
-    return generic_error_page("Method not allowed", err), 405
+    return generic_error_page('Method not allowed', err), 405
 
 
 def check_db_state():
     with app.app_context():
-        config = app.extensions["migrate"].migrate.get_config()
+        config = app.extensions['migrate'].migrate.get_config()
         script = alembic.script.ScriptDirectory.from_config(config)
 
         heads = script.get_revisions(script.get_heads())
@@ -124,10 +124,10 @@ def check_db_state():
                                 for rev in script.get_all_current(rev))
             if db_revs ^ head_revs:
                 config.print_stdout(
-                    "Current revision(s) for %s %s do not match the heads %s!\n"
-                    "Run ./docker/docker-admin.sh upgrade\n"
-                    "(Outside of docker you can directly run: ./manage.sh db"
-                    " upgrade)",
+                    'Current revision(s) for %s %s do not match the heads %s!\n'
+                    'Run ./docker/docker-admin.sh upgrade\n'
+                    '(Outside of docker you can directly run: ./manage.sh db'
+                    ' upgrade)',
                     alembic.util.obfuscate_url_pw(
                         context.connection.engine.url),
                     tuple(db_revs),
@@ -176,12 +176,12 @@ def main():
     ssl_context = None
     # Uncomment line below if you prefer using SSL here.
     # ssl_context = (cert_file, key_file)
-    use_host = "0.0.0.0"
+    use_host = '0.0.0.0'
     use_port = 8080
-    use_protocol = "https" if ssl_context else "http"
-    print(f"[+] Listening on: {use_protocol}://{use_host}:{use_port}")
+    use_protocol = 'https' if ssl_context else 'http'
+    print(f'[+] Listening on: {use_protocol}://{use_host}:{use_port}')
     app.run(host=use_host, port=use_port, ssl_context=ssl_context, debug=True)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

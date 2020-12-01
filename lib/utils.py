@@ -34,7 +34,7 @@ from app.exceptions import InvalidProducts, InvalidIdentifierException
 if TYPE_CHECKING:
     import data
 
-TRACING_PATH = "traces/"
+TRACING_PATH = 'traces/'
 TRACING_ACTIVE = False
 TRACING_LOGGING = False
 TRACING_FILE_HANDLE = None
@@ -49,12 +49,12 @@ def get_file_contents(path):
 
 
 def write_contents(path, content):
-    with open(path, "w") as file:
+    with open(path, 'w') as file:
         file.write(content)
 
 
 def create_json_response(msg, status_code=200, **kwargs):
-    message = {"msg": msg}
+    message = {'msg': msg}
     message.update(kwargs)
     resp = jsonify(message)
     resp.status_code = status_code
@@ -67,10 +67,10 @@ def manually_read_app_config():
         import yaml  # pylint: disable=import-outside-toplevel
     except ImportError:
         return None
-    with open("app.yaml") as file:
+    with open('app.yaml') as file:
         try:
             yaml_context = yaml.load(file, Loader=yaml.SafeLoader)
-            env_variables = yaml_context["env_variables"]
+            env_variables = yaml_context['env_variables']
             for key in env_variables:
                 os.environ[key] = str(env_variables[key])
         except yaml.YAMLError as err:
@@ -84,7 +84,7 @@ def measure_execution_time(label):
             res = func(*args, **kwargs)
             end = time.time()
 
-            print(f"[{label}] {end - start}s elapsed")
+            print(f'[{label}] {end - start}s elapsed')
             return res
 
         return wrapper
@@ -133,23 +133,23 @@ def log_trace(text):
     global TRACING_ACTIVE, TRACING_FILE_HANDLE  # pylint: disable=global-statement
     if not TRACING_ACTIVE or not TRACING_FILE_HANDLE:
         return
-    TRACING_FILE_HANDLE.write(text + "\n")
+    TRACING_FILE_HANDLE.write(text + '\n')
 
 
 def trace_func(frame, event, arg, stack_level=None):
     if stack_level is None:
         stack_level = [0]
     del arg
-    if event == "call":
+    if event == 'call':
         stack_level[0] += 2
         func_name = frame.f_code.co_name
         line_no = frame.f_lineno
         file_name = frame.f_code.co_filename
-        trace_info = "-" * stack_level[0] + "> {} - {}:{}".format(
+        trace_info = '-' * stack_level[0] + '> {} - {}:{}'.format(
             file_name, func_name, line_no)
         log_trace(trace_info)
         print(trace_info)
-    elif event == "return":
+    elif event == 'return':
         stack_level[0] -= 2
     return trace_func
 
@@ -174,13 +174,13 @@ def enable_tracing(enabled=True):
         if not os.path.exists(TRACING_PATH):
             os.makedirs(TRACING_PATH)
 
-        trace_file = time.strftime("trace_%Y%m%d-%H%M%S")
-        TRACING_FILE_HANDLE = open(TRACING_PATH + trace_file, "a+")
-        log_trace("-- Tracing Start --")
+        trace_file = time.strftime('trace_%Y%m%d-%H%M%S')
+        TRACING_FILE_HANDLE = open(TRACING_PATH + trace_file, 'a+')
+        log_trace('-- Tracing Start --')
         sys.setprofile(trace_func)
     else:
         sys.setprofile(None)
-        log_trace("-- Tracing End --")
+        log_trace('-- Tracing End --')
         TRACING_FILE_HANDLE.close()
         TRACING_FILE_HANDLE = None
         TRACING_ACTIVE = False
@@ -204,19 +204,19 @@ def update_products(
     # pylint: enable=import-outside-toplevel
 
     if products is None:
-        products = request.form.get("products")
+        products = request.form.get('products')
 
     if isinstance(products, str):
         try:
             products = json.loads(products)
         except (TypeError, json.JSONDecodeError) as ex:
-            raise InvalidProducts("Invalid products") from ex
+            raise InvalidProducts('Invalid products') from ex
 
     if products is not None:
         if not isinstance(products, list) or any(
             (not isinstance(p, dict) or 'product' not in p or 'vendor' not in p
              ) for p in products):
-            raise InvalidProducts("Invalid products")
+            raise InvalidProducts('Invalid products')
 
         vuln.products = []  # type: ignore
         for product in products:
@@ -225,7 +225,7 @@ def update_products(
                         vendor=product['vendor'],
                         product=product['product']).exists()).scalar():
                 raise InvalidProducts(
-                    "Invalid product {vendor}/{product}".format(**product))
+                    'Invalid product {vendor}/{product}'.format(**product))
             prod_obj = Product.query.filter_by(
                 vendor=product['vendor'],
                 product=product['product']).one_or_none()
