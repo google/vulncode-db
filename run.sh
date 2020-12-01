@@ -14,7 +14,7 @@
 # limitations under the License.
 
 function info() {
-  echo -e "[\e[94m*\e[0m]" "$@"
+  echo -e "[\033[94m*\033[0m]" "$@"
 }
 
 if [[ ! -d "migrations/versions" || ! $(ls -A migrations/versions) ]]; then
