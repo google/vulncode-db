@@ -156,21 +156,21 @@ def _db(app):
         session.add_all(roles)
         users = [
             User(
-                email="admin@vulncode-db.com",
+                login="admin@vulncode-db.com",
                 full_name="Admin McAdmin",
                 roles=roles,
                 state=UserState.ACTIVE,
                 login_type=LoginType.LOCAL,
             ),
             User(
-                email="user@vulncode-db.com",
+                login="user@vulncode-db.com",
                 full_name="User McUser",
                 roles=[roles[1]],
                 state=UserState.ACTIVE,
                 login_type=LoginType.LOCAL,
             ),
             User(
-                email="blocked@vulncode-db.com",
+                login="blocked@vulncode-db.com",
                 full_name="Blocked User",
                 roles=[roles[1]],
                 state=UserState.BLOCKED,
@@ -298,7 +298,7 @@ def as_admin(client: testing.FlaskClient):
     with client.session_transaction() as session:
         session["user_info"] = ui
 
-    user = User(full_name=ui["name"], email=ui["email"], profile_picture=ui["picture"])
+    user = User(full_name=ui["name"], login=ui["email"], profile_picture=ui["picture"])
     user.roles = [
         Role(name=PredefinedRoles.ADMIN),
         Role(name=PredefinedRoles.REVIEWER),
@@ -312,7 +312,7 @@ def as_user(client: testing.FlaskClient):
     with client.session_transaction() as session:
         session["user_info"] = ui
 
-    user = User(full_name=ui["name"], email=ui["email"], profile_picture=ui["picture"])
+    user = User(full_name=ui["name"], login=ui["email"], profile_picture=ui["picture"])
     user.roles = [
         Role(name=PredefinedRoles.USER),
     ]

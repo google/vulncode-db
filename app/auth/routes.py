@@ -142,7 +142,7 @@ def authorized():
     session["user_info"] = user
     session["user_info"]["type"] = LoginType.GOOGLE
 
-    if User.query.filter_by(email=user["email"]).one_or_none() is None:
+    if User.query.filter_by(login=user["email"]).one_or_none() is None:
         resp, _ = registration_required(user["email"])
         if resp is not None:
             return resp
@@ -178,8 +178,8 @@ def terms():
 
 def is_admin():
     if is_authenticated():
-        email = session["user_info"]["email"]
-        if email in current_app.config["APPLICATION_ADMINS"]:
+        login_id = session["user_info"]["email"]
+        if login_id in current_app.config["APPLICATION_ADMINS"]:
             return True
     return False
 
@@ -193,11 +193,11 @@ def get_or_create_role(name) -> Role:
 
 
 def registration_required(
-    email=None,
+    login_id=None,
 ) -> Tuple[Optional[Response], Optional[InviteCode]]:
     # pylint: disable=too-many-return-statements
     if current_app.config["REGISTRATION_MODE"] == "CLOSED":
-        if email and email in current_app.config["APPLICATION_ADMINS"]:
+        if login_id and login_id in current_app.config["APPLICATION_ADMINS"]:
             return None, None
         logout()
         flash("Registration is closed", "danger")
@@ -209,7 +209,7 @@ def registration_required(
             code=session.get("invite_code")
         ).one_or_none()
         if not invite_code:
-            if email and email in current_app.config["APPLICATION_ADMINS"]:
+            if login_id and login_id in current_app.config["APPLICATION_ADMINS"]:
                 return None, None
             logout()
             flash("Registration is invite only", "danger")
@@ -274,7 +274,7 @@ def load_user():
     login_type = LoginType(data["type"])
 
     if login_type in (LoginType.GOOGLE, LoginType.LOCAL):
-        user = User.query.filter_by(email=email).one_or_none()
+        user = User.query.filter_by(login=email).one_or_none()
     else:
         log.error("Unsupported login type %r", login_type)
         flash("Login unsupported.", "danger")
@@ -283,14 +283,14 @@ def load_user():
     is_new = False
     is_changed = False
     if not user:
-        resp, invite_code = registration_required(email=email)
+        resp, invite_code = registration_required(login_id=email)
         if resp is not None:
             return resp
 
         name, host = email.rsplit("@", 1)
         log.info("Creating new user %s...%s@%s", name[0], name[-1], host)
         user = User(
-            email=email,
+            login=email,
             full_name=data.get("name", name),
             profile_picture=data.get("picture"),
             login_type=login_type,

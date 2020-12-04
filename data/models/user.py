@@ -96,7 +96,7 @@ class UserState(StateMachine):
 
 
 class User(MainBase):
-    email = Column(String(256), unique=True, nullable=False)
+    login = Column(String(256), unique=True, nullable=False)
     full_name = Column(String(256), nullable=True)
     profile_picture = Column(String(256), nullable=True)
     roles = relationship(Role, secondary="user_role", back_populates="users")
@@ -113,7 +113,7 @@ class User(MainBase):
             return f"User {self.id}"
         if self.full_name:
             return self.full_name
-        return self.email.split("@", 1)[0]
+        return self.login.split("@", 1)[0]
 
     @property
     def avatar(self):

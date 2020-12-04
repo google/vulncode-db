@@ -15,16 +15,11 @@
         <div class="card my-3">
             <div class="card-body">
               <div class="form-group">
-                <label class="control-label">User ID</label>
-                <span class="form-control-plaintext">{{user.id}}</span>
+                <label class="control-label">Login</label>
+                <span class="form-control-plaintext">{{user.login}}</span>
+                <small class="form-text text-muted">Only you can see this.</small>
+                <small class="form-text text-muted">Provider: {{ user.login_type | title }}</small>
               </div>
-              {% if user.email %}
-              <div class="form-group">
-                <label class="control-label">E-Mail</label>
-                <span class="form-control-plaintext">{{user.email}}</span>
-                <small class="form-text text-muted">Only you can see this address.</small>
-              </div>
-              {% endif %}
               <form method="POST" name="terms_form">
                 {{ form.hidden_tag() }}
                 {{ wtf.form_errors(form, hiddens="only") }}
@@ -38,15 +33,19 @@
             </div>
         </div>
     </div>
-    {% if user.avatar %}
     <div class="col-sm-2 d-flex justify-content-center">
         <div class="card my-3">
-            <div class="card-body">
-              <img src="{{ user.avatar_resized(96) }}" alt="profile picture" class="img-thumbnail avatar_profile">
+            <div class="card-header">
+              Public Appearance
+            </div>
+            <div class="card-body d-flex flex-column align-items-center">
+              {% if user.avatar %}
+                <img src="{{ user.avatar_resized(96) }}" alt="profile picture" class="img-thumbnail avatar_profile">
+              {% endif %}
+              <span>{{ user.name }}</span>
             </div>
         </div>
     </div>
-    {% endif %}
 </div>
 <div class="row my-3">
     <div class="col-sm-8 offset-md-2">

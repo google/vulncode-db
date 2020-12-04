@@ -110,7 +110,7 @@ def users():
     if name:
         query = f"%{name}%"
         user_list = User.query.filter(
-            or_(User.email.like(query), User.full_name.like(query))
+            or_(User.login.like(query), User.full_name.like(query))
         ).paginate()
     else:
         user_list = User.query.paginate()
