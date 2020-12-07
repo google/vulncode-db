@@ -41,19 +41,19 @@ def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
     client_without_db,
 ):
     client = client_without_db
-    resp = client.get("/auth/login?as_user=OAuth")
+    resp = client.get("/auth/login?as_user=Google")
     assert resp.status_code == 302
     target = resp.headers.get("Location")
     assert target.startswith("https://accounts.google.com/o/oauth2/v2/auth")
     assert "profile" not in target
 
-    resp = client.post("/auth/login?as_user=OAuth")
+    resp = client.post("/auth/login?as_user=Google")
     assert resp.status_code == 302
     target = resp.headers.get("Location")
     assert target.startswith("https://accounts.google.com/o/oauth2/v2/auth")
     assert "profile" not in target
 
-    resp = client.post("/auth/login?as_user=OAuth", data={"fetch_profile": "false"})
+    resp = client.post("/auth/login?as_user=Google", data={"fetch_profile": "false"})
     assert resp.status_code == 302
     target = resp.headers.get("Location")
     assert target.startswith("https://accounts.google.com/o/oauth2/v2/auth")
@@ -64,7 +64,7 @@ def test_users_get_redirected_to_full_oauth_consent_screen_with_optin(
     client_without_db,
 ):
     client = client_without_db
-    resp = client.post("/auth/login?as_user=OAuth", data={"fetch_profile": "true"})
+    resp = client.post("/auth/login?as_user=Google", data={"fetch_profile": "true"})
     assert resp.status_code == 302
     target = resp.headers.get("Location")
     assert target.startswith("https://accounts.google.com/o/oauth2/v2/auth")

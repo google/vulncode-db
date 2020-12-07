@@ -125,8 +125,14 @@ SECRET_KEY = os.getenv("COOKIE_SECRET_KEY", "")
 
 PATCH_REGEX = r".*(github\.com|\.git|\.patch|\/hg\.|\/\+\/)"
 
-GOOGLE_CLIENT_ID = os.getenv("OAUTH_CONSUMER_KEY", "")
-GOOGLE_CLIENT_SECRET = os.getenv("OAUTH_CONSUMER_SECRET", "")
+GOOGLE_CLIENT_ID = os.getenv(
+    "GOOGLE_OAUTH_CONSUMER_KEY", os.getenv("OAUTH_CONSUMER_KEY", "")
+)
+GOOGLE_CLIENT_SECRET = os.getenv(
+    "GOOGLE_OAUTH_CONSUMER_SECRET", os.getenv("OAUTH_CONSUMER_SECRET", "")
+)
+GITHUB_CLIENT_ID = os.getenv("GITHUB_OAUTH_CONSUMER_KEY", "")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_OAUTH_CONSUMER_SECRET", "")
 
 # Make sure relevant properties are always set for QA and PROD.
 if IS_PROD or IS_QA:
