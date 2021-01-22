@@ -2,15 +2,15 @@
 const treeHead = document.querySelector('#product-search');
 const parent = document.createElement('div');
 const holder = document.createElement('div');
-const shadow = treeHead.attachShadow({mode: 'open'});
+const shadow = treeHead.attachShadow({ mode: 'open' });
 parent.appendChild(holder);
 shadow.appendChild(parent);
 
 // ##### workarounds ahead!! ####
-(function() {
+(function () {
   // https://github.com/vuetifyjs/vuetify/issues/7622
-  const {querySelector} = document;
-  document.querySelector = function(selector) {
+  const { querySelector } = document;
+  document.querySelector = function (selector) {
     if (selector === '[data-app]') return shadow.querySelector(selector);
     return querySelector.call(this, selector);
   };
@@ -31,24 +31,39 @@ shadow.appendChild(parent);
     });
     target.dispatchEvent(evt);
   });
-  // https://github.com/mdn/interactive-examples/issues/887 and https://bugs.chromium.org/p/chromium/issues/detail?id=336876
-  const fontFaceSheet = new CSSStyleSheet();
-  fontFaceSheet.replaceSync(`@font-face {
+
+  // https://github.com/mdn/interactive-examples/issues/887
+  const fontFaceStyle = `@font-face {
     font-family: "Material Design Icons";
     src: url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/fonts/materialdesignicons-webfont.eot?v=4.9.95");
     src: url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/fonts/materialdesignicons-webfont.eot?#iefix&v=4.9.95") format("embedded-opentype"),url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/fonts/materialdesignicons-webfont.woff2?v=4.9.95") format("woff2"),url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/fonts/materialdesignicons-webfont.woff?v=4.9.95") format("woff"),url("https://cdn.jsdelivr.net/npm/@mdi/font@4.x/fonts/materialdesignicons-webfont.ttf?v=4.9.95") format("truetype");
     font-weight: normal;
     font-style: normal;
-}`);
-  document.adoptedStyleSheets = [fontFaceSheet];
+  }`;
   // fixing min-height of v-app
-  const styles = new CSSStyleSheet();
-  styles.replaceSync(`
-    .v-application--wrap {
-        min-height: inherit;
-    }
-`);
-  shadow.adoptedStyleSheets = [styles];
+  const shadowStyle = `
+  .v-application--wrap {
+    min-height: inherit;
+  }
+  `;
+
+  if (document.adoptedStyleSheets) {
+    // https://github.com/mdn/interactive-examples/issues/887 and https://bugs.chromium.org/p/chromium/issues/detail?id=336876
+    const fontFaceSheet = new CSSStyleSheet();
+    fontFaceSheet.replaceSync(fontFaceStyle);
+    document.adoptedStyleSheets = [fontFaceSheet];
+    const styles = new CSSStyleSheet();
+    styles.replaceSync(shadowStyle);
+    shadow.adoptedStyleSheets = [styles];
+  } else {
+    const fontFaceSheet = document.createElement('style');
+    fontFaceSheet.textContent = fontFaceStyle;
+    document.body.appendChild(fontFaceSheet);
+
+    const styles = document.createElement('style');
+    styles.textContent = shadowStyle;
+    shadow.appendChild(styles);
+  }
 })();
 // ##### workarounds done!! ####
 
@@ -127,7 +142,7 @@ const ProductSearch = {
           }
           // TODO: replace with Set?
           data.forEach((pair) =>
-            this.internalItems.push({vendor: pair['vendor'], product: pair['product']}));
+            this.internalItems.push({ vendor: pair['vendor'], product: pair['product'] }));
         });
       }, 500);
     },
@@ -173,7 +188,7 @@ let selectedProducts = [];
 let el = treeHead;
 while (el) {
   if (el.tagName === 'FORM') {
-    el.addEventListener('submit', function() {
+    el.addEventListener('submit', function () {
       const container = this.querySelector('#product-fields');
       // clear node
       while (container.firstChild) {
