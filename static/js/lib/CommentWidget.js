@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {ZoneViewWidget} from './ZoneViewWidget.js';
-import {UI} from './UI.js';
+import { ZoneViewWidget } from './ZoneViewWidget.js';
+import { UI } from './UI.js';
 
 
 /**
@@ -33,7 +33,7 @@ export class CommentWidget extends ZoneViewWidget {
     super(
       isDiffMode ? editor.getOriginalEditor() : editor,
       isDiffMode ? editor.getModifiedEditor() : editor,
-      {glyphClassName: 'fa fa-comment'});
+      { glyphClassName: 'fa fa-comment' });
     this._comment = comment;
     this._isEditMode = isEditMode;
     this._isDiffMode = isDiffMode;
@@ -183,13 +183,13 @@ export class CommentWidget extends ZoneViewWidget {
       height: this._bodyElement.clientHeight,
     };
     const headHeight =
-      Math.ceil(this.overlayEditor.getRawOptions().lineHeight * 1.2);
-    const lineHeight = this.overlayEditor.getRawOptions().lineHeight;
+      Math.ceil(this.overlayEditor.getOption(monaco.editor.EditorOption.lineHeight) * 1.2);
+    const lineHeight = this.overlayEditor.getOption(monaco.editor.EditorOption.lineHeight);
     const arrowHeight = Math.round(lineHeight / 3);
     const frameThickness = Math.round(lineHeight / 9) * 2;
 
     const computedLinesNumber = Math.ceil(
-        (headHeight + dimensions.height + arrowHeight + frameThickness) /
+      (headHeight + dimensions.height + arrowHeight + frameThickness) /
       lineHeight);
     this._relayout(computedLinesNumber);
   }

@@ -169,22 +169,22 @@ export class ZoneViewWidget {
 
   show(rangeOrPos, heightInLines) {
     const range = monaco.Range.isIRange(rangeOrPos) ?
-        rangeOrPos :
-        new monaco.Range(
-            rangeOrPos.lineNumber, rangeOrPos.column, rangeOrPos.lineNumber,
-            rangeOrPos.column);
+      rangeOrPos :
+      new monaco.Range(
+        rangeOrPos.lineNumber, rangeOrPos.column, rangeOrPos.lineNumber,
+        rangeOrPos.column);
 
     this._isShowing = true;
     this._showImpl(range, heightInLines);
     this._isShowing = false;
     this._positionMarkerId = this.viewZoneEditor.deltaDecorations(
-        this._positionMarkerId, [{
-          range,
-          options: {
-            glyphMarginClassName: this.options.glyphClassName,
-            overviewRuler: true,
-          },
-        }]);
+      this._positionMarkerId, [{
+        range,
+        options: {
+          glyphMarginClassName: this.options.glyphClassName,
+          overviewRuler: true,
+        },
+      }]);
   }
 
   hide() {
@@ -204,7 +204,7 @@ export class ZoneViewWidget {
   }
 
   _decoratingElementsHeight() {
-    const lineHeight = this.viewZoneEditor.getRawOptions().lineHeight;
+    const lineHeight = this.viewZoneEditor.getOption(monaco.editor.EditorOption.lineHeight);
     let result = 0;
 
     if (this.options.showArrow) {
@@ -234,11 +234,11 @@ export class ZoneViewWidget {
     // Render the widget as zone (rendering) and widget (lifecycle)
     const viewZoneDomNode = document.createElement('div');
     viewZoneDomNode.style.overflow = 'hidden';
-    const lineHeight = this.viewZoneEditor.getRawOptions().lineHeight;
+    const lineHeight = this.viewZoneEditor.getOption(monaco.editor.EditorOption.lineHeight);
 
     // adjust heightInLines to viewport
     const maxHeightInLines =
-        (this.viewZoneEditor.getLayoutInfo().height / lineHeight) * .8;
+      (this.viewZoneEditor.getLayoutInfo().height / lineHeight) * .8;
     if (heightInLines >= maxHeightInLines) {
       heightInLines = maxHeightInLines;
     }
@@ -278,19 +278,19 @@ export class ZoneViewWidget {
       };
       this._viewZone.id = accessor.addZone(this._viewZone);
       this._overlayWidget = new OverlayWidgetDelegate(
-          WIDGET_ID + this._viewZone.id, this.domNode);
+        WIDGET_ID + this._viewZone.id, this.domNode);
       this.overlayEditor.addOverlayWidget(this._overlayWidget);
     });
 
     if (this.options.showFrame) {
       const width =
-          this.options.frameWidth ? this.options.frameWidth : frameThickness;
+        this.options.frameWidth ? this.options.frameWidth : frameThickness;
       this.container.style.borderTopWidth = width + 'px';
       this.container.style.borderBottomWidth = width + 'px';
     }
 
     const containerHeight =
-        heightInLines * lineHeight - this._decoratingElementsHeight();
+      heightInLines * lineHeight - this._decoratingElementsHeight();
     this.container.style.top = arrowHeight + 'px';
     this.container.style.height = containerHeight + 'px';
     this.container.style.overflow = 'hidden';
@@ -305,8 +305,8 @@ export class ZoneViewWidget {
     // Reveal the line above or below the zone widget, to get the zone widget in
     // the viewport
     const revealLineNumber = Math.min(
-        this.viewZoneEditor.getModel().getLineCount(),
-        Math.max(1, where.endLineNumber + 1));
+      this.viewZoneEditor.getModel().getLineCount(),
+      Math.max(1, where.endLineNumber + 1));
     this.revealLine(revealLineNumber);
   }
 
@@ -344,7 +344,7 @@ export class ZoneViewWidget {
   }
 
   _calcHeightInLines(height) {
-    const lines = height / this.viewZoneEditor.getRawOptions().lineHeight;
+    const lines = height / this.viewZoneEditor.getOption(monaco.editor.EditorOption.lineHeight);
     return Math.floor(lines);
   }
 
@@ -354,7 +354,7 @@ export class ZoneViewWidget {
 
   getHorizontalSashTop() {
     return parseInt(this.domNode.style.height) -
-        (this._decoratingElementsHeight() / 2);
+      (this._decoratingElementsHeight() / 2);
   }
 
   getHorizontalSashWidth() {
