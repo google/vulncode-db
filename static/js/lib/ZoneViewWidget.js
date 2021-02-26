@@ -171,20 +171,20 @@ export class ZoneViewWidget {
     const range = monaco.Range.isIRange(rangeOrPos) ?
       rangeOrPos :
       new monaco.Range(
-        rangeOrPos.lineNumber, rangeOrPos.column, rangeOrPos.lineNumber,
-        rangeOrPos.column);
+          rangeOrPos.lineNumber, rangeOrPos.column, rangeOrPos.lineNumber,
+          rangeOrPos.column);
 
     this._isShowing = true;
     this._showImpl(range, heightInLines);
     this._isShowing = false;
     this._positionMarkerId = this.viewZoneEditor.deltaDecorations(
-      this._positionMarkerId, [{
-        range,
-        options: {
-          glyphMarginClassName: this.options.glyphClassName,
-          overviewRuler: true,
-        },
-      }]);
+        this._positionMarkerId, [{
+          range,
+          options: {
+            glyphMarginClassName: this.options.glyphClassName,
+            overviewRuler: true,
+          },
+        }]);
   }
 
   hide() {
@@ -278,7 +278,7 @@ export class ZoneViewWidget {
       };
       this._viewZone.id = accessor.addZone(this._viewZone);
       this._overlayWidget = new OverlayWidgetDelegate(
-        WIDGET_ID + this._viewZone.id, this.domNode);
+          WIDGET_ID + this._viewZone.id, this.domNode);
       this.overlayEditor.addOverlayWidget(this._overlayWidget);
     });
 
@@ -305,8 +305,8 @@ export class ZoneViewWidget {
     // Reveal the line above or below the zone widget, to get the zone widget in
     // the viewport
     const revealLineNumber = Math.min(
-      this.viewZoneEditor.getModel().getLineCount(),
-      Math.max(1, where.endLineNumber + 1));
+        this.viewZoneEditor.getModel().getLineCount(),
+        Math.max(1, where.endLineNumber + 1));
     this.revealLine(revealLineNumber);
   }
 

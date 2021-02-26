@@ -2,15 +2,15 @@
 const treeHead = document.querySelector('#product-search');
 const parent = document.createElement('div');
 const holder = document.createElement('div');
-const shadow = treeHead.attachShadow({ mode: 'open' });
+const shadow = treeHead.attachShadow({mode: 'open'});
 parent.appendChild(holder);
 shadow.appendChild(parent);
 
 // ##### workarounds ahead!! ####
-(function () {
+(function() {
   // https://github.com/vuetifyjs/vuetify/issues/7622
-  const { querySelector } = document;
-  document.querySelector = function (selector) {
+  const {querySelector} = document;
+  document.querySelector = function(selector) {
     if (selector === '[data-app]') return shadow.querySelector(selector);
     return querySelector.call(this, selector);
   };
@@ -142,7 +142,7 @@ const ProductSearch = {
           }
           // TODO: replace with Set?
           data.forEach((pair) =>
-            this.internalItems.push({ vendor: pair['vendor'], product: pair['product'] }));
+            this.internalItems.push({vendor: pair['vendor'], product: pair['product']}));
         });
       }, 500);
     },
@@ -188,7 +188,7 @@ let selectedProducts = [];
 let el = treeHead;
 while (el) {
   if (el.tagName === 'FORM') {
-    el.addEventListener('submit', function () {
+    el.addEventListener('submit', function() {
       const container = this.querySelector('#product-fields');
       // clear node
       while (container.firstChild) {

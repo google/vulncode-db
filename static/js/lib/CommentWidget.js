@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { ZoneViewWidget } from './ZoneViewWidget.js';
-import { UI } from './UI.js';
+import {ZoneViewWidget} from './ZoneViewWidget.js';
+import {UI} from './UI.js';
 
 
 /**
@@ -33,7 +33,7 @@ export class CommentWidget extends ZoneViewWidget {
     super(
       isDiffMode ? editor.getOriginalEditor() : editor,
       isDiffMode ? editor.getModifiedEditor() : editor,
-      { glyphClassName: 'fa fa-comment' });
+      {glyphClassName: 'fa fa-comment'});
     this._comment = comment;
     this._isEditMode = isEditMode;
     this._isDiffMode = isDiffMode;
@@ -189,7 +189,7 @@ export class CommentWidget extends ZoneViewWidget {
     const frameThickness = Math.round(lineHeight / 9) * 2;
 
     const computedLinesNumber = Math.ceil(
-      (headHeight + dimensions.height + arrowHeight + frameThickness) /
+        (headHeight + dimensions.height + arrowHeight + frameThickness) /
       lineHeight);
     this._relayout(computedLinesNumber);
   }
