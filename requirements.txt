@@ -31,3 +31,6 @@ simplejson>=3.16.0
 sqlakeyset==0.1.1559103842
 # GAE logging
 google-cloud-logging==2.0.0
+
+# pin sqlalchemy until https://github.com/pallets/flask-sqlalchemy/issues/885 is fixed
+sqlalchemy<1.4
