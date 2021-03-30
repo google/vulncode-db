@@ -5,3 +5,6 @@ PyGithub==1.40
 unidiff==0.5.5
 pyyaml
 sqlakeyset==0.1.1559103842
+
+# pin sqlalchemy until https://github.com/pallets/flask-sqlalchemy/issues/885 is fixed
+sqlalchemy<1.4
