@@ -34,8 +34,9 @@ log = logging.getLogger(__name__)
 #       MariaDB server settings.
 class SQLAlchemy(SQLAlchemyBase):
     def apply_pool_defaults(self, app, options):
-        super().apply_pool_defaults(app, options)
+        options = super().apply_pool_defaults(app, options)
         options["pool_pre_ping"] = True
+        return options
 
 
 db = SQLAlchemy()
