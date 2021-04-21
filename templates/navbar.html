@@ -14,6 +14,11 @@
           <a class="nav-link" href="/about">About</a>
         </li>
       {% endif %}
+      {% if template_exists('news.html') %}
+        <li class="nav-item{%- if request.path == "/news" %} active{% endif %}">
+        <a class="nav-link" href="/news">News</a>
+        </li>
+      {% endif %}
     </ul>
 
     <ul class="navbar-nav mt-2 mt-md-0">

@@ -25,13 +25,10 @@ import io
 import requests
 
 try:
-    import markdown
-except ImportError:
-    markdown = None
-try:
     import pycmarkgfm
 except ImportError:
-    pycmarkgfm = None
+    print("pip install pycmarkgfm")
+    exit()
 
 
 class Release:
@@ -52,17 +49,14 @@ class Release:
 
     def to_html(self):
         if pycmarkgfm:
-            print("Using pycmarkgfm", file=sys.stderr)
+            # print("Using pycmarkgfm", file=sys.stderr)
             description = pycmarkgfm.gfm_to_html(self.body)
-        elif markdown:
-            print("Using markdown", file=sys.stderr)
-            description = markdown.markdown(self.body)
         else:
-            print("Using plain", file=sys.stderr)
+            # print("Using plain", file=sys.stderr)
             description = f'<pre id="desc-{self.id}"></pre><script>document.getElementById("desc-{self.id}").textContent = {json.dumps(self.body)};</script>'
         return f"""<div class="release" id="release-{self.id}">
-    <h1>{self.name}</h1>
-    <h5>{self.published_at}</h5>
+    <h2>{self.name}</h2>
+    <p>{self.published_at}</p>
     <div class="description">
     {description}
     </div>
@@ -71,7 +65,7 @@ class Release:
 
 def fetch(path, **kwargs):
     resp = requests.get(
-        "https://api.github.com/repos/rust-lang/rust/" + path.lstrip("/"),
+        "https://api.github.com/repos/google/vulncode-db/" + path.lstrip("/"),
         params=kwargs,
         headers={"Accept": "application/vnd.github.v3+json"},
     )
