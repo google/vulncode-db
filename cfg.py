@@ -150,8 +150,10 @@ if suggested_admins != "":
 # Restrict the login to administrators only.
 RESTRICT_LOGIN = os.getenv("RESTRICT_LOGIN", "true").lower() == "true"
 
-# registration mode. INVITE_ONLY / OPEN / CLOSED
-REGISTRATION_MODE = "INVITE_ONLY"
+# Registration mode can be CLOSED, INVITE_ONLY or OPEN.
+REGISTRATION_MODE = os.getenv("REGISTRATION_MODE", "INVITE_ONLY").upper()
+if REGISTRATION_MODE not in ["CLOSED", "INVITE_ONLY", "OPEN"]:
+    raise AssertionError("Invalid REGISTRATION_MODE passed.")
 
 AUTO_ENABLE_INVITED_USERS = True
 

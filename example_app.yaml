@@ -70,6 +70,9 @@ env_variables:
   # Restrict the login to administrators only.
   RESTRICT_LOGIN: True
 
+  # Allow external registrations. Can be: 'INVITE_ONLY' (default), 'CLOSED' or 'OPEN'.
+  # REGISTRATION_MODE: 'INVITE_ONLY'
+
   # Shows a warning as changes can only be stored permanently by admins.
   # DEMO_MODE: False
   # Show a "maintenance page".
