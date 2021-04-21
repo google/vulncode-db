@@ -380,6 +380,8 @@ def load_user():
             if current_app.config["AUTO_ENABLE_INVITED_USERS"]:
                 user.enable()
             db.session.add(invite_code)
+        elif current_app.config["REGISTRATION_MODE"] == "OPEN":
+            user.enable()
     else:
         log.info("Updating user %s", user)
         if "name" in data and not user.full_name:
