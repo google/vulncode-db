@@ -1,6 +1,6 @@
 -r requirements.txt
 pylint
-black>=20.8b1
+black==21.5b1
 pyyaml
 pytest==5.2.0
 pytest-mock==1.11.0
