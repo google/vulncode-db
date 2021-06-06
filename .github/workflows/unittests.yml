@@ -41,8 +41,8 @@ jobs:
         python -m pip install --upgrade pip
         # Install mysql_config on machine to avoid "OSError: mysql_config not found" error during pip install for mysqlclient.
         sudo apt-get update && sudo apt-get install -y libmysqlclient-dev
-        pip3 install -r requirements.txt
-        pip3 install -r dev_requirements.txt
+        pip3 install -r deps/requirements.txt
+        pip3 install -r deps/dev_requirements.txt
     - name: Run Python tests
       run: |
         ./tests/run_unit_tests.sh
