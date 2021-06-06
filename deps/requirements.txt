@@ -1,0 +1,31 @@
+-r common_requirements.txt
+
+# 'MySQLdb' dependency.
+mysqlclient==2.0.3
+# Main Flask related dependencies.
+Flask-Bootstrap==3.3.7.1
+flask-marshmallow==0.14.0
+Flask-Migrate==2.7.0
+Authlib==0.15.3
+Flask-SQLAlchemy==2.5.1
+# Not in use due to a problem when matching against multiple fulltext columns with a joined table.
+# SQLAlchemy-FullText-Search==0.2.5
+Flask-WTF==0.14.3
+marshmallow-sqlalchemy==0.25.0
+google-auth==1.23
+flask-bouncer==0.3.0
+bouncer==0.1.12
+# Flask-debugtoolbar requirements -------
+flask-debugtoolbar==0.11.0
+setuptools==57.0.0
+sqlparse==0.3.0
+pygments==2.7.4
+colorama==0.4.4
+# Provides a WSGI werkzeug server alternative.
+#gevent==1.4.0
+# Required to make Flask's jsonify work with decimal numbers.
+simplejson==3.17.2
+# ---------------------------------------
+# Misc. requirements
+# GAE logging
+google-cloud-logging==2.0.0

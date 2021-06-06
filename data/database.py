@@ -15,7 +15,6 @@
 # Attention: DO NOT DELETE THE * IMPORT BELOW
 # -> Required to import all model definitions to allow database creation.
 
-from flask_script import Manager  # type: ignore
 from flask_migrate import Migrate, MigrateCommand  # type: ignore
 from sqlalchemy.engine import reflection
 
@@ -27,7 +26,6 @@ class Database:
     db = db
     ma = ma  # pylint: disable=invalid-name
     migrate = Migrate(db=db)
-    manager = Manager()
 
     def __init__(self, app=None):
         """Initializes the questionnaire object."""
@@ -39,7 +37,6 @@ class Database:
             self.db.init_app(self.app)
             self.ma.init_app(self.app)
             self.migrate.init_app(self.app)
-            self.manager.app = self.app
 
             # Create the database from all model definitions.
             # Note: This is a no-op if the tables already exist.
@@ -68,8 +65,6 @@ class Database:
     def query(self, *args, **kwargs):
         return self.db.session.query(*args, **kwargs)
 
-
-Database.manager.add_command("db", MigrateCommand)
 
 DEFAULT_DATABASE = Database()
 

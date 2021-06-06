@@ -1,0 +1,8 @@
+-r common_requirements.txt
+
+# Dependencies for the version control system (VCS) proxy that serves source code from GitHub or Git repositories.
+dulwich>=0.19,<0.20
+gitpython==2.1.11
+PyGithub==1.40
+unidiff==0.5.5
+pyyaml

@@ -1,0 +1,10 @@
+# Dependencies shared by multiple components like the frontend and version control system (VCS) prox
+Flask==2.0.1
+sqlakeyset==0.1.1559103842
+
+# Pin sqlalchemy until pytest-flask-sqlalchemy gets fully removed.
+# It's not well maintained and has compatibility issues with SQLAlchemy 1.4.x
+# Example: https://github.com/jeancochrane/pytest-flask-sqlalchemy/issues/46 is fixed
+# Potential workaround for the whole package is provided in
+# https://github.com/jeancochrane/pytest-flask-sqlalchemy/issues/46#issuecomment-829694672
+sqlalchemy<1.4
