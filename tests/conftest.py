@@ -190,8 +190,10 @@ def db_session(
 def setup_test_database():
     """Returns session-wide initialised database."""
 
-    # create app for db setup. we don't use the app or db fixture here as they should
-    # stay at a function scope, not session scope as this function
+    # Create a temporary flask app for the database setup.
+    # We don't use the app or db fixtures here as they should be
+    # executed in the function scope, not in the session scope like
+    # this function is.
     app = create_app(TEST_CONFIG)
     with app.app_context():
         db: SQLAlchemy = app.extensions["sqlalchemy"].db
