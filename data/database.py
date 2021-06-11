@@ -15,7 +15,9 @@
 # Attention: DO NOT DELETE THE * IMPORT BELOW
 # -> Required to import all model definitions to allow database creation.
 
-from flask_migrate import Migrate, MigrateCommand  # type: ignore
+from typing import Dict, Iterable, Optional
+from flask import Flask
+from flask_migrate import Migrate  # type: ignore
 from sqlalchemy.engine import reflection
 
 from data.models import *  # pylint: disable=wildcard-import
@@ -27,11 +29,11 @@ class Database:
     ma = ma  # pylint: disable=invalid-name
     migrate = Migrate(db=db)
 
-    def __init__(self, app=None):
+    def __init__(self, app: Optional[Flask] = None):
         """Initializes the questionnaire object."""
         self.app = app
 
-    def init_app(self, app):
+    def init_app(self, app: Flask):
         self.app = app
         with self.app.app_context():
             self.db.init_app(self.app)
@@ -47,9 +49,11 @@ class Database:
         self.db.drop_all()
 
         # Hack to remove all indices from the database...
-        insp = reflection.Inspector.from_engine(self.db.engine)
-        for name in insp.get_table_names():
-            for index in insp.get_indexes(name):
+        insp: reflection.Inspector = reflection.Inspector.from_engine(self.db.engine)
+        table_names: Iterable[str] = insp.get_table_names()
+        for name in table_names:
+            indexes: Iterable[Dict[str, str]] = insp.get_indexes(name)
+            for index in indexes:
                 self.db.engine.execute(f"DROP INDEX IF EXISTS {index['name']}")
         self.app.logger.warning("!!! Attention !!! FLUSHED the main database.")
 
@@ -69,5 +73,5 @@ class Database:
 DEFAULT_DATABASE = Database()
 
 
-def init_app(app):
+def init_app(app: Flask):
     DEFAULT_DATABASE.init_app(app)

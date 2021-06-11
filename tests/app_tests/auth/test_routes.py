@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pytest
+import pytest_mock
+import contextlib
+import unittest.mock
+
+from flask import testing
 
 from app.auth.routes import oauth
 from tests.conftest import as_user
@@ -20,8 +25,11 @@ from tests.conftest import set_user
 from authlib.oidc.core import UserInfo
 
 
-def test_authenticated_users_get_redirected_to_home(app, client_without_db):
+def test_authenticated_users_get_redirected_to_home(
+    client_without_db: testing.FlaskClient,
+):
     client = client_without_db
+    app = client.application
     with set_user(app, as_user(client)):
         with app.app_context():
             resp = client.get("/auth/login")
@@ -29,7 +37,9 @@ def test_authenticated_users_get_redirected_to_home(app, client_without_db):
             assert resp.headers.get("Location") == "http://localhost/"
 
 
-def test_unauthenticated_users_can_choose_login(client_without_db):
+def test_unauthenticated_users_can_choose_login(
+    client_without_db: testing.FlaskClient,
+):
     client = client_without_db
     resp = client.get("/auth/login")
     assert resp.status_code == 200
@@ -38,7 +48,7 @@ def test_unauthenticated_users_can_choose_login(client_without_db):
 
 
 def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
-    client_without_db,
+    client_without_db: testing.FlaskClient,
 ):
     client = client_without_db
     resp = client.get("/auth/login?as_user=Google")
@@ -61,7 +71,7 @@ def test_users_get_redirected_to_minimal_oauth_consent_screen_by_default(
 
 
 def test_users_get_redirected_to_full_oauth_consent_screen_with_optin(
-    client_without_db,
+    client_without_db: testing.FlaskClient,
 ):
     client = client_without_db
     resp = client.post("/auth/login?as_user=Google", data={"fetch_profile": "true"})
@@ -71,8 +81,11 @@ def test_users_get_redirected_to_full_oauth_consent_screen_with_optin(
     assert "profile" in target
 
 
-def test_logout_clears_the_session(app, client_without_db):
+def test_logout_clears_the_session(
+    client_without_db: testing.FlaskClient,
+):
     client = client_without_db
+    app = client.application
 
     with set_user(app, as_user(client)):
         with app.app_context():
@@ -93,26 +106,41 @@ def test_logout_clears_the_session(app, client_without_db):
                 assert "something_else" not in session
 
 
-def test_authorization_callback_success(mocker, client_without_db):
+@contextlib.contextmanager
+def patch_query(model: str):
+    module, name = model.rsplit(".", 1)
+    model_cls = getattr(__import__(module, fromlist=[name]), name)
+    query = unittest.mock.MagicMock()
+    model_cls.query = query
+    yield query
+    delattr(model_cls, "query")
+
+
+def test_authorization_callback_success(
+    mocker: pytest_mock.MockFixture,
+    client_without_db: testing.FlaskClient,
+):
     client = client_without_db
     mocker.patch("app.auth.routes.oauth.google.authorize_access_token")
     mocker.patch("app.auth.routes.oauth.google.parse_id_token")
-    query = mocker.patch("data.models.user.User.query")
+    # normally one should do
+    # query = mocker.patch("data.models.user.User.query")
+    # but this makes issues if there is no database available
+    with patch_query("data.models.user.User") as query:
+        oauth.google.authorize_access_token.return_value = {"access_token": "TOKEN"}
 
-    oauth.google.authorize_access_token.return_value = {"access_token": "TOKEN"}
+        oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
+        query.filter_by.one_or_none.return_value = True
 
-    oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
-    query.filter_by.one_or_none.return_value = True
+        resp = client.get("/auth/authorized")
 
-    resp = client.get("/auth/authorized")
+        assert resp.status_code == 302
+        assert resp.headers.get("Location") == "http://localhost/"
 
-    assert resp.status_code == 302
-    assert resp.headers.get("Location") == "http://localhost/"
-
-    oauth.google.authorize_access_token.assert_called_once()
-    oauth.google.parse_id_token.assert_called_once_with({"access_token": "TOKEN"})
-    with client.session_transaction() as session:
-        assert "user_info" in session
+        oauth.google.authorize_access_token.assert_called_once()
+        oauth.google.parse_id_token.assert_called_once_with({"access_token": "TOKEN"})
+        with client.session_transaction() as session:
+            assert "user_info" in session
 
 
 # TODO: Re-enable this test.
@@ -132,7 +160,10 @@ def test_authorization_callback_success(mocker, client_without_db):
 #         assert 'user_info' not in session
 
 
-def test_authorization_callback_access_denied_with_reason(mocker, client_without_db):
+def test_authorization_callback_access_denied_with_reason(
+    mocker: pytest_mock.MockFixture,
+    client_without_db: testing.FlaskClient,
+):
     client = client_without_db
     mocker.patch("app.auth.routes.oauth.google.authorize_access_token")
     mocker.patch("app.auth.routes.oauth.google.get")
@@ -152,34 +183,39 @@ def test_authorization_callback_access_denied_with_reason(mocker, client_without
         assert "user_info" not in session
 
 
-def test_authorization_callback_redirect(mocker, client_without_db):
+def test_authorization_callback_redirect(
+    mocker: pytest_mock.MockFixture,
+    client_without_db: testing.FlaskClient,
+):
     client = client_without_db
     mocker.patch("app.auth.routes.oauth.google.authorize_access_token")
     mocker.patch("app.auth.routes.oauth.google.parse_id_token")
-    query = mocker.patch("data.models.user.User.query")
+    # normally one should do
+    # query = mocker.patch("data.models.user.User.query")
+    # but this makes issues if there is no database available
+    with patch_query("data.models.user.User") as query:
+        oauth.google.authorize_access_token.return_value = {"access_token": "TOKEN"}
 
-    oauth.google.authorize_access_token.return_value = {"access_token": "TOKEN"}
+        oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
+        query.filter_by.one_or_none.return_value = True
 
-    oauth.google.parse_id_token.return_value = UserInfo(regular_user_info())
-    query.filter_by.one_or_none.return_value = True
+        with client.session_transaction() as session:
+            session["redirect_path"] = "/FOO"
 
-    with client.session_transaction() as session:
-        session["redirect_path"] = "/FOO"
+        resp = client.get("/auth/authorized")
 
-    resp = client.get("/auth/authorized")
+        assert resp.status_code == 302
+        assert resp.headers.get("Location") == "http://localhost/FOO"
 
-    assert resp.status_code == 302
-    assert resp.headers.get("Location") == "http://localhost/FOO"
-
-    oauth.google.authorize_access_token.assert_called_once()
-    oauth.google.parse_id_token.assert_called_once_with({"access_token": "TOKEN"})
-    with client.session_transaction() as session:
-        assert "user_info" in session
-        assert "redirect_path" not in session
+        oauth.google.authorize_access_token.assert_called_once()
+        oauth.google.parse_id_token.assert_called_once_with({"access_token": "TOKEN"})
+        with client.session_transaction() as session:
+            assert "user_info" in session
+            assert "redirect_path" not in session
 
 
 @pytest.mark.integration
-def test_blocked_user(mocker, client):
+def test_blocked_user(mocker: pytest_mock.MockFixture, client: testing.FlaskClient):
     mocker.patch("app.auth.routes.oauth.google.authorize_access_token")
     mocker.patch("app.auth.routes.oauth.google.parse_id_token")
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+from typing import Any, Dict, Optional
 
 from urllib.parse import urljoin
 from urllib.parse import urlparse
@@ -53,7 +54,7 @@ from data.database import init_app as init_db
 from data.models import Vulnerability
 
 
-def create_app(test_config=None):
+def create_app(test_config: Optional[Dict[str, Any]] = None, *, with_db: bool = True):
     """Application factory."""
     app = Flask("main", static_url_path="", template_folder=cfg.TEMPLATES_DIR)
 
@@ -74,8 +75,9 @@ def create_app(test_config=None):
     app.jinja_env.lstrip_blocks = True
     app.jinja_env.trim_blocks = True
 
-    # Connect to the database and initialize SQLAlchemy.
-    init_db(app)
+    if with_db:
+        # Connect to the database and initialize SQLAlchemy.
+        init_db(app)
     return app
 
 
