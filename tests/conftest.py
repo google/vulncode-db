@@ -186,134 +186,141 @@ def db_session(
         db.session = old_session
 
 
-@pytest.fixture
-def setup_test_database(db: SQLAlchemy):
+@pytest.fixture("session")
+def setup_test_database():
     """Returns session-wide initialised database."""
 
-    # setup databases and tables
-    with open(os.path.join(cfg.BASE_DIR, "docker/db_schema.sql"), "rb") as f:
-        create_schemas_sql = f.read().decode("utf8")
+    # create app for db setup. we don't use the app or db fixture here as they should
+    # stay at a function scope, not session scope as this function
+    app = create_app(TEST_CONFIG)
+    with app.app_context():
+        db: SQLAlchemy = app.extensions["sqlalchemy"].db
 
-    # with app.app_context():
-    # clear database
-    db.drop_all()
-    db.engine.execute("DROP TABLE IF EXISTS alembic_version")
+        # setup databases and tables
+        with open(os.path.join(cfg.BASE_DIR, "docker/db_schema.sql"), "rb") as f:
+            create_schemas_sql = f.read().decode("utf8")
 
-    # build database
-    db.engine.execute(create_schemas_sql)
-    alembic_upgrade()
+        # with app.app_context():
+        # clear database
+        db.drop_all()
+        db.engine.execute("DROP TABLE IF EXISTS alembic_version")
 
-    # create data
-    session = db.session
-    roles = [Role(name=role) for role in (PredefinedRoles.ADMIN, PredefinedRoles.USER)]
-    session.add_all(roles)
-    users = [
-        User(
-            login="admin@vulncode-db.com",
-            full_name="Admin McAdmin",
-            roles=roles,
-            state=UserState.ACTIVE,
-            login_type=LoginType.LOCAL,
-        ),
-        User(
-            login="user@vulncode-db.com",
-            full_name="User McUser",
-            roles=[roles[1]],
-            state=UserState.ACTIVE,
-            login_type=LoginType.LOCAL,
-        ),
-        User(
-            login="blocked@vulncode-db.com",
-            full_name="Blocked User",
-            roles=[roles[1]],
-            state=UserState.BLOCKED,
-            login_type=LoginType.LOCAL,
-        ),
-    ]
-    session.add_all(users)
+        # build database
+        db.engine.execute(create_schemas_sql)
+        alembic_upgrade()
 
-    vuln_cves = list("CVE-1970-{}".format(1000 + i) for i in range(10))
-    new_cves = list("CVE-1970-{}".format(2000 + i) for i in range(10))
-    cves = vuln_cves + new_cves
+        # create data
+        session = db.session
+        roles = [
+            Role(name=role) for role in (PredefinedRoles.ADMIN, PredefinedRoles.USER)
+        ]
+        session.add_all(roles)
+        users = [
+            User(
+                login="admin@vulncode-db.com",
+                full_name="Admin McAdmin",
+                roles=roles,
+                state=UserState.ACTIVE,
+                login_type=LoginType.LOCAL,
+            ),
+            User(
+                login="user@vulncode-db.com",
+                full_name="User McUser",
+                roles=[roles[1]],
+                state=UserState.ACTIVE,
+                login_type=LoginType.LOCAL,
+            ),
+            User(
+                login="blocked@vulncode-db.com",
+                full_name="Blocked User",
+                roles=[roles[1]],
+                state=UserState.BLOCKED,
+                login_type=LoginType.LOCAL,
+            ),
+        ]
+        session.add_all(users)
 
-    nvds = []
-    for i, cve in enumerate(cves, 1):
-        nvds.append(
-            Nvd(
-                cve_id=cve,
-                descriptions=[
-                    Description(
-                        value="Description {}".format(i),
-                    ),
-                ],
-                references=[
-                    Reference(
-                        link="https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(
-                            cve
+        vuln_cves = list("CVE-1970-{}".format(1000 + i) for i in range(10))
+        new_cves = list("CVE-1970-{}".format(2000 + i) for i in range(10))
+        cves = vuln_cves + new_cves
+
+        nvds = []
+        for i, cve in enumerate(cves, 1):
+            nvds.append(
+                Nvd(
+                    cve_id=cve,
+                    descriptions=[
+                        Description(
+                            value="Description {}".format(i),
                         ),
-                        source="cve.mitre.org",
-                    ),
-                ],
-                published_date=datetime.date.today(),
-                cpes=[
-                    Cpe(
-                        vendor="Vendor {}".format(i),
-                        product="Product {}".format(j),
-                    )
-                    for j in range(1, 4)
-                ],
+                    ],
+                    references=[
+                        Reference(
+                            link="https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(
+                                cve
+                            ),
+                            source="cve.mitre.org",
+                        ),
+                    ],
+                    published_date=datetime.date.today(),
+                    cpes=[
+                        Cpe(
+                            vendor="Vendor {}".format(i),
+                            product="Product {}".format(j),
+                        )
+                        for j in range(1, 4)
+                    ],
+                )
             )
-        )
-    session.add_all(nvds)
+        session.add_all(nvds)
 
-    vulns = []
-    for i, cve in enumerate(vuln_cves, 1):
-        repo_owner = "OWNER"
-        repo_name = "REPO{i}".format(i=i)
-        repo_url = "https://github.com/{owner}/{repo}/".format(
-            owner=repo_owner,
-            repo=repo_name,
-        )
-        commit = "{:07x}".format(0x1234567 + i)
+        vulns = []
+        for i, cve in enumerate(vuln_cves, 1):
+            repo_owner = "OWNER"
+            repo_name = "REPO{i}".format(i=i)
+            repo_url = "https://github.com/{owner}/{repo}/".format(
+                owner=repo_owner,
+                repo=repo_name,
+            )
+            commit = "{:07x}".format(0x1234567 + i)
+            vulns.append(
+                Vulnerability(
+                    vcdb_id=i,
+                    cve_id=cve,
+                    date_created=datetime.date.today(),
+                    creator=users[1],
+                    state=VulnerabilityState.PUBLISHED,
+                    version=0,
+                    comment="Vulnerability {} comment".format(i),
+                    commits=[
+                        VulnerabilityGitCommits(
+                            commit_link="{repo_url}commit/{commit}".format(
+                                repo_url=repo_url,
+                                commit=commit,
+                            ),
+                            repo_owner=repo_owner,
+                            repo_name=repo_name,
+                            # TODO: test conflicting data?
+                            repo_url=repo_url,
+                            commit_hash=commit,
+                        )
+                    ],
+                )
+            )
         vulns.append(
             Vulnerability(
-                vcdb_id=i,
-                cve_id=cve,
-                date_created=datetime.date.today(),
-                creator=users[1],
                 state=VulnerabilityState.PUBLISHED,
                 version=0,
-                comment="Vulnerability {} comment".format(i),
-                commits=[
-                    VulnerabilityGitCommits(
-                        commit_link="{repo_url}commit/{commit}".format(
-                            repo_url=repo_url,
-                            commit=commit,
-                        ),
-                        repo_owner=repo_owner,
-                        repo_name=repo_name,
-                        # TODO: test conflicting data?
-                        repo_url=repo_url,
-                        commit_hash=commit,
-                    )
-                ],
+                vcdb_id=len(vulns) + 1,
+                cve_id="CVE-1970-1500",
+                date_created=datetime.date.today(),
+                comment="Vulnerability {} comment".format(len(vuln_cves) + 1),
+                commits=[],
             )
         )
-    vulns.append(
-        Vulnerability(
-            state=VulnerabilityState.PUBLISHED,
-            version=0,
-            vcdb_id=len(vulns) + 1,
-            cve_id="CVE-1970-1500",
-            date_created=datetime.date.today(),
-            comment="Vulnerability {} comment".format(len(vuln_cves) + 1),
-            commits=[],
-        )
-    )
-    session.add_all(vulns)
+        session.add_all(vulns)
 
-    session.commit()
-    return db
+        session.commit()
 
 
 def regular_user_info():
