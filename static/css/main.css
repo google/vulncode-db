@@ -122,6 +122,10 @@ div.container-fluid {
   white-space: pre-wrap;
 }
 
+strong {
+  font-weight: bold !important;
+}
+
 .shadow-textarea textarea.form-control::placeholder {
   font-weight: 300;
 }

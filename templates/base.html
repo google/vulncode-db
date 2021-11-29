@@ -21,6 +21,11 @@
         <div class="col-sm-4 offset-md-4">
           <div id="alert_placeholder"></div>
           <div id="dialog_placeholder"></div>
+          {% if template_exists('end.html') %}
+          <div class="alert alert-danger alert-dismissible" role="alert">
+            <strong>Note:</strong><p>This project will be discontinued after  <strong>December 13, 2021</strong>. <a href="/end">[more]</a></p>
+          </div>
+          {% endif %}
           {% if config.MAINTENANCE_MODE %}
           <div class="alert alert-warning alert-dismissible" role="alert">
             <strong>Application is currently under maintenance. Please come back later.</strong>
