@@ -133,7 +133,7 @@ class VulnerabilityProposalPublish(FlaskForm):
 
 
 class VulnerabilityDeleteForm(FlaskForm):
-    delete_entry = IntegerField("Delete entry", [validators.required()])
+    delete_entry = IntegerField("Delete entry", [validators.DataRequired()])
     submit = SubmitField()
 
 
